@@ -86,7 +86,7 @@ const TestimonialsSection = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground text-sm italic">
-                    "{testimonial.content}"
+                    &quot;{testimonial.content}&quot;
                   </p>
                 </CardContent>
               </Card>

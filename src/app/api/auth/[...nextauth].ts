@@ -73,8 +73,8 @@ export const authOptions: NextAuthOptions = {
       if (user.access_token) {
         session.access_token = user.access_token;
       }
-      if (user.access_token) {
-        session.access_token = user.refresh_token;
+      if (user.refresh_token) {
+        session.refresh_token = user.refresh_token;
       }
       return session;
     },
