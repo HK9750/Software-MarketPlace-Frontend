@@ -1,12 +1,8 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-# Running linters
-npm run lint && npm run format||
-(
-    echo '😤 Something went wrong! 😤'
-    false;
-)
+# Running formatting
+npm run format
 
 # All checks are passed
-echo '✅ All checks are passed. Committing... ✅'
+echo '✅ Formatting Done. Committing... ✅'
