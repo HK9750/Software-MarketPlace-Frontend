@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -16,19 +16,79 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { KeyRound, LogIn, User } from 'lucide-react';
+import { KeyRound, LogIn } from 'lucide-react';
+import { toast } from 'sonner';
+import axiosInstance from '@/utils/axios';
+import Cookies from 'js-cookie';
+import { useRouter } from 'next/navigation';
+import { SessionUser } from '@/types/types';
+
+const SIGNIN_URL = '/auth/login';
+
+type SignInResponse = {
+    user: SessionUser;
+    access_token: string;
+    refresh_token: string;
+};
 
 const SignInPage = () => {
+    const router = useRouter();
+    const [loading, setLoading] = useState(false);
+
     const {
         register,
         handleSubmit,
+        setError,
         formState: { errors },
     } = useForm<SignInFormData>({
         resolver: zodResolver(signInSchema),
     });
 
-    const onSubmit = (data: SignInFormData) => {
-        // empty onSubmit function
+    const onSubmit = async (data: SignInFormData) => {
+        setLoading(true);
+        try {
+            const response = await axiosInstance.post<SignInResponse>(
+                SIGNIN_URL,
+                data
+            );
+
+            if (response.data.access_token && response.data.refresh_token) {
+                Cookies.set('access_token', response.data.access_token, {
+                    secure: true,
+                    sameSite: 'Strict',
+                });
+                Cookies.set('refresh_token', response.data.refresh_token, {
+                    secure: true,
+                    sameSite: 'Strict',
+                });
+
+                toast.success('Signed in successfully!');
+                router.push('/dashboard');
+            } else {
+                toast.error('Invalid response from server.');
+            }
+        } catch (error: any) {
+            if (error.response) {
+                toast.error('Sign-in failed', {
+                    description:
+                        error.response.data.message || 'Please try again.',
+                });
+                if (error.response.status === 401) {
+                    setError('email', {
+                        type: 'manual',
+                        message: 'Invalid email or password',
+                    });
+                    setError('password', {
+                        type: 'manual',
+                        message: 'Invalid email or password',
+                    });
+                }
+            } else {
+                toast.error('Something went wrong. Please try again.');
+            }
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -56,19 +116,6 @@ const SignInPage = () => {
                             onSubmit={handleSubmit(onSubmit)}
                         >
                             <div className="space-y-2">
-                                <Label htmlFor="username">Username</Label>
-                                <div className="relative">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        id="username"
-                                        type="text"
-                                        placeholder="johndoe"
-                                        className="bg-muted/50 pl-10 focus:border-primary focus:ring-1 focus:ring-primary"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
                                 <Label htmlFor="email">Email</Label>
                                 <Input
                                     id="email"
@@ -77,6 +124,11 @@ const SignInPage = () => {
                                     className="bg-muted/50 focus:border-primary focus:ring-1 focus:ring-primary"
                                     {...register('email')}
                                 />
+                                {errors.email && (
+                                    <p className="text-red-500 text-xs">
+                                        {errors.email.message}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="space-y-2">
@@ -96,6 +148,11 @@ const SignInPage = () => {
                                     className="bg-muted/50 focus:border-primary focus:ring-1 focus:ring-primary"
                                     {...register('password')}
                                 />
+                                {errors.password && (
+                                    <p className="text-red-500 text-xs">
+                                        {errors.password.message}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="flex items-center space-x-2 pt-1">
@@ -115,9 +172,16 @@ const SignInPage = () => {
                             <Button
                                 type="submit"
                                 className="w-full font-medium h-11 transition-all hover:shadow-[0_0_15px_rgba(var(--primary)/25)]"
+                                disabled={loading}
                             >
-                                <LogIn className="mr-2 h-4 w-4" />
-                                Sign In
+                                {loading ? (
+                                    'Signing in...'
+                                ) : (
+                                    <>
+                                        <LogIn className="mr-2 h-4 w-4" />
+                                        Sign In
+                                    </>
+                                )}
                             </Button>
                         </form>
 

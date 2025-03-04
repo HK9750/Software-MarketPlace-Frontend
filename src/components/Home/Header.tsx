@@ -5,9 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ShoppingCart, Zap, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useSignOut } from '@/hooks/useSignOut';
 
 const Header = () => {
     const router = useRouter();
+    const signOut = useSignOut(
+        typeof window != 'undefined' ? window.location.origin : ''
+    );
+    const handleSignOut = async () => {
+        await signOut();
+    };
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="container flex h-16 items-center justify-between px-4 md:px-6 max-w-7xl mx-auto">
@@ -64,6 +71,13 @@ const Header = () => {
                         onClick={() => router.push('/sign-in')}
                     >
                         Sign In
+                    </Button>
+                    <Button
+                        variant="outline"
+                        className="hidden md:flex"
+                        onClick={handleSignOut}
+                    >
+                        Sign Out
                     </Button>
                     <Button>Get Started</Button>
                 </div>
