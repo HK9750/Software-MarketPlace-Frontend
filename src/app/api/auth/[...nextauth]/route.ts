@@ -21,12 +21,10 @@ async function socialAuth(
     body: Record<string, unknown>
 ): Promise<SocialAuthResponse> {
     try {
-        console.log('Calling socialAuth with:', endpoint, body);
         const response = await axiosInstance.post<SocialAuthResponse>(
             endpoint,
             body
         );
-        console.log('socialAuth response:', response.data);
         return response.data;
     } catch (error) {
         console.error('Error calling social auth:', error);
@@ -70,10 +68,9 @@ export const authOptions: NextAuthOptions = {
         },
     },
     secret: NEXT_PUBLIC_AUTH0_SECRET,
-    debug: true, // Enable debug logging to help diagnose issues.
+    // debug: true, // Enable debug logging to help diagnose issues.
     callbacks: {
         async signIn({ user }) {
-            console.log('signIn callback invoked with user:', user);
             if (!user?.email) {
                 console.error('Email is missing', { user });
                 return false;
@@ -87,15 +84,10 @@ export const authOptions: NextAuthOptions = {
                     username,
                     email: userEmail,
                 });
-                console.log('Received socialResponse:', socialResponse);
 
                 if (socialResponse.accessToken && socialResponse.refreshToken) {
                     user.access_token = socialResponse.accessToken;
                     user.refresh_token = socialResponse.refreshToken;
-                    console.log('User tokens set:', {
-                        access_token: user.access_token,
-                        refresh_token: user.refresh_token,
-                    });
                     return true;
                 } else {
                     console.error(
@@ -115,12 +107,10 @@ export const authOptions: NextAuthOptions = {
             return session;
         },
         async jwt({ token, user }) {
-            console.log('jwt callback invoked. Token:', token, 'User:', user);
             if (user) {
                 token.access_token = user.access_token;
                 token.refresh_token = user.refresh_token;
             }
-            console.log('JWT token after modification:', token);
             return token;
         },
         async redirect({ url, baseUrl }) {

@@ -54,16 +54,16 @@ const SignInPage = () => {
 
             if (response.data.accessToken && response.data.refreshToken) {
                 Cookies.set('access_token', response.data.accessToken, {
-                    secure: true,
+                    secure: process.env.NODE_ENV === 'production',
                     sameSite: 'Strict',
                 });
                 Cookies.set('refresh_token', response.data.refreshToken, {
-                    secure: true,
+                    secure: process.env.NODE_ENV === 'production',
                     sameSite: 'Strict',
                 });
 
                 toast.success('Signed in successfully!');
-                router.push('/dashboard');
+                router.push('/profile');
             } else {
                 toast.error('Invalid response from server.');
             }
@@ -198,6 +198,7 @@ const SignInPage = () => {
                             <Button
                                 variant="outline"
                                 className="w-full hover:bg-accent hover:text-accent-foreground transition-all h-11"
+                                onClick={() => router.push('/Auth0')}
                             >
                                 <KeyRound className="mr-2 h-5 w-5 text-[#EB5424]" />
                                 Sign in with Auth0

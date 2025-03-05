@@ -6,7 +6,7 @@ import { SessionUser } from '@/types/types';
 
 type ProvidersProps = {
     children: React.ReactNode;
-    user: SessionUser;
+    user: SessionUser | null | undefined;
 };
 
 export const Providers = ({ children, user }: ProvidersProps) => {
