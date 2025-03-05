@@ -23,8 +23,8 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import { SessionUser } from '@/types/types';
 
-const SIGNIN_URL = process.env.NEXT_PUBLIC_BACKEND_URL + '/auth/login';
-
+const SIGNIN_URL = '/auth/login';
+// console.log(process.env.NEXT_PUBLIC_BACKEND_URL);
 type SignInResponse = {
     user: SessionUser;
     accessToken: string;

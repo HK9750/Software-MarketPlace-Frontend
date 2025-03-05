@@ -2,9 +2,18 @@
 
 import Home from '@/components/Home/Home';
 import useAuthCookies from '@/hooks/useAuthCookies';
-import React from 'react';
+import axiosInstance from '@/utils/axios';
+import React, { useEffect } from 'react';
 
-const page = () => {
+const Page =  () => {
+    useEffect(() => {
+        const fetchData = async () => {
+            const res = await axiosInstance.get('/profile');
+            console.log(res.data);
+        };
+        fetchData();
+    }, []);
+
     useAuthCookies();
     return (
         <React.Fragment>
@@ -12,4 +21,4 @@ const page = () => {
         </React.Fragment>
     );
 };
-export default page;
+export default Page;

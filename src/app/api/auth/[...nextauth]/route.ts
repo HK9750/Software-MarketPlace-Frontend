@@ -1,7 +1,10 @@
-import axiosInstance from '@/utils/axios';
+// import axiosInstance from '@/utils/axios';
 import { NextAuthOptions } from 'next-auth';
 import NextAuth, { getServerSession } from 'next-auth/next';
 import Auth0 from 'next-auth/providers/auth0';
+import axios from "axios";
+import { NextRequest, NextResponse } from 'next/server';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 const {
     NEXT_PUBLIC_AUTH0_CLIENT_ID,
@@ -18,12 +21,26 @@ type SocialAuthResponse = {
 
 async function socialAuth(
     endpoint: string,
-    body: Record<string, unknown>
+    body: Record<string, unknown>,
+    cookieHeader?: string
 ): Promise<SocialAuthResponse> {
+    // console.log("COOKIE HEADER", cookieHeader);
     try {
-        const response = await axiosInstance.post<SocialAuthResponse>(
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+        };
+
+        if (cookieHeader) {
+            headers['Cookie'] = cookieHeader;
+        }
+
+        const response = await axios.post<SocialAuthResponse>(
             endpoint,
-            body
+            body,
+            {
+                withCredentials: true,
+                headers,
+            }
         );
         return response.data;
     } catch (error) {
@@ -70,7 +87,7 @@ export const authOptions: NextAuthOptions = {
     secret: NEXT_PUBLIC_AUTH0_SECRET,
     // debug: true, // Enable debug logging to help diagnose issues.
     callbacks: {
-        async signIn({ user }) {
+        async signIn({ user, req }) {
             if (!user?.email) {
                 console.error('Email is missing', { user });
                 return false;
@@ -79,10 +96,14 @@ export const authOptions: NextAuthOptions = {
             const userEmail = user.email.toLowerCase();
             const username = user.name || 'Unknown';
 
+            const cookieHeader = req?.headers?.cookie || '';
+            console.log("COOKIE HEADER", cookieHeader);
+
             try {
                 const socialResponse = await socialAuth('/auth/social', {
                     username,
                     email: userEmail,
+                    cookieHeader
                 });
 
                 if (socialResponse.accessToken && socialResponse.refreshToken) {
@@ -125,8 +146,7 @@ export const authOptions: NextAuthOptions = {
     },
 };
 
-const handler = NextAuth(authOptions);
-
+const handler = (req: NextApiRequest, res: NextApiResponse) => NextAuth(req, res, authOptions);
 export const useGetSession = () => getServerSession(authOptions);
 
 export { handler as GET, handler as POST };
