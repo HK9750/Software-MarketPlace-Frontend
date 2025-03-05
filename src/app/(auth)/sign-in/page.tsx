@@ -23,12 +23,12 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import { SessionUser } from '@/types/types';
 
-const SIGNIN_URL = '/auth/login';
+const SIGNIN_URL = process.env.NEXT_PUBLIC_BACKEND_URL + '/auth/login';
 
 type SignInResponse = {
     user: SessionUser;
-    access_token: string;
-    refresh_token: string;
+    accessToken: string;
+    refreshToken: string;
 };
 
 const SignInPage = () => {
@@ -52,12 +52,12 @@ const SignInPage = () => {
                 data
             );
 
-            if (response.data.access_token && response.data.refresh_token) {
-                Cookies.set('access_token', response.data.access_token, {
+            if (response.data.accessToken && response.data.refreshToken) {
+                Cookies.set('access_token', response.data.accessToken, {
                     secure: true,
                     sameSite: 'Strict',
                 });
-                Cookies.set('refresh_token', response.data.refresh_token, {
+                Cookies.set('refresh_token', response.data.refreshToken, {
                     secure: true,
                     sameSite: 'Strict',
                 });

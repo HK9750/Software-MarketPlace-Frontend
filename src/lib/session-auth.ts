@@ -34,8 +34,8 @@ export async function getSessionAccessToken(): Promise<JWT | null> {
         ),
     };
 
-    // @ts-ignore
+    // @ts-expect-error
     const session = await getToken({ req });
-    // @ts-ignore the types are wrong for some reason
+    // @ts-expect-error the types are wrong for some reason
     return session?.accessToken;
 }
