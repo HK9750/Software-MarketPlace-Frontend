@@ -1,3 +1,5 @@
+'use client';
+
 import { signOut as nextSignOut } from 'next-auth/react';
 import { useCallback } from 'react';
 
@@ -12,6 +14,9 @@ export const useSignOut = (callbackUrl: string) => {
                 method: 'GET',
                 credentials: 'include',
                 mode: 'no-cors',
+            });
+            await fetch('/api/auth/tokens', {
+                method: 'DELETE',
             });
         } catch (error) {
             console.error('Error occurred in fetching senSessionUrl', error);

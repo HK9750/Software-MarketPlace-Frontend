@@ -18,13 +18,13 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { KeyRound, LogIn } from 'lucide-react';
 import { toast } from 'sonner';
-import axiosInstance from '@/utils/axios';
+import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import { SessionUser } from '@/types/types';
 
-const SIGNIN_URL = '/auth/login';
-// console.log(process.env.NEXT_PUBLIC_BACKEND_URL);
+const SIGNIN_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`;
+
 type SignInResponse = {
     user: SessionUser;
     accessToken: string;
@@ -47,9 +47,14 @@ const SignInPage = () => {
     const onSubmit = async (data: SignInFormData) => {
         setLoading(true);
         try {
-            const response = await axiosInstance.post<SignInResponse>(
+            const response = await axios.post<SignInResponse>(
                 SIGNIN_URL,
-                data
+                data,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }
             );
 
             if (response.data.accessToken && response.data.refreshToken) {

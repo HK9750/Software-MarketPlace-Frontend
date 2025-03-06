@@ -1,15 +1,8 @@
-// import axiosInstance from '@/utils/axios';
+import axios from 'axios';
 import { NextAuthOptions } from 'next-auth';
 import NextAuth, { getServerSession } from 'next-auth/next';
 import Auth0 from 'next-auth/providers/auth0';
-import axios from "axios";
-import { GetServerSideProps, NextApiRequest, NextApiResponse } from 'next';
 import { cookies } from 'next/headers';
-
-const cookieStore = cookies();
-const accessToken = cookieStore.get("access_token")?.value || "No access token found";
-const refreshToken = cookieStore.get("refresh_token")?.value || "No refresh token found";
-
 
 const {
     NEXT_PUBLIC_AUTH0_CLIENT_ID,
@@ -26,25 +19,16 @@ type SocialAuthResponse = {
 
 async function socialAuth(
     endpoint: string,
-    body: Record<string, unknown>,
-    cookieHeader?: string
+    body: Record<string, unknown>
 ): Promise<SocialAuthResponse> {
-    // console.log("COOKIE HEADER", cookieHeader);
     try {
-        const headers: Record<string, string> = {
-            'Content-Type': 'application/json',
-        };
-
-        if (cookieHeader) {
-            headers['Cookie'] = cookieHeader;
-        }
-
         const response = await axios.post<SocialAuthResponse>(
-            endpoint,
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}${endpoint}`,
             body,
             {
-                withCredentials: true,
-                headers,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
             }
         );
         return response.data;
@@ -67,7 +51,6 @@ export const authOptions: NextAuthOptions = {
             },
         }),
     ],
-    // Define custom cookie settings for local development.
     cookies: {
         sessionToken: {
             name: 'next-auth.session-token',
@@ -75,24 +58,22 @@ export const authOptions: NextAuthOptions = {
                 httpOnly: true,
                 sameSite: 'lax',
                 path: '/',
-                secure: false, // For local development over HTTP
+                secure: false,
             },
         },
-        // Add the state cookie configuration.
         state: {
             name: 'next-auth.state',
             options: {
                 httpOnly: true,
                 sameSite: 'lax',
                 path: '/',
-                secure: false, // For local development over HTTP
+                secure: false,
             },
         },
     },
     secret: NEXT_PUBLIC_AUTH0_SECRET,
-    // debug: true, // Enable debug logging to help diagnose issues.
     callbacks: {
-        async signIn({ user, req }) {
+        async signIn({ user }) {
             if (!user?.email) {
                 console.error('Email is missing', { user });
                 return false;
@@ -101,17 +82,16 @@ export const authOptions: NextAuthOptions = {
             const userEmail = user.email.toLowerCase();
             const username = user.name || 'Unknown';
 
-            const cookieHeader = req?.headers?.cookie || '';
-            console.log("COOKIE HEADER", cookieHeader);
-
             try {
                 const socialResponse = await socialAuth('/auth/social', {
                     username,
                     email: userEmail,
-                    cookieHeader
                 });
 
                 if (socialResponse.accessToken && socialResponse.refreshToken) {
+                    const cookieIn = await cookies();
+                    cookieIn.set('access_token', socialResponse.accessToken);
+                    cookieIn.set('refresh_token', socialResponse.refreshToken);
                     user.access_token = socialResponse.accessToken;
                     user.refresh_token = socialResponse.refreshToken;
                     return true;
@@ -151,7 +131,8 @@ export const authOptions: NextAuthOptions = {
     },
 };
 
-const handler = (req: NextApiRequest, res: NextApiResponse) => NextAuth(req, res, authOptions);
+const handler = NextAuth(authOptions);
+
 export const useGetSession = () => getServerSession(authOptions);
 
 export { handler as GET, handler as POST };

@@ -23,10 +23,10 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { KeyRound, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
-import axiosInstance from '@/utils/axios';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import ActivationSignUpDialog from '@/components/ActivationDialog/ActivationSignUpDialog';
+import axios from 'axios';
 
 type RegisterResponse = {
     activationToken: string;
@@ -38,8 +38,8 @@ type ActivateResponse = {
     user: any;
 };
 
-const SIGNUP_URL = '/auth/register';
-const ACTIVATE_URL = '/auth/activate';
+const SIGNUP_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/register`;
+const ACTIVATE_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/activate`;
 
 const SignUpPage = () => {
     const router = useRouter();
@@ -62,9 +62,14 @@ const SignUpPage = () => {
         setLoading(true);
         try {
             const registerData: RegisterData = registerSchema.parse(data);
-            const response = await axiosInstance.post<RegisterResponse>(
+            const response = await axios.post<RegisterResponse>(
                 SIGNUP_URL,
-                registerData
+                registerData,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }
             );
             if (response.data.activationToken) {
                 setActivationToken(response.data.activationToken);
@@ -94,12 +99,21 @@ const SignUpPage = () => {
         }
         setLoading(true);
         try {
-            const response = await axiosInstance.post<ActivateResponse>(
+            const response = await axios.post<ActivateResponse>(
                 ACTIVATE_URL,
                 {
                     activationToken,
                     activationCode,
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
                 }
+            );
+            console.log(response);
+            console.log(
+                response.data.access_token && response.data.refresh_token
             );
             if (response.data.access_token && response.data.refresh_token) {
                 Cookies.set('access_token', response.data.access_token, {
@@ -149,6 +163,21 @@ const SignUpPage = () => {
                             onSubmit={handleSubmit(onSubmit)}
                         >
                             <input type="hidden" {...register('username')} />
+                            <div className="space-y-2">
+                                <Label htmlFor="email">Email</Label>
+                                <Input
+                                    id="username"
+                                    type="text"
+                                    placeholder="johndoe"
+                                    className="bg-muted/50 focus:border-primary focus:ring-1 focus:ring-primary"
+                                    {...register('username')}
+                                />
+                                {errors.username && (
+                                    <p className="text-red-500 text-xs">
+                                        {errors.username.message}
+                                    </p>
+                                )}
+                            </div>
                             <div className="space-y-2">
                                 <Label htmlFor="email">Email</Label>
                                 <Input
