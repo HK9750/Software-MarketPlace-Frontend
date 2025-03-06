@@ -2,6 +2,8 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import cookie from 'cookie'; 
 
+
+
 const axiosInstance = axios.create({
     baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
     withCredentials: true,
@@ -19,7 +21,7 @@ axiosInstance.interceptors.request.use(
             access_token = Cookies.get('access_token');
             refresh_token = Cookies.get('refresh_token');
         } else {
-            console.log('Server side request', config.headers);
+            // console.log('Server side request', config.headers);
             if (config.headers && config.headers.cookie) {
                 const parsedCookies = cookie.parse(config.headers.cookie);
                 access_token = parsedCookies.access_token;

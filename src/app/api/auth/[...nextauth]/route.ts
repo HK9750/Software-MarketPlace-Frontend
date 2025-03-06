@@ -3,8 +3,13 @@ import { NextAuthOptions } from 'next-auth';
 import NextAuth, { getServerSession } from 'next-auth/next';
 import Auth0 from 'next-auth/providers/auth0';
 import axios from "axios";
-import { NextRequest, NextResponse } from 'next/server';
-import { NextApiRequest, NextApiResponse } from 'next';
+import { GetServerSideProps, NextApiRequest, NextApiResponse } from 'next';
+import { cookies } from 'next/headers';
+
+const cookieStore = cookies();
+const accessToken = cookieStore.get("access_token")?.value || "No access token found";
+const refreshToken = cookieStore.get("refresh_token")?.value || "No refresh token found";
+
 
 const {
     NEXT_PUBLIC_AUTH0_CLIENT_ID,

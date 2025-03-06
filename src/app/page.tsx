@@ -5,6 +5,7 @@ import useAuthCookies from '@/hooks/useAuthCookies';
 import axiosInstance from '@/utils/axios';
 import React, { useEffect } from 'react';
 
+
 const Page =  () => {
     useEffect(() => {
         const fetchData = async () => {
