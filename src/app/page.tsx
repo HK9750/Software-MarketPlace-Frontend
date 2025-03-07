@@ -1,7 +1,6 @@
 'use client';
 
-import Home from '@/components/Home/Home';
-import useSetCookies from '@/hooks/useSetCookies';
+import Home from '@/components/Home';
 import { useRootContext } from '@/lib/Providers/RootContext';
 import React from 'react';
 

@@ -14,26 +14,28 @@ const useSetCookies = () => {
                 const session = await getSession();
                 console.log('Session in useSetCookies:', session);
 
-                if (!session?.access_token || !session?.refresh_token) {
-                    console.warn('No tokens found in session.');
-                    return;
-                }
+                let accessToken = session?.access_token;
+                let refreshToken = session?.refresh_token;
 
-                Cookies.set('access_token', session.access_token, {
-                    secure: process.env.NODE_ENV === 'production',
-                    sameSite: 'lax',
-                });
-                Cookies.set('refresh_token', session.refresh_token, {
-                    secure: process.env.NODE_ENV === 'production',
-                    sameSite: 'lax',
-                });
+                if (!accessToken || !refreshToken) {
+                    console.warn(
+                        'No tokens found in session, checking cookies.'
+                    );
+                    accessToken = Cookies.get('access_token');
+                    refreshToken = Cookies.get('refresh_token');
+
+                    if (!accessToken || !refreshToken) {
+                        console.warn('No tokens found in session or cookies.');
+                        return;
+                    }
+                }
 
                 const response = await fetch('/api/auth/tokens', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        access_token: session.access_token,
-                        refresh_token: session.refresh_token,
+                        access_token: accessToken,
+                        refresh_token: refreshToken,
                     }),
                     signal,
                 });

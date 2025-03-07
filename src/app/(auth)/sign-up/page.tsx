@@ -164,7 +164,7 @@ const SignUpPage = () => {
                         >
                             <input type="hidden" {...register('username')} />
                             <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
+                                <Label htmlFor="email">Username</Label>
                                 <Input
                                     id="username"
                                     type="text"
