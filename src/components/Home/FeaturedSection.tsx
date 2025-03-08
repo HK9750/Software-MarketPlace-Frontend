@@ -1,7 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
-import SoftwareCard from '@/components/Home/SoftwareCard';
+import SoftwareCard from '@/components/Product/ProductCard';
 
 const softwareCategories = {
     trending: [

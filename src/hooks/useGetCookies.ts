@@ -16,9 +16,8 @@ export const useGetCookies = () => {
             try {
                 const response = await fetch('/api/auth/tokens', { signal });
                 if (!response.ok) {
-                    throw new Error(
-                        `Error ${response.status}: ${response.statusText}`
-                    );
+                    setAccessToken(null);
+                    setRefreshToken(null);
                 }
                 const data = await response.json();
                 setAccessToken(data.access_token);

@@ -14,8 +14,8 @@ const useSetCookies = () => {
                 const session = await getSession();
                 console.log('Session in useSetCookies:', session);
 
-                let accessToken = session?.access_token;
-                let refreshToken = session?.refresh_token;
+                let accessToken = session?.access_token || null;
+                let refreshToken = session?.refresh_token || null;
 
                 if (!accessToken || !refreshToken) {
                     console.warn(
