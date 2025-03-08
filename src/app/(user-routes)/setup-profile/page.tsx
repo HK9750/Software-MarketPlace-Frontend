@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -42,9 +41,9 @@ import axios from 'axios';
 const SETUP_PROFILE_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/profile/setup`;
 
 export default function ProfileSetupPage() {
-    const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { user, access_token, refresh_token } = useRootContext();
+    console.log('User:', user);
 
     // Default values for the form
     const defaultValues: Partial<ProfileFormValues> = {

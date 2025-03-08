@@ -25,10 +25,10 @@ const Header = () => {
                     </Link>
                     <nav className="hidden md:flex gap-6">
                         <Link
-                            href="#"
+                            href="/products"
                             className="text-sm font-medium transition-colors hover:text-primary"
                         >
-                            Categories
+                            Products
                         </Link>
                         <Link
                             href="#"
