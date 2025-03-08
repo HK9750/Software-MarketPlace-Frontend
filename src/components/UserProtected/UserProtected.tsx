@@ -10,10 +10,10 @@ interface UserProtectedProps {
 }
 
 const UserProtected: React.FC<UserProtectedProps> = ({ children }) => {
-    const { accessToken, loading, error } = useGetCookies();
+    const { access_token, loading, error } = useGetCookies();
 
     if (loading) return <Loader />;
-    if (error || !accessToken) return <Unauthorized />;
+    if (error || !access_token) return <Unauthorized />;
 
     return <>{children}</>;
 };

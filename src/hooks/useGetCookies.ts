@@ -40,5 +40,10 @@ export const useGetCookies = () => {
         return () => controller.abort();
     }, []);
 
-    return { accessToken, refreshToken, loading, error };
+    return {
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        loading,
+        error,
+    };
 };

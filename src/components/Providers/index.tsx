@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { SessionProvider } from 'next-auth/react';
 import axios from 'axios';
-import { RootContext } from '@/lib/Providers/RootContext';
+import { RootContext } from '@/lib/contexts/RootContext';
 import { SessionUser } from '@/types/types';
 import useSetCookies from '@/hooks/useSetCookies';
 import { useGetCookies } from '@/hooks/useGetCookies';
@@ -16,19 +16,19 @@ type ProvidersProps = {
 
 export const Providers = ({ children }: ProvidersProps) => {
     useSetCookies();
-    const { accessToken, refreshToken, loading, error } = useGetCookies();
+    const { access_token, refresh_token, loading, error } = useGetCookies();
     const [user, setUser] = useState<SessionUser | null>(null);
 
     useEffect(() => {
-        if (!loading && accessToken && !error) {
+        if (!loading && access_token && !error) {
             (async () => {
                 try {
                     const response: any = await axios.get(
                         GET_USER_PROFILE_URL,
                         {
                             headers: {
-                                Authorization: `Bearer ${accessToken}`,
-                                'X-Refresh-Token': refreshToken || '',
+                                Authorization: `Bearer ${access_token}`,
+                                'X-Refresh-Token': refresh_token || '',
                             },
                         }
                     );
@@ -38,11 +38,11 @@ export const Providers = ({ children }: ProvidersProps) => {
                 }
             })();
         }
-    }, [loading, accessToken, refreshToken, error]);
+    }, [loading, access_token, refresh_token, error]);
 
     return (
         <SessionProvider>
-            <RootContext.Provider value={{ user }}>
+            <RootContext.Provider value={{ user, access_token, refresh_token }}>
                 {children}
             </RootContext.Provider>
         </SessionProvider>

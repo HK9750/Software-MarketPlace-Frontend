@@ -25,7 +25,7 @@ import { KeyRound, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
-import ActivationSignUpDialog from '@/components/ActivationDialog/ActivationSignUpDialog';
+import ActivationSignUpDialog from '@/components/ActivationDialog';
 import axios from 'axios';
 
 type RegisterResponse = {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,17 +36,22 @@ import {
     Phone,
 } from 'lucide-react';
 import { ProfileFormValues, profileFormSchema } from '@/schemas/profile-schema';
+import { useRootContext } from '@/lib/contexts/RootContext';
+import axios from 'axios';
+
+const SETUP_PROFILE_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/profile/setup`;
 
 export default function ProfileSetupPage() {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { user, access_token, refresh_token } = useRootContext();
 
     // Default values for the form
     const defaultValues: Partial<ProfileFormValues> = {
         firstname: '',
         lastname: '',
-        username: '',
-        email: '',
+        username: user?.username || '',
+        email: user?.email || '',
         address: '',
         phone: '',
         profile: '',
@@ -66,10 +71,25 @@ export default function ProfileSetupPage() {
         setIsSubmitting(true);
 
         try {
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1500));
+            const payload = {
+                firstName: data.firstname,
+                lastName: data.lastname,
+                phone: data.phone,
+                address: data.address,
+                websiteLink: data.websiteLink,
+                role: data.role.toUpperCase(),
+            };
 
-            console.log('Form data:', data);
+            console.log('Payload to be sent:', payload);
+            console.log(data);
+            const response = await axios.put(SETUP_PROFILE_URL, payload, {
+                headers: {
+                    Authorization: `Bearer ${access_token}`,
+                    'X-Refresh-Token': refresh_token,
+                },
+            });
+
+            console.log('Form response:', response.data);
 
             // Show success message
             toast.success('Profile setup complete!', {
@@ -77,18 +97,37 @@ export default function ProfileSetupPage() {
                 duration: 5000,
             });
 
-            // Redirect to dashboard or home page
+            // Redirect to dashboard or home page if needed
             // router.push('/dashboard');
         } catch (error: any) {
             console.error('Error submitting form:', error);
             toast.error('Something went wrong', {
-                description: error.message || 'Please try again later',
+                description:
+                    error.response?.data?.message ||
+                    error.message ||
+                    'Please try again later',
                 duration: 5000,
             });
         } finally {
             setIsSubmitting(false);
         }
     }
+
+    useEffect(() => {
+        if (user) {
+            form.reset({
+                firstname: '',
+                lastname: '',
+                username: user.username || '',
+                email: user.email || '',
+                address: '',
+                phone: '',
+                profile: '',
+                role: 'customer',
+                websiteLink: '',
+            });
+        }
+    }, [user, form]);
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4">
