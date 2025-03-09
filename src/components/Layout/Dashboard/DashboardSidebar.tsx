@@ -1,5 +1,4 @@
 'use client';
-
 import Link from 'next/link';
 import { Package } from 'lucide-react';
 import {
@@ -16,10 +15,7 @@ import {
     SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { UserProfile } from '@/components/Layout/Dashboard/UserProfile';
-import {
-    navigationItems,
-    utilityItems,
-} from '@/components/Layout/Dashboard/Items';
+import { navigationItems } from '@/components/Layout/Dashboard/Items';
 
 export function DashboardSidebar({ pathname }) {
     return (
@@ -32,7 +28,6 @@ export function DashboardSidebar({ pathname }) {
                     <span className="font-semibold text-lg">SoftMarket</span>
                 </div>
             </SidebarHeader>
-
             <SidebarContent>
                 <SidebarGroup>
                     <SidebarGroupLabel>Navigation</SidebarGroupLabel>
@@ -48,25 +43,8 @@ export function DashboardSidebar({ pathname }) {
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
-
                 <SidebarSeparator />
-
-                <SidebarGroup>
-                    <SidebarGroupLabel>Settings</SidebarGroupLabel>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            {utilityItems.map((item) => (
-                                <NavigationItem
-                                    key={item.name}
-                                    item={item}
-                                    isActive={pathname === item.href}
-                                />
-                            ))}
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
             </SidebarContent>
-
             <SidebarFooter className="border-t border-border p-4">
                 <UserProfile />
             </SidebarFooter>
@@ -76,11 +54,10 @@ export function DashboardSidebar({ pathname }) {
 
 function NavigationItem({ item, isActive }) {
     const { name, href, icon: Icon } = item;
-
     return (
         <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive} tooltip={name}>
-                <Link href={href}>
+                <Link href={href} className="flex items-center gap-2">
                     <Icon className="h-5 w-5" />
                     <span>{name}</span>
                 </Link>

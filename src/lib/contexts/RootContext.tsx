@@ -7,12 +7,14 @@ interface RootContextProps {
     user: SessionUser | null | undefined;
     access_token: string | null | undefined;
     refresh_token: string | null | undefined;
+    loading: boolean;
 }
 
 export const RootContext = React.createContext<RootContextProps>({
     user: null,
     access_token: null,
     refresh_token: null,
+    loading: true,
 });
 
 export const useRootContext = () => {

@@ -1,5 +1,10 @@
 import DashboardLayout from '@/components/Layout/Dashboard';
+import AdminProtected from '@/components/AdminProtected/AdminProtected';
 
 export default function Layout({ children }) {
-    return <DashboardLayout>{children}</DashboardLayout>;
+    return (
+        <AdminProtected>
+            <DashboardLayout>{children}</DashboardLayout>
+        </AdminProtected>
+    );
 }
