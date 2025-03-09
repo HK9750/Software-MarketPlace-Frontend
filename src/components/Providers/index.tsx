@@ -15,12 +15,26 @@ type ProvidersProps = {
 };
 
 export const Providers = ({ children }: ProvidersProps) => {
+    // Ensure cookies are set on mount
     useSetCookies();
-    const { access_token, refresh_token, loading, error } = useGetCookies();
+
+    // Retrieve cookies and their loading state
+    const {
+        access_token,
+        refresh_token,
+        loading: cookiesLoading,
+        error,
+    } = useGetCookies();
+
+    // Manage the fetched user profile and its loading state
     const [user, setUser] = useState<SessionUser | null>(null);
+    const [userLoading, setUserLoading] = useState<boolean>(true);
 
     useEffect(() => {
-        if (!loading && access_token && !error) {
+        let isMounted = true;
+
+        // Fetch the user profile only after cookies have loaded
+        if (!cookiesLoading && access_token && !error) {
             (async () => {
                 try {
                     const response: any = await axios.get(
@@ -32,17 +46,40 @@ export const Providers = ({ children }: ProvidersProps) => {
                             },
                         }
                     );
-                    setUser(response.data.user);
+                    if (isMounted) {
+                        setUser(response.data.user);
+                    }
                 } catch (err) {
                     console.error('Error fetching user profile:', err);
+                } finally {
+                    if (isMounted) {
+                        setUserLoading(false);
+                    }
                 }
             })();
+        } else if (!cookiesLoading) {
+            // No valid token or error exists so end loading
+            setUserLoading(false);
         }
-    }, [loading, access_token, refresh_token, error]);
+
+        return () => {
+            isMounted = false;
+        };
+    }, [cookiesLoading, access_token, refresh_token, error]);
+
+    // Combined loading state: true if either cookie or user profile is still loading
+    const combinedLoading = cookiesLoading || userLoading;
 
     return (
         <SessionProvider>
-            <RootContext.Provider value={{ user, access_token, refresh_token }}>
+            <RootContext.Provider
+                value={{
+                    user,
+                    access_token,
+                    refresh_token,
+                    loading: combinedLoading,
+                }}
+            >
                 {children}
             </RootContext.Provider>
         </SessionProvider>

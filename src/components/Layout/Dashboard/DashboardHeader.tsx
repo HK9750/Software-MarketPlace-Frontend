@@ -1,5 +1,4 @@
 'use client';
-
 import { Bell, Search, User, Settings, LogOut } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -13,29 +12,31 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useRootContext } from '@/lib/contexts/RootContext';
+import { SessionUser } from '@/types/types';
 
-export function DashboardHeader() {
-    const { user } = useRootContext();
+interface DashboardHeaderProps {
+    user?: SessionUser;
+}
+
+export const DashboardHeader = ({ user }: DashboardHeaderProps) => {
     const initials = user.profile.firstName[0] + user.profile.lastName[0];
     return (
         <header className="border-b border-border bg-card">
             <div className="flex h-16 items-center px-4 py-3">
                 <SidebarTrigger className="mr-2" />
-
                 <SearchBar />
                 <NotificationsButton />
                 <UserMenu initials={initials} />
             </div>
         </header>
     );
-}
+};
 
 function SearchBar() {
     return (
         <div className="hidden md:flex md:flex-1 md:items-center md:gap-4 md:px-4">
             <div className="relative w-full max-w-sm">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-2.5 top-2.5 h-5 w-5 text-muted-foreground" />
                 <Input
                     type="search"
                     placeholder="Search..."
@@ -99,3 +100,5 @@ function UserMenu({ initials }: { initials: string }) {
         </DropdownMenu>
     );
 }
+
+export default DashboardHeader;
