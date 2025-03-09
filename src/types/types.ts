@@ -12,13 +12,32 @@ export type SessionUser = {
 
 export interface Product {
     id: string;
-    title: string;
+    name: string; // replaced "title" with "name"
     description: string;
-    price: string;
-    category: string;
-    vendor: string;
-    image: string;
-    rating: number;
+    price: number;
+    filePath: string; // new property for image file path
+    averageRating: number; // replaced "rating" with "averageRating"
     badge?: string;
-    features?: string[];
+    // Additional fields from the response (not used in the card)
+    features?: string;
+    requirements?: string;
+    category: {
+        id: string;
+        name: string;
+    };
+    seller: {
+        verified: boolean;
+        websiteLink: string;
+        user: {
+            id: string;
+            username: string;
+            email: string;
+            profile: {
+                firstName: string;
+                lastName: string;
+                phone: string;
+            };
+        };
+    };
+    isWishlisted: boolean;
 }

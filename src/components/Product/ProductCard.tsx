@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
     Card,
     CardHeader,
@@ -12,27 +13,38 @@ import { Button } from '@/components/ui/button';
 import { Star, ShoppingCart, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/types/types';
+import { useGetCookies } from '@/hooks/useGetCookies';
+import axios from 'axios';
 
 interface ProductCardProps {
     software: Product;
-    isInWishlist: boolean;
-    onAddToWishlist: (id: string) => void;
-    onRemoveFromWishlist: (id: string) => void;
+    onWishlistToggle: () => void;
 }
 
-const ProductCard = ({
-    software,
-    isInWishlist,
-    onAddToWishlist,
-    onRemoveFromWishlist,
-}: ProductCardProps) => {
-    const { id, title, description, price, rating, image, badge } = software;
 
-    const toggleWishlist = () => {
-        if (isInWishlist) {
-            onRemoveFromWishlist(id);
-        } else {
-            onAddToWishlist(id);
+const ProductCard = ({ software, onWishlistToggle }: ProductCardProps) => {
+    const { id, name, description, price, filePath, averageRating, badge, isWishlisted: initialWishlist } = software;
+    const { access_token, refresh_token } = useGetCookies();
+    const [isWishlisted, setIsWishlisted] = useState(initialWishlist);
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+    const toggleWishlist = async () => {
+        try {
+            setIsWishlisted(prev => !prev);
+            const response = await axios.post<{ toggled: boolean }>(
+                `${backendUrl}/wishlist/toggle/${id}`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${access_token}`,
+                        'X-Refresh-Token': refresh_token || '',
+                    },
+                }
+            );
+            setIsWishlisted(response.data.toggled);
+            onWishlistToggle();
+        } catch (error) {
+            console.error('Error toggling wishlist:', error);
         }
     };
 
@@ -40,8 +52,8 @@ const ProductCard = ({
         <Card className="overflow-hidden transition-all hover:shadow-lg">
             <div className="relative">
                 <img
-                    src={image || '/placeholder.svg'}
-                    alt={title}
+                    src={filePath || '/placeholder.svg'}
+                    alt={name}
                     className="w-full aspect-[4/3] object-cover"
                 />
                 {badge && (
@@ -54,30 +66,24 @@ const ProductCard = ({
                     size="icon"
                     className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm hover:bg-background/90"
                     onClick={toggleWishlist}
-                    aria-label={
-                        isInWishlist
-                            ? 'Remove from wishlist'
-                            : 'Add to wishlist'
-                    }
+                    aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
                 >
                     <Heart
                         className={cn(
                             'h-5 w-5 transition-colors',
-                            isInWishlist
-                                ? 'fill-red-500 text-red-500'
-                                : 'text-muted-foreground'
+                            isWishlisted ? 'fill-red-500 text-red-500' : 'text-muted-foreground'
                         )}
                     />
                 </Button>
             </div>
             <CardHeader>
-                <CardTitle>{title}</CardTitle>
+                <CardTitle>{name}</CardTitle>
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
             <CardFooter className="flex justify-between items-center">
                 <div className="flex items-center gap-1">
                     <Star className="h-4 w-4 fill-primary text-primary" />
-                    <span className="text-sm font-medium">{rating}</span>
+                    <span className="text-sm font-medium">{averageRating}</span>
                 </div>
                 <div className="flex items-center gap-4">
                     <span className="font-bold">{price}</span>

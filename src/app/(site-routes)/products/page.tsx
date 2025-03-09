@@ -1,12 +1,38 @@
+'use client';
 import ProductCatalog from '@/components/Product';
-import { products } from '@/lib/product-data';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useGetCookies } from '@/hooks/useGetCookies';
+import { Product } from '@/types/types';
 
-export const metadata = {
-    title: 'Software Products | SoftMarket',
-    description: 'Browse our collection of software products and services',
-};
 
 export default function ProductsPage() {
+    const [products, setProducts] = useState<Product[]>([]);
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    const { access_token ,refresh_token, loading, error } = useGetCookies();
+ 
+
+    useEffect(() => {
+        if (!loading && access_token && !error) {
+            (async () => {
+                try {
+                    const response = await axios.get<{ data: Product[] }>(
+                        `${backendUrl}/products`,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${access_token}`,
+                                'X-Refresh-Token': refresh_token || '',
+                            },
+                        }
+                    );
+                    setProducts(response.data.data);
+                } catch (err) {
+                    console.error('Error fetching user profile:', err);
+                }
+            })();
+        }
+    }, [loading, access_token, refresh_token, error, backendUrl]);
+
     return (
         <div className="container mx-auto py-8 px-4">
             <h1 className="text-3xl font-bold mb-2">Software Products</h1>
