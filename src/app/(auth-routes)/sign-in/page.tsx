@@ -16,7 +16,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { KeyRound, LogIn } from 'lucide-react';
+import { KeyRound, LogIn, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 import Cookies from 'js-cookie';
@@ -34,6 +34,7 @@ type SignInResponse = {
 const SignInPage = () => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const {
         register,
@@ -43,6 +44,10 @@ const SignInPage = () => {
     } = useForm<SignInFormData>({
         resolver: zodResolver(signInSchema),
     });
+
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
 
     const onSubmit = async (data: SignInFormData) => {
         setLoading(true);
@@ -146,13 +151,29 @@ const SignInPage = () => {
                                         Forgot password?
                                     </Link>
                                 </div>
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    placeholder="••••••••"
-                                    className="bg-muted/50 focus:border-primary focus:ring-1 focus:ring-primary"
-                                    {...register('password')}
-                                />
+                                <div className="relative">
+                                    <Input
+                                        id="password"
+                                        type={
+                                            showPassword ? 'text' : 'password'
+                                        }
+                                        placeholder="••••••••"
+                                        className="bg-muted/50 focus:border-primary focus:ring-1 focus:ring-primary pr-10"
+                                        {...register('password')}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="absolute inset-y-0 right-3 flex items-center pr-3 text-muted-foreground hover:text-foreground"
+                                        onClick={togglePasswordVisibility}
+                                        tabIndex={-1}
+                                    >
+                                        {showPassword ? (
+                                            <EyeOff className="h-5 w-5" />
+                                        ) : (
+                                            <Eye className="h-5 w-5" />
+                                        )}
+                                    </button>
+                                </div>
                                 {errors.password && (
                                     <p className="text-red-500 text-xs">
                                         {errors.password.message}

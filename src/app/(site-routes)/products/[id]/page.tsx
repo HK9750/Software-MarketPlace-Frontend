@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Product } from '@/types/types';
 import ProductDetails from '@/components/Product/ProductDetails';
+import Loader from '@/components/Loader';
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 const Page = ({ params }: { params: Promise<{ id: string }> }) => {
@@ -41,11 +42,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
 
     return (
         <div className="container mx-auto py-8 px-4">
-            {productLoading ? (
-                <p>Loading...</p>
-            ) : (
-                <ProductDetails product={product} />
-            )}
+            {productLoading ? <Loader /> : <ProductDetails product={product} />}
         </div>
     );
 };

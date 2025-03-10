@@ -1,85 +1,175 @@
 'use client';
-
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ShoppingCart, Zap, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { ShoppingCart, Zap, Bell, ChevronDown } from 'lucide-react';
 import { useSignOut } from '@/hooks/useSignOut';
+import { useRootContext } from '@/lib/contexts/RootContext';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const Header = () => {
+    const { user, loading } = useRootContext();
     const router = useRouter();
     const signOut = useSignOut(
-        typeof window != 'undefined' ? window.location.origin : ''
+        typeof window !== 'undefined' ? window.location.origin : ''
     );
+
     const handleSignOut = async () => {
         await signOut();
     };
+
+    const getUserInitials = () => {
+        if (user && user.profile.firstName && user.profile.lastName) {
+            return `${user.profile.firstName[0].toUpperCase()}${user.profile.lastName[0].toUpperCase()}`;
+        }
+        return '';
+    };
+
     return (
-        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container flex h-16 items-center justify-between px-4 md:px-6 max-w-7xl mx-auto">
-                <div className="flex items-center gap-4 md:gap-8">
-                    <Link href="/" className="flex items-center space-x-2">
+        <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 font-sans shadow-sm">
+            <div className="container flex h-14 items-center justify-between px-4 md:px-6 max-w-7xl mx-auto">
+                {/* Logo Section - Left */}
+                <div className="flex-shrink-0">
+                    <Link href="/" className="flex items-center space-x-2 py-1">
                         <Zap className="h-6 w-6 text-primary" />
-                        <span className="font-bold text-xl">SoftMarket</span>
+                        <span className="font-bold text-xl tracking-tight">
+                            SoftMarket
+                        </span>
                     </Link>
-                    <nav className="hidden md:flex gap-6">
+                </div>
+
+                {/* Navigation Section - Center */}
+                <nav className="hidden md:flex justify-center flex-1 mx-4">
+                    <div className="flex gap-8">
                         <Link
                             href="/products"
-                            className="text-sm font-medium transition-colors hover:text-primary"
+                            className="text-md font-medium text-foreground/80 transition-colors hover:text-primary"
                         >
                             Products
                         </Link>
                         <Link
-                            href="#"
-                            className="text-sm font-medium transition-colors hover:text-primary"
+                            href="/solutions"
+                            className="text-md font-medium text-foreground/80 transition-colors hover:text-primary"
                         >
-                            Trending
+                            Solutions
                         </Link>
                         <Link
-                            href="#"
-                            className="text-sm font-medium transition-colors hover:text-primary"
+                            href="/pricing"
+                            className="text-md font-medium text-foreground/80 transition-colors hover:text-primary"
                         >
-                            New Releases
+                            Pricing
                         </Link>
                         <Link
-                            href="#"
-                            className="text-sm font-medium transition-colors hover:text-primary"
+                            href="/resources"
+                            className="text-md font-medium text-foreground/80 transition-colors hover:text-primary"
                         >
-                            Deals
+                            Resources
                         </Link>
-                    </nav>
-                </div>
-                <div className="flex items-center gap-3 md:gap-4">
-                    <div className="hidden md:flex relative w-full max-w-sm items-center">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            type="search"
-                            placeholder="Search software..."
-                            className="w-full pl-8 bg-background"
-                        />
                     </div>
-                    <Button variant="ghost" size="icon" className="relative">
+                </nav>
+
+                <div className="flex items-center gap-1 md:gap-3 flex-shrink-0">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="relative hover:bg-muted/80"
+                        aria-label="Shopping cart"
+                    >
                         <ShoppingCart className="h-5 w-5" />
                         <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-xs font-medium text-primary-foreground flex items-center justify-center">
                             3
                         </span>
                     </Button>
-                    <Button
-                        variant="outline"
-                        className="hidden md:flex"
-                        onClick={() => router.push('/sign-in')}
-                    >
-                        Sign In
+
+                    {loading ? (
+                        <Button
+                            variant="outline"
+                            disabled
+                            className="hidden md:flex h-9 text-sm font-medium px-4"
+                        >
+                            Sign In
+                        </Button>
+                    ) : user ? (
+                        <>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="hover:bg-muted/80"
+                                aria-label="Notifications"
+                            >
+                                <Bell className="h-5 w-5" />
+                            </Button>
+
+                            {/* Shadcn Dropdown Menu */}
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        className="flex items-center gap-2 hover:bg-muted/80 h-9 px-2 md:px-3"
+                                    >
+                                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground font-medium">
+                                            {getUserInitials()}
+                                        </span>
+                                        <ChevronDown className="h-4 w-4 opacity-70" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    align="center"
+                                    className="w-56"
+                                >
+                                    <div className="px-4 py-2 border-b border-border/60">
+                                        <p className="text-sm font-medium truncate">
+                                            {user.profile.firstName}{' '}
+                                            {user.profile.lastName}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground truncate">
+                                            {user.email}
+                                        </p>
+                                    </div>
+                                    <DropdownMenuItem asChild>
+                                        <Link
+                                            href="/dashboard"
+                                            className="cursor-pointer"
+                                        >
+                                            Dashboard
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <Link
+                                            href="/profile"
+                                            className="cursor-pointer"
+                                        >
+                                            Profile
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        onClick={handleSignOut}
+                                        className="cursor-pointer"
+                                    >
+                                        Sign out
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </>
+                    ) : (
+                        <Button
+                            variant="outline"
+                            onClick={() => router.push('/sign-in')}
+                            className="hidden md:flex h-9 text-sm font-medium px-4 border-border/60"
+                        >
+                            Sign In
+                        </Button>
+                    )}
+                    <Button className="h-9 text-sm font-medium px-4 ml-1 md:ml-2 bg-primary hover:bg-primary/90">
+                        Get Started
                     </Button>
-                    <Button
-                        variant="outline"
-                        className="hidden md:flex"
-                        onClick={handleSignOut}
-                    >
-                        Sign Out
-                    </Button>
-                    <Button>Get Started</Button>
                 </div>
             </div>
         </header>

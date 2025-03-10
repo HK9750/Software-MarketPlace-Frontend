@@ -1,26 +1,34 @@
 'use client';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { useRootContext } from '@/lib/contexts/RootContext';
 import { LogOut } from 'lucide-react';
 
-export function UserProfile({
-    name = 'John Doe',
-    email = 'john@example.com',
-    avatarSrc = '/placeholder.svg?height=36&width=36',
-    onLogout = () => {},
-}) {
+export function UserProfile({ onLogout = () => {} }) {
+    const { user } = useRootContext();
+    let name = 'Anonymous';
+    let email = 'Anonymous@gmail.com';
+
+    if (user) {
+        name = user.username;
+        email = user.email;
+    }
+
+    // Compute initials using user.profile.firstName and user.profile.lastName
+    const initials =
+        user && user.profile
+            ? `${user.profile.firstName[0].toUpperCase()}${user.profile.lastName[0].toUpperCase()}`
+            : name
+                  .split(' ')
+                  .map((n) => n[0].toUpperCase())
+                  .join('');
+
     return (
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
                 <Avatar className="h-9 w-9">
-                    <AvatarImage src={avatarSrc} alt={name} />
-                    <AvatarFallback>
-                        {name
-                            .split(' ')
-                            .map((n) => n[0])
-                            .join('')}
-                    </AvatarFallback>
+                    <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col">
                     <span className="text-sm font-medium">{name}</span>
@@ -41,3 +49,5 @@ export function UserProfile({
         </div>
     );
 }
+
+export default UserProfile;

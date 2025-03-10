@@ -12,4 +12,10 @@ export const navigationItems = [
     { name: 'Products', href: '/dashboard/products', icon: Package },
     { name: 'Orders', href: '/dashboard/orders', icon: ShoppingCart },
     { name: 'users', href: '/dashboard/users', icon: Users },
+    { name: 'categories', href: '/dashboard/categories', icon: Package },
+    {
+        name: 'subscriptions',
+        href: '/dashboard/subscriptions',
+        icon: ShoppingCart,
+    },
 ];
