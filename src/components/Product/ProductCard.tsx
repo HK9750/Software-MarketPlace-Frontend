@@ -21,9 +21,16 @@ interface ProductCardProps {
     onWishlistToggle: () => void;
 }
 
-
 const ProductCard = ({ software, onWishlistToggle }: ProductCardProps) => {
-    const { id, name, description, price, filePath, averageRating, isWishlisted: initialWishlist } = software;
+    const {
+        id,
+        name,
+        description,
+        price,
+        filePath,
+        averageRating,
+        isWishlisted: initialWishlist,
+    } = software;
     const { access_token, refresh_token } = useGetCookies();
     const [isWishlisted, setIsWishlisted] = useState(initialWishlist);
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -32,7 +39,7 @@ const ProductCard = ({ software, onWishlistToggle }: ProductCardProps) => {
         e.stopPropagation();
         e.preventDefault();
         try {
-            setIsWishlisted(prev => !prev);
+            setIsWishlisted((prev) => !prev);
             const response = await axios.post<{ toggled: boolean }>(
                 `${backendUrl}/wishlist/toggle/${id}`,
                 {},
@@ -67,13 +74,21 @@ const ProductCard = ({ software, onWishlistToggle }: ProductCardProps) => {
                     variant="ghost"
                     size="icon"
                     className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm hover:bg-background/90"
-                    onClick={(e: React.MouseEvent<HTMLButtonElement>) => toggleWishlist(e)}
-                    aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                    onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
+                        toggleWishlist(e)
+                    }
+                    aria-label={
+                        isWishlisted
+                            ? 'Remove from wishlist'
+                            : 'Add to wishlist'
+                    }
                 >
                     <Heart
                         className={cn(
                             'h-5 w-5 transition-colors',
-                            isWishlisted ? 'fill-red-500 text-red-500' : 'text-muted-foreground'
+                            isWishlisted
+                                ? 'fill-red-500 text-red-500'
+                                : 'text-muted-foreground'
                         )}
                     />
                 </Button>

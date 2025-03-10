@@ -5,12 +5,10 @@ import axios from 'axios';
 import { useGetCookies } from '@/hooks/useGetCookies';
 import { Product } from '@/types/types';
 
-
 export default function ProductsPage() {
     const [products, setProducts] = useState<Product[]>([]);
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-    const { access_token ,refresh_token, loading, error } = useGetCookies();
- 
+    const { access_token, refresh_token, loading, error } = useGetCookies();
 
     useEffect(() => {
         if (!loading && access_token && !error) {

@@ -37,7 +37,9 @@ interface WishlistItem {
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 export default function ProductCatalog({ products }: ProductCatalogProps) {
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(
+        null
+    );
     const [selectedPrice, setSelectedPrice] = useState<string | null>(null);
     const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -66,7 +68,9 @@ export default function ProductCatalog({ products }: ProductCatalogProps) {
         fetchWishlist();
     }, [access_token, refresh_token, loading, error]);
 
-    const categories = Array.from(new Set(products.map(p => p.category.name)));
+    const categories = Array.from(
+        new Set(products.map((p) => p.category.name))
+    );
     const priceRanges = [
         { id: 'under25', label: 'Under $25', min: 0, max: 25 },
         { id: '25to50', label: '$25 - $50', min: 25, max: 50 },
@@ -75,24 +79,27 @@ export default function ProductCatalog({ products }: ProductCatalogProps) {
         { id: 'over200', label: '$200+', min: 200, max: Infinity },
     ];
 
-    const filteredProducts = products.filter(p => {
-        if (selectedCategory && p.category.name !== selectedCategory) return false;
+    const filteredProducts = products.filter((p) => {
+        if (selectedCategory && p.category.name !== selectedCategory)
+            return false;
         if (selectedPrice) {
             const num = parseInt(p.price.toString());
-            const range = priceRanges.find(r => r.id === selectedPrice);
+            const range = priceRanges.find((r) => r.id === selectedPrice);
             if (range && (num < range.min || num > range.max)) return false;
         }
         return true;
     });
-
 
     const clearFilters = () => {
         setSelectedCategory(null);
         setSelectedPrice(null);
     };
     const getPriceLabel = () =>
-        selectedPrice && priceRanges.find(r => r.id === selectedPrice)?.label || null;
-    const openWishlist = () => document.getElementById('wishlist-trigger')?.click();
+        (selectedPrice &&
+            priceRanges.find((r) => r.id === selectedPrice)?.label) ||
+        null;
+    const openWishlist = () =>
+        document.getElementById('wishlist-trigger')?.click();
 
     return (
         <div>
@@ -109,34 +116,53 @@ export default function ProductCatalog({ products }: ProductCatalogProps) {
                                 className="flex items-center gap-1"
                             >
                                 <Heart
-                                    className={cn('h-4 w-4', wishlist.length > 0 && 'fill-red-500 text-red-500')}
+                                    className={cn(
+                                        'h-4 w-4',
+                                        wishlist.length > 0 &&
+                                            'fill-red-500 text-red-500'
+                                    )}
                                 />{' '}
                                 ({wishlist.length})
                             </Button>
                         </SheetTrigger>
-                        <SheetContent side="right" className="w-full sm:max-w-md">
+                        <SheetContent
+                            side="right"
+                            className="w-full sm:max-w-md"
+                        >
                             <SheetHeader>
                                 <SheetTitle>Your Wishlist</SheetTitle>
                             </SheetHeader>
                             <div className="mt-6 grid gap-4 px-8">
                                 {wishlist.length === 0
                                     ? 'Your wishlist is empty.'
-                                    : wishlist.map(i => (
-                                        <div key={i.software.id} className="flex items-center gap-4 border-b pb-4">
-                                            <img
-                                                src={i.software.filePath || '/placeholder.svg'}
-                                                alt={i.software.name}
-                                                className="w-16 h-16 object-cover rounded"
-                                            />
-                                            <div className="flex-1">
-                                                <h4 className="font-medium">{i.software.name}</h4>
-                                                <p className="text-sm text-muted-foreground">$ {i.software.price}</p>
-                                            </div>
-                                        </div>
-                                    ))}
+                                    : wishlist.map((i) => (
+                                          <div
+                                              key={i.software.id}
+                                              className="flex items-center gap-4 border-b pb-4"
+                                          >
+                                              <img
+                                                  src={
+                                                      i.software.filePath ||
+                                                      '/placeholder.svg'
+                                                  }
+                                                  alt={i.software.name}
+                                                  className="w-16 h-16 object-cover rounded"
+                                              />
+                                              <div className="flex-1">
+                                                  <h4 className="font-medium">
+                                                      {i.software.name}
+                                                  </h4>
+                                                  <p className="text-sm text-muted-foreground">
+                                                      $ {i.software.price}
+                                                  </p>
+                                              </div>
+                                          </div>
+                                      ))}
                                 {wishlist.length > 0 && (
                                     <SheetClose asChild>
-                                        <Button className="mt-4">Continue Shopping</Button>
+                                        <Button className="mt-4">
+                                            Continue Shopping
+                                        </Button>
                                     </SheetClose>
                                 )}
                             </div>
@@ -144,20 +170,33 @@ export default function ProductCatalog({ products }: ProductCatalogProps) {
                     </Sheet>
                     <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
                         <SheetTrigger asChild>
-                            <Button variant="outline" size="sm" className="flex items-center gap-1">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex items-center gap-1"
+                            >
                                 <Filter className="h-4 w-4" /> Filters
                             </Button>
                         </SheetTrigger>
-                        <SheetContent side="left" className="w-full sm:max-w-md">
+                        <SheetContent
+                            side="left"
+                            className="w-full sm:max-w-md"
+                        >
                             <SheetHeader>
                                 <SheetTitle>Filters</SheetTitle>
                             </SheetHeader>
                             <div className="py-4">
                                 <div className="mb-6">
-                                    <h3 className="font-medium mb-2">Price Range</h3>
+                                    <h3 className="font-medium mb-2">
+                                        Price Range
+                                    </h3>
                                     <div className="space-y-1">
                                         <Button
-                                            variant={selectedPrice === null ? 'default' : 'outline'}
+                                            variant={
+                                                selectedPrice === null
+                                                    ? 'default'
+                                                    : 'outline'
+                                            }
                                             size="sm"
                                             className="w-full justify-start"
                                             onClick={() => {
@@ -167,10 +206,14 @@ export default function ProductCatalog({ products }: ProductCatalogProps) {
                                         >
                                             All Prices
                                         </Button>
-                                        {priceRanges.map(r => (
+                                        {priceRanges.map((r) => (
                                             <Button
                                                 key={r.id}
-                                                variant={selectedPrice === r.id ? 'default' : 'outline'}
+                                                variant={
+                                                    selectedPrice === r.id
+                                                        ? 'default'
+                                                        : 'outline'
+                                                }
                                                 size="sm"
                                                 className="w-full justify-start"
                                                 onClick={() => {
@@ -184,10 +227,16 @@ export default function ProductCatalog({ products }: ProductCatalogProps) {
                                     </div>
                                 </div>
                                 <div>
-                                    <h3 className="font-medium mb-2">Categories</h3>
+                                    <h3 className="font-medium mb-2">
+                                        Categories
+                                    </h3>
                                     <div className="space-y-1">
                                         <Button
-                                            variant={selectedCategory === null ? 'default' : 'outline'}
+                                            variant={
+                                                selectedCategory === null
+                                                    ? 'default'
+                                                    : 'outline'
+                                            }
                                             size="sm"
                                             className="w-full justify-start"
                                             onClick={() => {
@@ -197,10 +246,14 @@ export default function ProductCatalog({ products }: ProductCatalogProps) {
                                         >
                                             All Categories
                                         </Button>
-                                        {categories.map(cat => (
+                                        {categories.map((cat) => (
                                             <Button
                                                 key={cat}
-                                                variant={selectedCategory === cat ? 'default' : 'outline'}
+                                                variant={
+                                                    selectedCategory === cat
+                                                        ? 'default'
+                                                        : 'outline'
+                                                }
                                                 size="sm"
                                                 className="w-full justify-start"
                                                 onClick={() => {
@@ -248,10 +301,19 @@ export default function ProductCatalog({ products }: ProductCatalogProps) {
                 <div className="space-y-6">
                     <div className="flex items-center justify-between mb-4">
                         <div>
-                            <h2 className="text-xl font-bold hidden md:block">Products</h2>
+                            <h2 className="text-xl font-bold hidden md:block">
+                                Products
+                            </h2>
                             <p className="text-sm text-muted-foreground">
-                                Showing <span className="font-medium">{filteredProducts.length}</span> of{' '}
-                                <span className="font-medium">{products.length}</span> products
+                                Showing{' '}
+                                <span className="font-medium">
+                                    {filteredProducts.length}
+                                </span>{' '}
+                                of{' '}
+                                <span className="font-medium">
+                                    {products.length}
+                                </span>{' '}
+                                products
                             </p>
                         </div>
                         {(selectedCategory || selectedPrice) && (
@@ -269,20 +331,28 @@ export default function ProductCatalog({ products }: ProductCatalogProps) {
                     {(selectedCategory || selectedPrice) && (
                         <div className="flex flex-wrap gap-2 mb-4">
                             {selectedCategory && (
-                                <Badge variant="secondary" className="flex items-center gap-1">
+                                <Badge
+                                    variant="secondary"
+                                    className="flex items-center gap-1"
+                                >
                                     Category: {selectedCategory}
                                     <Button
                                         variant="ghost"
                                         size="icon"
                                         className="h-4 w-4 ml-1 p-0"
-                                        onClick={() => setSelectedCategory(null)}
+                                        onClick={() =>
+                                            setSelectedCategory(null)
+                                        }
                                     >
                                         <X className="h-3 w-3" />
                                     </Button>
                                 </Badge>
                             )}
                             {selectedPrice && (
-                                <Badge variant="secondary" className="flex items-center gap-1">
+                                <Badge
+                                    variant="secondary"
+                                    className="flex items-center gap-1"
+                                >
                                     Price: {getPriceLabel()}
                                     <Button
                                         variant="ghost"
@@ -303,7 +373,7 @@ export default function ProductCatalog({ products }: ProductCatalogProps) {
                             'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
                         )}
                     >
-                        {filteredProducts.map(p => (
+                        {filteredProducts.map((p) => (
                             <Link key={p.id} href={`/products/${p.id}`}>
                                 <ProductCard
                                     software={p}
@@ -315,11 +385,18 @@ export default function ProductCatalog({ products }: ProductCatalogProps) {
 
                     {filteredProducts.length === 0 && (
                         <div className="text-center py-12">
-                            <h3 className="text-lg font-medium">No products found</h3>
+                            <h3 className="text-lg font-medium">
+                                No products found
+                            </h3>
                             <p className="text-muted-foreground mt-2">
-                                Try adjusting your filters to find what you are looking for
+                                Try adjusting your filters to find what you are
+                                looking for
                             </p>
-                            <Button variant="outline" className="mt-4" onClick={clearFilters}>
+                            <Button
+                                variant="outline"
+                                className="mt-4"
+                                onClick={clearFilters}
+                            >
                                 Clear all filters
                             </Button>
                         </div>

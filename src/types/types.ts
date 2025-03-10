@@ -10,17 +10,13 @@ export type SessionUser = {
     };
 };
 
-
-
-
 interface Review {
-  id: string
-  user: SessionUser
-  rating: number
-  comment: string
-  createdAt: string 
+    id: string;
+    user: SessionUser;
+    rating: number;
+    comment: string;
+    createdAt: string;
 }
-
 
 export interface Product {
     id: string;
@@ -31,8 +27,8 @@ export interface Product {
     filePath: string;
     averageRating: number;
     status: number; // 0 = PENDING, 1 = ACTIVE, 2 = INACTIVE
-    features: string[]; 
-    requirements: string[]; 
+    features: string[];
+    requirements: string[];
     category?: {
         id: string;
         name: string;

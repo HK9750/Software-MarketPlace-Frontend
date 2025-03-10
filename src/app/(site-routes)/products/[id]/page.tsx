@@ -43,10 +43,9 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
         <div className="container mx-auto py-8 px-4">
             {productLoading ? (
                 <p>Loading...</p>
-            ) :  (
+            ) : (
                 <ProductDetails product={product} />
-            ) 
-        }
+            )}
         </div>
     );
 };
