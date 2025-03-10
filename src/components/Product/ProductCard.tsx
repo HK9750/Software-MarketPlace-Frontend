@@ -8,7 +8,7 @@ import {
     CardDescription,
     CardFooter,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+// import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Star, ShoppingCart, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -23,12 +23,14 @@ interface ProductCardProps {
 
 
 const ProductCard = ({ software, onWishlistToggle }: ProductCardProps) => {
-    const { id, name, description, price, filePath, averageRating, badge, isWishlisted: initialWishlist } = software;
+    const { id, name, description, price, filePath, averageRating, isWishlisted: initialWishlist } = software;
     const { access_token, refresh_token } = useGetCookies();
     const [isWishlisted, setIsWishlisted] = useState(initialWishlist);
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-    const toggleWishlist = async () => {
+    const toggleWishlist = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation();
+        e.preventDefault();
         try {
             setIsWishlisted(prev => !prev);
             const response = await axios.post<{ toggled: boolean }>(
@@ -56,16 +58,16 @@ const ProductCard = ({ software, onWishlistToggle }: ProductCardProps) => {
                     alt={name}
                     className="w-full aspect-[4/3] object-cover"
                 />
-                {badge && (
+                {/* {badge && (
                     <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground">
                         {badge}
                     </Badge>
-                )}
+                )} */}
                 <Button
                     variant="ghost"
                     size="icon"
                     className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm hover:bg-background/90"
-                    onClick={toggleWishlist}
+                    onClick={(e: React.MouseEvent<HTMLButtonElement>) => toggleWishlist(e)}
                     aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
                 >
                     <Heart

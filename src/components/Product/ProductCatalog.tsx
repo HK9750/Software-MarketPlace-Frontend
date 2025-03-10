@@ -21,6 +21,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import axios from 'axios';
 import { useGetCookies } from '@/hooks/useGetCookies';
+import Link from 'next/link';
 
 interface ProductCatalogProps {
     products: Product[];
@@ -43,22 +44,22 @@ export default function ProductCatalog({ products }: ProductCatalogProps) {
     const { access_token, refresh_token, loading, error } = useGetCookies();
 
     const fetchWishlist = async () => {
-       if (!loading && access_token && !error) {
-           try {
-               const response: any = await axios.get(
-                   `${backendUrl}/wishlist`,
-                   {
-                       headers: {
-                           Authorization: `Bearer ${access_token}`,
-                           'X-Refresh-Token': refresh_token || '',
-                       },
-                   }
-               );
-               setWishlist(response.data.data);
-           } catch (error) {
-               console.error('Error fetching wishlist:', error);
-           }
-       }
+        if (!loading && access_token && !error) {
+            try {
+                const response: any = await axios.get(
+                    `${backendUrl}/wishlist`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${access_token}`,
+                            'X-Refresh-Token': refresh_token || '',
+                        },
+                    }
+                );
+                setWishlist(response.data.data);
+            } catch (error) {
+                console.error('Error fetching wishlist:', error);
+            }
+        }
     };
 
     useEffect(() => {
@@ -303,11 +304,12 @@ export default function ProductCatalog({ products }: ProductCatalogProps) {
                         )}
                     >
                         {filteredProducts.map(p => (
-                            <ProductCard
-                                key={p.id}
-                                software={p}
-                                onWishlistToggle={fetchWishlist}
-                            />
+                            <Link key={p.id} href={`/products/${p.id}`}>
+                                <ProductCard
+                                    software={p}
+                                    onWishlistToggle={fetchWishlist}
+                                />
+                            </Link>
                         ))}
                     </div>
 

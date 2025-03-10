@@ -10,22 +10,35 @@ export type SessionUser = {
     };
 };
 
+
+
+
+interface Review {
+  id: string
+  user: SessionUser
+  rating: number
+  comment: string
+  createdAt: string 
+}
+
+
 export interface Product {
     id: string;
-    name: string; // replaced "title" with "name"
+    name: string;
     description: string;
     price: number;
-    filePath: string; // new property for image file path
-    averageRating: number; // replaced "rating" with "averageRating"
-    badge?: string;
-    // Additional fields from the response (not used in the card)
-    features?: string;
-    requirements?: string;
-    category: {
+    discount: number;
+    filePath: string;
+    averageRating: number;
+    status: number; // 0 = PENDING, 1 = ACTIVE, 2 = INACTIVE
+    features: string[]; 
+    requirements: string[]; 
+    category?: {
         id: string;
         name: string;
     };
     seller: {
+        id: string;
         verified: boolean;
         websiteLink: string;
         user: {
@@ -40,4 +53,8 @@ export interface Product {
         };
     };
     isWishlisted: boolean;
+    isInCart: boolean;
+    reviews: Review[];
+    createdAt: string;
+    updatedAt: string;
 }

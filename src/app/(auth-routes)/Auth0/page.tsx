@@ -1,7 +1,7 @@
 'use client';
 
 import { AUTH_PROVIDER } from '@/lib/constants';
-import { useRootContext } from '@/lib/Providers/RootContext';
+import { useRootContext } from '@/lib/contexts/RootContext';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
