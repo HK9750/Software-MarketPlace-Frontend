@@ -4,15 +4,18 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useGetCookies } from '@/hooks/useGetCookies';
 import { Product } from '@/types/types';
+import Loader from '@/components/Loader';
 
 export default function ProductsPage() {
     const [products, setProducts] = useState<Product[]>([]);
+    const [productLoading, setProductLoading] = useState<boolean>(false);
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
     const { access_token, refresh_token, loading, error } = useGetCookies();
 
     useEffect(() => {
         if (!loading && access_token && !error) {
             (async () => {
+                setProductLoading(true);
                 try {
                     const response = await axios.get<{ data: Product[] }>(
                         `${backendUrl}/products`,
@@ -26,6 +29,8 @@ export default function ProductsPage() {
                     setProducts(response.data.data);
                 } catch (err) {
                     console.error('Error fetching user profile:', err);
+                } finally {
+                    setProductLoading(false);
                 }
             })();
         }
@@ -38,7 +43,9 @@ export default function ProductsPage() {
                 Browse our collection of high-quality software products and
                 services
             </p>
-            <ProductCatalog products={products} />
+           {
+             productLoading ? <Loader /> : <ProductCatalog products={products} />       
+           }
         </div>
     );
 }

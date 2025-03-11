@@ -8,6 +8,7 @@ interface RootContextProps {
     access_token: string | null | undefined;
     refresh_token: string | null | undefined;
     loading: boolean;
+    refetchUserProfile: () => void;
 }
 
 export const RootContext = React.createContext<RootContextProps>({
@@ -15,6 +16,7 @@ export const RootContext = React.createContext<RootContextProps>({
     access_token: null,
     refresh_token: null,
     loading: true,
+    refetchUserProfile: () => {},
 });
 
 export const useRootContext = () => {

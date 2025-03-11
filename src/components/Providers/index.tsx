@@ -37,15 +37,12 @@ export const Providers = ({ children }: ProvidersProps) => {
         if (!cookiesLoading && access_token && !error) {
             (async () => {
                 try {
-                    const response: any = await axios.get(
-                        GET_USER_PROFILE_URL,
-                        {
-                            headers: {
-                                Authorization: `Bearer ${access_token}`,
-                                'X-Refresh-Token': refresh_token || '',
-                            },
-                        }
-                    );
+                    const response: any = await axios.get(GET_USER_PROFILE_URL, {
+                        headers: {
+                            Authorization: `Bearer ${access_token}`,
+                            'X-Refresh-Token': refresh_token || '',
+                        },
+                    });
                     if (isMounted) {
                         setUser(response.data.user);
                     }
@@ -70,6 +67,23 @@ export const Providers = ({ children }: ProvidersProps) => {
     // Combined loading state: true if either cookie or user profile is still loading
     const combinedLoading = cookiesLoading || userLoading;
 
+    // Function to re-fetch the user profile (e.g., after a cart update)
+    const refetchUserProfile = async () => {
+        if (!cookiesLoading && access_token && !error) {
+            try {
+                const response: any = await axios.get(GET_USER_PROFILE_URL, {
+                    headers: {
+                        Authorization: `Bearer ${access_token}`,
+                        'X-Refresh-Token': refresh_token || '',
+                    },
+                });
+                setUser(response.data.user);
+            } catch (err) {
+                console.error('Error re-fetching user profile:', err);
+            }
+        }
+    };
+
     return (
         <SessionProvider>
             <RootContext.Provider
@@ -78,6 +92,7 @@ export const Providers = ({ children }: ProvidersProps) => {
                     access_token,
                     refresh_token,
                     loading: combinedLoading,
+                    refetchUserProfile, 
                 }}
             >
                 {children}

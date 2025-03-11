@@ -12,9 +12,12 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useState } from 'react';
+import CartModal from '../Product/CartModal';
 
 const Header = () => {
     const { user, loading } = useRootContext();
+    const [isOpenCart, setIsOpenCart] = useState(false);
     const router = useRouter();
     const signOut = useSignOut(
         typeof window !== 'undefined' ? window.location.origin : ''
@@ -80,10 +83,11 @@ const Header = () => {
                         size="icon"
                         className="relative hover:bg-muted/80"
                         aria-label="Shopping cart"
+                        onClick={() => setIsOpenCart(true)}
                     >
                         <ShoppingCart className="h-5 w-5" />
                         <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-xs font-medium text-primary-foreground flex items-center justify-center">
-                            3
+                            {!loading && user ? user.cartCount : 0}
                         </span>
                     </Button>
 
@@ -172,6 +176,7 @@ const Header = () => {
                     </Button>
                 </div>
             </div>
+            <CartModal isOpen={isOpenCart} onClose={() => setIsOpenCart(false)} />
         </header>
     );
 };

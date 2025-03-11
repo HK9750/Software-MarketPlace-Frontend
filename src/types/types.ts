@@ -8,6 +8,7 @@ export type SessionUser = {
         firstName: string;
         lastName: string;
     };
+    cartCount: number;
 };
 
 interface Review {
@@ -23,46 +24,33 @@ export interface Product {
     name: string;
     description: string;
     price: number;
-    discount: number;
-    filePath: string;
     averageRating: number;
-    status: number; // 0 = PENDING, 1 = ACTIVE, 2 = INACTIVE
-    features: string[];
-    requirements: string[];
-    category?: {
-        filePath: string;
-        averageRating: number;
-        badge?: string;
-        status?: 'active' | 'inactive' | 'pending'; // Adding status for dashboard functionality
-        sales?: number; // Adding sales for dashboard functionality
-        dateAdded?: string; // Adding dateAdded for dashboard functionality
-        features?: string;
-        requirements?: string;
-        category: {
-            id: string;
-            name: string;
-        };
-        seller: {
-            id: string;
-            verified: boolean;
-            websiteLink: string;
-            user: {
-                id: string;
-                username: string;
-                email: string;
-                profile: {
-                    firstName: string;
-                    lastName: string;
-                    phone: string;
-                };
-            };
-        };
-        isWishlisted: boolean;
-        isInCart: boolean;
-        reviews: Review[];
-        createdAt: string;
-        updatedAt: string;
+    reviews: Review[];
+    category: {
+        id: string;
+        name: string;
     };
+    isInCart: boolean;
+    isWishlisted: boolean;
+    filePath?: string;
+    seller: Seller;
+}
+
+interface Seller {
+    user: User;
+    websiteLink: string;
+    verified: boolean;
+}
+
+interface User {
+    username: string;
+    profile: UserProfile;
+}
+
+interface UserProfile {
+    firstName: string;
+    lastName: string;
+    phone: string;
 }
 
 export enum OrderStatus {

@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/card';
 // import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, ShoppingCart, Heart } from 'lucide-react';
+import { Star, Heart, MoveRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/types/types';
 import { useGetCookies } from '@/hooks/useGetCookies';
@@ -103,10 +103,10 @@ const ProductCard = ({ software, onWishlistToggle }: ProductCardProps) => {
                     <span className="text-sm font-medium">{averageRating}</span>
                 </div>
                 <div className="flex items-center gap-4">
-                    <span className="font-bold">{price}</span>
-                    <Button size="sm">
-                        <ShoppingCart className="h-4 w-4 mr-2" />
-                        Add
+                    <span className="font-bold">From {price}</span>
+                    <Button size="sm" >
+                        <MoveRight className="h-4 w-4 mr-2" />
+                        View
                     </Button>
                 </div>
             </CardFooter>

@@ -28,6 +28,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import type { Product } from '@/types/types';
 import { useGetCookies } from '@/hooks/useGetCookies';
 import axios from 'axios';
+import { useRootContext } from '@/lib/contexts/RootContext';
 
 interface LicenseOption {
     duration: string;
@@ -44,6 +45,8 @@ const hardcodedLicenseOptions: LicenseOption[] = [
 export default function ProductDetails({ product }: { product: Product }) {
     const [isInCart, setIsInCart] = useState(product?.isInCart);
     const [isInWishlist, setIsInWishlist] = useState(product?.isWishlisted);
+    const [isInCartLoading, setIsInCartLoading] = useState(false);
+    const { refetchUserProfile } = useRootContext();
 
     const { access_token, refresh_token } = useGetCookies();
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -56,6 +59,7 @@ export default function ProductDetails({ product }: { product: Product }) {
 
     const handleAddToCart = async () => {
         try {
+            setIsInCartLoading(true);
             const response = await axios.post<{ success: boolean }>(
                 `${backendUrl}/cart`,
                 {
@@ -69,8 +73,11 @@ export default function ProductDetails({ product }: { product: Product }) {
                 }
             );
             setIsInCart(response.data.success);
+            await refetchUserProfile();
         } catch (error) {
             console.error('Error adding to cart:', error);
+        } finally {
+            setIsInCartLoading(false);
         }
     };
 
@@ -190,7 +197,7 @@ export default function ProductDetails({ product }: { product: Product }) {
                                 disabled={isInCart}
                             >
                                 <ShoppingCart className="mr-2 h-4 w-4" />
-                                {isInCart ? 'In Cart' : 'Add to Cart'}
+                                {isInCartLoading ? 'Adding to Cart...' : isInCart ? 'Added to Cart' : 'Add to Cart'}
                             </Button>
                             <Button
                                 variant="outline"
