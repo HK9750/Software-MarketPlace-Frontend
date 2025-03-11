@@ -17,61 +17,61 @@ import CartModal from '../Product/CartModal';
 import NotificationPanel from './NotificationPanel';
 
 interface Notification {
-    id: string
-    type: string
-    userId: string
-    softwareId?: string
-    message: string
-    isRead: boolean
-    createdAt: string
+    id: string;
+    type: string;
+    userId: string;
+    softwareId?: string;
+    message: string;
+    isRead: boolean;
+    createdAt: string;
 }
 
 const dummyNotifications: Notification[] = [
     {
-        id: "1",
-        type: "NEW_PRODUCT",
-        userId: "user1",
-        softwareId: "software1",
-        message: "New software product available: AI Image Generator",
+        id: '1',
+        type: 'NEW_PRODUCT',
+        userId: 'user1',
+        softwareId: 'software1',
+        message: 'New software product available: AI Image Generator',
         isRead: false,
         createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(), // 5 minutes ago
     },
     {
-        id: "2",
-        type: "PRICE_DROP",
-        userId: "user1",
-        softwareId: "software2",
-        message: "Price drop alert: Cloud Storage Pro is now 20% off!",
+        id: '2',
+        type: 'PRICE_DROP',
+        userId: 'user1',
+        softwareId: 'software2',
+        message: 'Price drop alert: Cloud Storage Pro is now 20% off!',
         isRead: false,
         createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
     },
     {
-        id: "3",
-        type: "SYSTEM",
-        userId: "user1",
-        message: "Your account has been successfully verified.",
+        id: '3',
+        type: 'SYSTEM',
+        userId: 'user1',
+        message: 'Your account has been successfully verified.',
         isRead: true,
         createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
     },
     {
-        id: "4",
-        type: "ORDER",
-        userId: "user1",
-        softwareId: "software3",
-        message: "Your order for DevOps Toolkit has been shipped!",
+        id: '4',
+        type: 'ORDER',
+        userId: 'user1',
+        softwareId: 'software3',
+        message: 'Your order for DevOps Toolkit has been shipped!',
         isRead: false,
         createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // 2 days ago
     },
     {
-        id: "5",
-        type: "REVIEW",
-        userId: "user1",
-        softwareId: "software4",
-        message: "Someone replied to your review on Data Visualization Pro",
+        id: '5',
+        type: 'REVIEW',
+        userId: 'user1',
+        softwareId: 'software4',
+        message: 'Someone replied to your review on Data Visualization Pro',
         isRead: true,
         createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), // 3 days ago
     },
-]
+];
 
 const Header = () => {
     const { user, loading } = useRootContext();
@@ -80,21 +80,24 @@ const Header = () => {
     const signOut = useSignOut(
         typeof window !== 'undefined' ? window.location.origin : ''
     );
-    const [notifications, setNotifications] = useState<Notification[]>(dummyNotifications)
-    const [isNotificationOpen, setIsNotificationOpen] = useState(false)
+    const [notifications, setNotifications] =
+        useState<Notification[]>(dummyNotifications);
+    const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
-    const unreadCount = notifications.filter((n) => !n.isRead).length
+    const unreadCount = notifications.filter((n) => !n.isRead).length;
 
     const handleSignOut = async () => {
         await signOut();
     };
     const markAsRead = (id: string) => {
-        setNotifications(notifications.map((n) => (n.id === id ? { ...n, isRead: true } : n)))
-    }
+        setNotifications(
+            notifications.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+        );
+    };
 
     const markAllAsRead = () => {
-        setNotifications(notifications.map((n) => ({ ...n, isRead: true })))
-    }
+        setNotifications(notifications.map((n) => ({ ...n, isRead: true })));
+    };
 
     const getUserInitials = () => {
         if (user && user.profile.firstName && user.profile.lastName) {
@@ -170,25 +173,36 @@ const Header = () => {
                         </Button>
                     ) : user ? (
                         <>
-                                <DropdownMenu open={isNotificationOpen} onOpenChange={setIsNotificationOpen}>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="relative hover:bg-muted/80" aria-label="Notifications">
-                                            <Bell className="h-5 w-5" />
-                                            {unreadCount > 0 && (
-                                                <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-xs font-medium text-white flex items-center justify-center">
-                                                    {unreadCount}
-                                                </span>
-                                            )}
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-80 p-0">
-                                        <NotificationPanel
-                                            notifications={notifications}
-                                            onMarkAsRead={markAsRead}
-                                            onMarkAllAsRead={markAllAsRead}
-                                        />
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                            <DropdownMenu
+                                open={isNotificationOpen}
+                                onOpenChange={setIsNotificationOpen}
+                            >
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="relative hover:bg-muted/80"
+                                        aria-label="Notifications"
+                                    >
+                                        <Bell className="h-5 w-5" />
+                                        {unreadCount > 0 && (
+                                            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-xs font-medium text-white flex items-center justify-center">
+                                                {unreadCount}
+                                            </span>
+                                        )}
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    align="end"
+                                    className="w-80 p-0"
+                                >
+                                    <NotificationPanel
+                                        notifications={notifications}
+                                        onMarkAsRead={markAsRead}
+                                        onMarkAllAsRead={markAllAsRead}
+                                    />
+                                </DropdownMenuContent>
+                            </DropdownMenu>
 
                             {/* Shadcn Dropdown Menu */}
                             <DropdownMenu>
