@@ -87,7 +87,7 @@ export function SellerSidebar() {
                     </Link>
                 </SidebarHeader>
 
-                <SidebarContent>
+                <SidebarContent className="p-3">
                     <SidebarMenu>
                         {routes.map((route) => (
                             <SidebarMenuItem key={route.href}>

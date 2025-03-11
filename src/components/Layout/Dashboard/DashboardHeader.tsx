@@ -1,6 +1,5 @@
 'use client';
-import { Bell, Search, User, Settings, LogOut } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { Bell, User, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -22,30 +21,16 @@ export const DashboardHeader = ({ user }: DashboardHeaderProps) => {
     const initials = user.profile.firstName[0] + user.profile.lastName[0];
     return (
         <header className="border-b border-border bg-card">
-            <div className="flex h-16 items-center px-4 py-3">
+            <div className="flex h-16 items-center justify-between px-4 py-3">
                 <SidebarTrigger className="mr-2" />
-                <SearchBar />
-                <NotificationsButton />
-                <UserMenu initials={initials} />
+                <div>
+                    <NotificationsButton />
+                    <UserMenu initials={initials} />
+                </div>
             </div>
         </header>
     );
 };
-
-function SearchBar() {
-    return (
-        <div className="hidden md:flex md:flex-1 md:items-center md:gap-4 md:px-4">
-            <div className="relative w-full max-w-sm">
-                <Search className="absolute left-2.5 top-2.5 h-5 w-5 text-muted-foreground" />
-                <Input
-                    type="search"
-                    placeholder="Search..."
-                    className="w-full bg-background pl-8 focus-visible:ring-primary"
-                />
-            </div>
-        </div>
-    );
-}
 
 function NotificationsButton() {
     return (

@@ -15,10 +15,8 @@ type ProvidersProps = {
 };
 
 export const Providers = ({ children }: ProvidersProps) => {
-    // Ensure cookies are set on mount
     useSetCookies();
 
-    // Retrieve cookies and their loading state
     const {
         access_token,
         refresh_token,
@@ -26,14 +24,12 @@ export const Providers = ({ children }: ProvidersProps) => {
         error,
     } = useGetCookies();
 
-    // Manage the fetched user profile and its loading state
     const [user, setUser] = useState<SessionUser | null>(null);
     const [userLoading, setUserLoading] = useState<boolean>(true);
 
     useEffect(() => {
         let isMounted = true;
 
-        // Fetch the user profile only after cookies have loaded
         if (!cookiesLoading && access_token && !error) {
             (async () => {
                 try {
@@ -58,7 +54,6 @@ export const Providers = ({ children }: ProvidersProps) => {
                 }
             })();
         } else if (!cookiesLoading) {
-            // No valid token or error exists so end loading
             setUserLoading(false);
         }
 
@@ -67,10 +62,8 @@ export const Providers = ({ children }: ProvidersProps) => {
         };
     }, [cookiesLoading, access_token, refresh_token, error]);
 
-    // Combined loading state: true if either cookie or user profile is still loading
     const combinedLoading = cookiesLoading || userLoading;
 
-    // Function to re-fetch the user profile (e.g., after a cart update)
     const refetchUserProfile = async () => {
         if (!cookiesLoading && access_token && !error) {
             try {
