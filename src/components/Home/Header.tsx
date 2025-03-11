@@ -176,7 +176,10 @@ const Header = () => {
                     </Button>
                 </div>
             </div>
-            <CartModal isOpen={isOpenCart} onClose={() => setIsOpenCart(false)} />
+            <CartModal
+                isOpen={isOpenCart}
+                onClose={() => setIsOpenCart(false)}
+            />
         </header>
     );
 };

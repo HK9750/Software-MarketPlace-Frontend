@@ -197,7 +197,11 @@ export default function ProductDetails({ product }: { product: Product }) {
                                 disabled={isInCart}
                             >
                                 <ShoppingCart className="mr-2 h-4 w-4" />
-                                {isInCartLoading ? 'Adding to Cart...' : isInCart ? 'Added to Cart' : 'Add to Cart'}
+                                {isInCartLoading
+                                    ? 'Adding to Cart...'
+                                    : isInCart
+                                      ? 'Added to Cart'
+                                      : 'Add to Cart'}
                             </Button>
                             <Button
                                 variant="outline"

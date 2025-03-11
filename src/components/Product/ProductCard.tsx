@@ -104,7 +104,7 @@ const ProductCard = ({ software, onWishlistToggle }: ProductCardProps) => {
                 </div>
                 <div className="flex items-center gap-4">
                     <span className="font-bold">From {price}</span>
-                    <Button size="sm" >
+                    <Button size="sm">
                         <MoveRight className="h-4 w-4 mr-2" />
                         View
                     </Button>

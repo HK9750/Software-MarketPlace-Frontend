@@ -43,9 +43,11 @@ export default function ProductsPage() {
                 Browse our collection of high-quality software products and
                 services
             </p>
-           {
-             productLoading ? <Loader /> : <ProductCatalog products={products} />       
-           }
+            {productLoading ? (
+                <Loader />
+            ) : (
+                <ProductCatalog products={products} />
+            )}
         </div>
     );
 }

@@ -37,12 +37,15 @@ export const Providers = ({ children }: ProvidersProps) => {
         if (!cookiesLoading && access_token && !error) {
             (async () => {
                 try {
-                    const response: any = await axios.get(GET_USER_PROFILE_URL, {
-                        headers: {
-                            Authorization: `Bearer ${access_token}`,
-                            'X-Refresh-Token': refresh_token || '',
-                        },
-                    });
+                    const response: any = await axios.get(
+                        GET_USER_PROFILE_URL,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${access_token}`,
+                                'X-Refresh-Token': refresh_token || '',
+                            },
+                        }
+                    );
                     if (isMounted) {
                         setUser(response.data.user);
                     }
@@ -92,7 +95,7 @@ export const Providers = ({ children }: ProvidersProps) => {
                     access_token,
                     refresh_token,
                     loading: combinedLoading,
-                    refetchUserProfile, 
+                    refetchUserProfile,
                 }}
             >
                 {children}
