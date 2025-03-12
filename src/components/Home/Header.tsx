@@ -36,8 +36,6 @@ const Header = () => {
 
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
-
-
     const handleSignOut = async () => {
         await signOut();
     };
@@ -50,8 +48,10 @@ const Header = () => {
     };
 
     const cartCount = user && user.cart ? user.cart.length : 0;
-    const unreadCount = user && user?.notifications && user?.notifications.filter((n) => !n.isRead).length;
-
+    const unreadCount =
+        user &&
+        user?.notifications &&
+        user?.notifications.filter((n) => !n.isRead).length;
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 font-sans shadow-sm">

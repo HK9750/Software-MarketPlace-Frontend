@@ -12,13 +12,13 @@ import axios from 'axios';
 
 interface NotificationPanelProps {
     notifications: Notification[];
-
 }
 
 const NotificationPanel: React.FC<NotificationPanelProps> = ({
     notifications,
 }) => {
-    const { refetchUserProfile, access_token, refresh_token } = useRootContext();
+    const { refetchUserProfile, access_token, refresh_token } =
+        useRootContext();
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
     const router = useRouter();
     const onMarkAsRead = async (id: string) => {
@@ -49,7 +49,6 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
             <div className="p-4 border-b">
                 <div className="flex justify-between items-center">
                     <h3 className="text-lg font-semibold">Notifications</h3>
-                    
                 </div>
             </div>
             <ScrollArea className="h-[400px]">
@@ -61,10 +60,11 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
                     notifications.map((notification) => (
                         <div
                             key={notification.id}
-                            className={`p-4 border-b last:border-b-0 ${notification.isRead
-                                ? 'bg-background'
-                                : 'bg-blue-50 dark:bg-blue-900/20'
-                                }`}
+                            className={`p-4 border-b last:border-b-0 ${
+                                notification.isRead
+                                    ? 'bg-background'
+                                    : 'bg-blue-50 dark:bg-blue-900/20'
+                            }`}
                         >
                             <div className="flex items-start gap-3">
                                 {!notification.isRead && (
@@ -72,10 +72,14 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
                                 )}
                                 <div className="flex-1">
                                     <button
-                                        onClick={() => handleClick(notification)}
+                                        onClick={() =>
+                                            handleClick(notification)
+                                        }
                                         className={`text-sm cursor-pointer ${notification.isRead ? 'text-muted-foreground' : 'font-medium text-foreground'}`}
                                     >
-                                            <p className='text-start'>{notification.message}</p>
+                                        <p className="text-start">
+                                            {notification.message}
+                                        </p>
                                     </button>
                                     <p className="text-xs text-muted-foreground mt-1">
                                         {formatDistanceToNow(
