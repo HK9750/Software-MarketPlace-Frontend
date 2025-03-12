@@ -9,6 +9,7 @@ export type SessionUser = {
         lastName: string;
     };
     cart: any;
+    notifications: Notification[];
 };
 
 export type Category = {
@@ -128,4 +129,17 @@ export interface Order {
     user: UserType;
     software: Software;
     history: UserOrderHistory[];
+}
+
+export interface Notification {
+    id: string;
+    type: string;
+    userId: string;
+    software?: {
+        id: string;
+        name: string;
+    };
+    message: string;
+    isRead: boolean;
+    createdAt: string;
 }
