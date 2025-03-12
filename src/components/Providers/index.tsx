@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -7,7 +8,6 @@ import { RootContext } from '@/lib/contexts/RootContext';
 import { SessionUser } from '@/types/types';
 import useSetCookies from '@/hooks/useSetCookies';
 import { useGetCookies } from '@/hooks/useGetCookies';
-import { initSocket } from '@/lib/socket';
 
 const GET_USER_PROFILE_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/profile`;
 
@@ -63,12 +63,7 @@ export const Providers = ({ children }: ProvidersProps) => {
         };
     }, [cookiesLoading, access_token, refresh_token, error]);
 
-    useEffect(() => {
-        const socket = initSocket();
-        socket.on('connect', () => {
-            console.log('Socket connected:', socket.id);
-        });
-    }, []);
+
 
     const combinedLoading = cookiesLoading || userLoading;
 

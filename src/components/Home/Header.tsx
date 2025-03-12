@@ -16,15 +16,6 @@ import { useState } from 'react';
 import CartModal from '../Product/CartModal';
 import NotificationPanel from './NotificationPanel';
 
-interface Notification {
-    id: string;
-    type: string;
-    userId: string;
-    softwareId?: string;
-    message: string;
-    isRead: boolean;
-    createdAt: string;
-}
 
 const Header = () => {
     const { user, loading } = useRootContext();
