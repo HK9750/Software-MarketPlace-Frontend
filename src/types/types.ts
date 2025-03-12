@@ -145,28 +145,27 @@ export interface Notification {
     createdAt: string;
 }
 
-
 export interface Address {
-  [key: string]: string
+    [key: string]: string;
 }
 
 export interface MyProfile {
-  id: string
-  username: string
-  email: string
-  role: string
-  profile: {
-    id: string
-    firstName: string
-    lastName: string
-    phone: string
-    address: Address | string
-    userId: string
-  }
-  sellerProfile?: {
-    id: string
-    verified: boolean
-    websiteLink: string
-    userId: string
-  }
+    id: string;
+    username: string;
+    email: string;
+    role: string;
+    profile: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        phone: string;
+        address: Address | string;
+        userId: string;
+    };
+    sellerProfile?: {
+        id: string;
+        verified: boolean;
+        websiteLink: string;
+        userId: string;
+    };
 }

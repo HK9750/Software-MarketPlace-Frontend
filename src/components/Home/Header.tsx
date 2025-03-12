@@ -16,7 +16,6 @@ import { useState } from 'react';
 import CartModal from '../Product/CartModal';
 import NotificationPanel from './NotificationPanel';
 
-
 const Header = () => {
     const { user, loading } = useRootContext();
     const [isOpenCart, setIsOpenCart] = useState(false);

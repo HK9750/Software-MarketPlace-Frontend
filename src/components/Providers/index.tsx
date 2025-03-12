@@ -63,8 +63,6 @@ export const Providers = ({ children }: ProvidersProps) => {
         };
     }, [cookiesLoading, access_token, refresh_token, error]);
 
-
-
     const combinedLoading = cookiesLoading || userLoading;
 
     const refetchUserProfile = async () => {

@@ -17,7 +17,8 @@ interface NotificationPanelProps {
 const NotificationPanel: React.FC<NotificationPanelProps> = ({
     notifications,
 }) => {
-    const { refetchUserProfile, access_token, refresh_token } = useRootContext();
+    const { refetchUserProfile, access_token, refresh_token } =
+        useRootContext();
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
     const router = useRouter();
     const onMarkAsRead = async (id: string) => {
