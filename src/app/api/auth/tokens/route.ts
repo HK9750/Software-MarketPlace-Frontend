@@ -13,7 +13,7 @@ export async function GET() {
                 { status: 404 }
             );
         }
-        console.log('Fetched tokens:', { access_token, refresh_token });
+        // console.log('Fetched tokens:', { access_token, refresh_token });
 
         return NextResponse.json({ access_token, refresh_token });
     } catch (error) {
