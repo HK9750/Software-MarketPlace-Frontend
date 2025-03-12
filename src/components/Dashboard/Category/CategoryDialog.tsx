@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -24,14 +23,8 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 import { Loader2 } from 'lucide-react';
-
-// Category type
-interface Category {
-    id: string;
-    name: string;
-    description: string;
-    productCount: number;
-}
+import { Category } from '@/types/types';
+import { useEffect } from 'react';
 
 // Form schema
 const categoryFormSchema = z.object({
@@ -48,19 +41,23 @@ type CategoryFormValues = z.infer<typeof categoryFormSchema>;
 interface CategoryDialogProps {
     isOpen: boolean;
     category: Category | null;
+    isSubmitting: boolean;
     onClose: () => void;
-    onSave: (category: Category) => void;
+    onSave: (
+        category: Omit<Category, 'id' | 'productCount'> & { id?: string }
+    ) => void;
 }
 
 export function CategoryDialog({
     isOpen,
     category,
+    isSubmitting,
     onClose,
     onSave,
 }: CategoryDialogProps) {
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
     // Default values
+    console.log('category', category);
+
     const defaultValues: Partial<CategoryFormValues> = {
         name: category?.name || '',
         description: category?.description || '',
@@ -81,28 +78,23 @@ export function CategoryDialog({
     };
 
     const onSubmit = async (data: CategoryFormValues) => {
-        setIsSubmitting(true);
-
-        try {
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-
-            onSave({
-                id: category?.id || '',
-                name: data.name,
-                description: data.description,
-                productCount: category?.productCount || 0,
-            });
-
-            form.reset(defaultValues);
-        } finally {
-            setIsSubmitting(false);
-        }
+        onSave({
+            id: category?.id,
+            name: data.name,
+            description: data.description,
+        });
     };
+
+    useEffect(() => {
+        form.reset({
+            name: category?.name || '',
+            description: category?.description || '',
+        });
+    }, [category, form.reset]);
 
     return (
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-            <DialogContent>
+            <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                     <DialogTitle>
                         {category ? 'Edit Category' : 'Add Category'}
@@ -117,7 +109,7 @@ export function CategoryDialog({
                 <Form {...form}>
                     <form
                         onSubmit={form.handleSubmit(onSubmit)}
-                        className="space-y-4"
+                        className="space-y-6"
                     >
                         <FormField
                             control={form.control}

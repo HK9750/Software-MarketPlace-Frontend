@@ -11,6 +11,12 @@ export type SessionUser = {
     cart: any;
 };
 
+export type Category = {
+    id: string;
+    name: string;
+    description: string;
+};
+
 interface Review {
     id: string;
     user: SessionUser;

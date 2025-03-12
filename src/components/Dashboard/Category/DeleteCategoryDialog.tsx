@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -10,11 +9,12 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertTriangle } from 'lucide-react';
 
 interface DeleteCategoryDialogProps {
     isOpen: boolean;
     categoryName: string;
+    isSubmitting: boolean;
     onClose: () => void;
     onDelete: () => void;
 }
@@ -22,27 +22,18 @@ interface DeleteCategoryDialogProps {
 export function DeleteCategoryDialog({
     isOpen,
     categoryName,
+    isSubmitting,
     onClose,
     onDelete,
 }: DeleteCategoryDialogProps) {
-    const [isDeleting, setIsDeleting] = useState(false);
-
-    const handleDelete = async () => {
-        setIsDeleting(true);
-        try {
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            onDelete();
-        } finally {
-            setIsDeleting(false);
-        }
-    };
-
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Delete Category</DialogTitle>
+                    <DialogTitle className="flex items-center gap-2">
+                        <AlertTriangle className="h-5 w-5 text-destructive" />
+                        Delete Category
+                    </DialogTitle>
                     <DialogDescription>
                         Are you sure you want to delete{' '}
                         <span className="font-medium">{categoryName}</span>?
@@ -53,16 +44,16 @@ export function DeleteCategoryDialog({
                     <Button
                         variant="outline"
                         onClick={onClose}
-                        disabled={isDeleting}
+                        disabled={isSubmitting}
                     >
                         Cancel
                     </Button>
                     <Button
                         variant="destructive"
-                        onClick={handleDelete}
-                        disabled={isDeleting}
+                        onClick={onDelete}
+                        disabled={isSubmitting}
                     >
-                        {isDeleting ? (
+                        {isSubmitting ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 Deleting...

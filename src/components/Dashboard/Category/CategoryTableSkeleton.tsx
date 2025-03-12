@@ -46,7 +46,7 @@ export function CategoryTableSkeleton() {
                                         <Skeleton className="h-4 w-48" />
                                     </TableCell>
                                     <TableCell>
-                                        <Skeleton className="h-4 w-16" />
+                                        <Skeleton className="h-6 w-16 rounded-full" />
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex items-center justify-end gap-2">
