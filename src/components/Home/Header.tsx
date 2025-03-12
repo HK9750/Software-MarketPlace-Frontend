@@ -33,24 +33,13 @@ const Header = () => {
     const signOut = useSignOut(
         typeof window !== 'undefined' ? window.location.origin : ''
     );
-    const [notifications, setNotifications] = useState<Notification[]>(
-        user.notifications
-    );
+
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
-    const unreadCount = notifications.filter((n) => !n.isRead).length;
+
 
     const handleSignOut = async () => {
         await signOut();
-    };
-    const markAsRead = (id: string) => {
-        setNotifications(
-            notifications.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-        );
-    };
-
-    const markAllAsRead = () => {
-        setNotifications(notifications.map((n) => ({ ...n, isRead: true })));
     };
 
     const getUserInitials = () => {
@@ -61,6 +50,8 @@ const Header = () => {
     };
 
     const cartCount = user && user.cart ? user.cart.length : 0;
+    const unreadCount = user && user?.notifications && user?.notifications.filter((n) => !n.isRead).length;
+
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 font-sans shadow-sm">
@@ -155,9 +146,7 @@ const Header = () => {
                                     className="w-80 p-0"
                                 >
                                     <NotificationPanel
-                                        notifications={notifications}
-                                        onMarkAsRead={markAsRead}
-                                        onMarkAllAsRead={markAllAsRead}
+                                        notifications={user.notifications}
                                     />
                                 </DropdownMenuContent>
                             </DropdownMenu>

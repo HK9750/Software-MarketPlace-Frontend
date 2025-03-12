@@ -132,6 +132,7 @@ export default function ProductCatalog({ products }: ProductCatalogProps) {
                             <SheetHeader>
                                 <SheetTitle>Your Wishlist</SheetTitle>
                             </SheetHeader>
+                            <p className='mx-8'>Add Your favourite Softwares to wishlist and not miss exciting price drop notifications!</p>
                             <div className="mt-6 grid gap-4 px-8">
                                 {wishlist.length === 0
                                     ? 'Your wishlist is empty.'
