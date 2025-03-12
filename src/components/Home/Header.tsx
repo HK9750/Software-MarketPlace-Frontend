@@ -26,53 +26,6 @@ interface Notification {
     createdAt: string;
 }
 
-const dummyNotifications: Notification[] = [
-    {
-        id: '1',
-        type: 'NEW_PRODUCT',
-        userId: 'user1',
-        softwareId: 'software1',
-        message: 'New software product available: AI Image Generator',
-        isRead: false,
-        createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(), // 5 minutes ago
-    },
-    {
-        id: '2',
-        type: 'PRICE_DROP',
-        userId: 'user1',
-        softwareId: 'software2',
-        message: 'Price drop alert: Cloud Storage Pro is now 20% off!',
-        isRead: false,
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-    },
-    {
-        id: '3',
-        type: 'SYSTEM',
-        userId: 'user1',
-        message: 'Your account has been successfully verified.',
-        isRead: true,
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
-    },
-    {
-        id: '4',
-        type: 'ORDER',
-        userId: 'user1',
-        softwareId: 'software3',
-        message: 'Your order for DevOps Toolkit has been shipped!',
-        isRead: false,
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // 2 days ago
-    },
-    {
-        id: '5',
-        type: 'REVIEW',
-        userId: 'user1',
-        softwareId: 'software4',
-        message: 'Someone replied to your review on Data Visualization Pro',
-        isRead: true,
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), // 3 days ago
-    },
-];
-
 const Header = () => {
     const { user, loading } = useRootContext();
     const [isOpenCart, setIsOpenCart] = useState(false);
@@ -81,7 +34,7 @@ const Header = () => {
         typeof window !== 'undefined' ? window.location.origin : ''
     );
     const [notifications, setNotifications] =
-        useState<Notification[]>(dummyNotifications);
+        useState<Notification[]>(user.notifications);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
     const unreadCount = notifications.filter((n) => !n.isRead).length;
