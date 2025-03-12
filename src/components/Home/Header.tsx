@@ -33,8 +33,9 @@ const Header = () => {
     const signOut = useSignOut(
         typeof window !== 'undefined' ? window.location.origin : ''
     );
-    const [notifications, setNotifications] =
-        useState<Notification[]>(user.notifications);
+    const [notifications, setNotifications] = useState<Notification[]>(
+        user.notifications
+    );
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
     const unreadCount = notifications.filter((n) => !n.isRead).length;

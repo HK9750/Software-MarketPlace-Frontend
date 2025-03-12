@@ -7,8 +7,6 @@ import { Button } from '@/components/ui/button';
 import { formatDistanceToNow } from 'date-fns';
 import { Notification } from '@/types/types';
 
-
-
 interface NotificationPanelProps {
     notifications: Notification[];
     onMarkAsRead: (id: string) => void;
