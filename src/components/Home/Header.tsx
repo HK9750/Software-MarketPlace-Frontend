@@ -106,6 +106,8 @@ const Header = () => {
         return '';
     };
 
+    const cartCount = user && user.cart ? user.cart.length : 0;
+
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 font-sans shadow-sm">
             <div className="container flex h-14 items-center justify-between px-4 md:px-6 max-w-7xl mx-auto">
@@ -159,7 +161,7 @@ const Header = () => {
                     >
                         <ShoppingCart className="h-5 w-5" />
                         <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-xs font-medium text-primary-foreground flex items-center justify-center">
-                            {!loading && user ? user.cartCount : 0}
+                            {!loading && cartCount ? cartCount : 0}
                         </span>
                     </Button>
 

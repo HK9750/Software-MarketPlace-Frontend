@@ -55,7 +55,6 @@ export const Providers = ({ children }: ProvidersProps) => {
                 }
             })();
         } else if (!cookiesLoading) {
-            // No valid token or error exists so end loading
             setUserLoading(false);
         }
 

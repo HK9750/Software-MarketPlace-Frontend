@@ -8,7 +8,7 @@ export type SessionUser = {
         firstName: string;
         lastName: string;
     };
-    cartCount: number;
+    cart: any;
 };
 
 interface Review {

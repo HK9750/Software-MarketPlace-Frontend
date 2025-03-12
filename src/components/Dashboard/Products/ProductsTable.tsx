@@ -1,3 +1,5 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -29,6 +31,7 @@ import {
     Trash,
 } from 'lucide-react';
 import { Product } from '@/types/types';
+import { useRouter } from 'next/navigation';
 
 interface ProductsTableProps {
     products: any[];
@@ -49,7 +52,8 @@ export function ProductsTable({
     handleSort,
     openConfirmDialog,
 }: ProductsTableProps) {
-    // Get status badge
+    const router = useRouter();
+
     const getStatusBadge = (status: string | undefined) => {
         switch (status) {
             case 'active':
@@ -271,6 +275,11 @@ export function ProductsTable({
                                                     variant="outline"
                                                     size="sm"
                                                     className="h-8 w-8 p-0"
+                                                    onClick={() =>
+                                                        router.push(
+                                                            `/products/${product.id}`
+                                                        )
+                                                    }
                                                 >
                                                     <Eye className="h-4 w-4" />
                                                     <span className="sr-only">

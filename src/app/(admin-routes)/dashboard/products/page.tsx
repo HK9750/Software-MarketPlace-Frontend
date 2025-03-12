@@ -1,215 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { ProductsHeader } from '@/components/Dashboard/Products/ProductsHeader';
 import { ProductsFilters } from '@/components/Dashboard/Products/ProductsFilters';
 import { ProductsTable } from '@/components/Dashboard/Products/ProductsTable';
 import { StatusChangeDialog } from '@/components/Dashboard/Products/StatusChangeDialog';
 import { toast } from 'sonner';
+import { useRootContext } from '@/lib/contexts/RootContext';
 
-// Mock product data with the new Product interface
-const initialProducts: any[] = [
-    {
-        id: '1',
-        name: 'DesignPro Studio',
-        description: 'Professional design software for creative professionals',
-        price: 49.99,
-        filePath: '/placeholder.svg?height=40&width=40',
-        averageRating: 4.8,
-        status: 'active',
-        sales: 1245,
-        dateAdded: '2023-01-15',
-        badge: 'Popular',
-        features:
-            'Advanced design tools, Cloud collaboration, Template library',
-        requirements: 'Windows 10/11 or macOS 10.15+, 8GB RAM, 4GB storage',
-        category: {
-            id: 'cat1',
-            name: 'Design',
-        },
-        seller: {
-            verified: true,
-            websiteLink: 'https://designpro.com',
-            user: {
-                id: 'u1',
-                username: 'designpro',
-                email: 'info@designpro.com',
-                profile: {
-                    firstName: 'Design',
-                    lastName: 'Studio',
-                    phone: '+1234567890',
-                },
-            },
-        },
-        isWishlisted: false,
-    },
-    {
-        id: '2',
-        name: 'CodeMaster IDE',
-        description: 'Powerful integrated development environment for coders',
-        price: 39.99,
-        filePath: '/placeholder.svg?height=40&width=40',
-        averageRating: 4.7,
-        status: 'active',
-        sales: 982,
-        dateAdded: '2023-02-20',
-        badge: 'Trending',
-        features: 'Code completion, Debugging tools, Git integration',
-        requirements: 'Windows 10/11, macOS, or Linux, 4GB RAM',
-        category: {
-            id: 'cat2',
-            name: 'Development',
-        },
-        seller: {
-            verified: true,
-            websiteLink: 'https://codemaster.dev',
-            user: {
-                id: 'u2',
-                username: 'codemaster',
-                email: 'support@codemaster.dev',
-                profile: {
-                    firstName: 'Code',
-                    lastName: 'Master',
-                    phone: '+1987654321',
-                },
-            },
-        },
-        isWishlisted: true,
-    },
-    {
-        id: '3',
-        name: 'DataViz Analytics',
-        description: 'Data visualization and analytics platform',
-        price: 59.99,
-        filePath: '/placeholder.svg?height=40&width=40',
-        averageRating: 4.9,
-        status: 'pending',
-        sales: 567,
-        dateAdded: '2023-03-10',
-        badge: 'New',
-        features:
-            'Interactive dashboards, Real-time data processing, Export capabilities',
-        requirements: 'Any modern browser, 2GB RAM',
-        category: {
-            id: 'cat3',
-            name: 'Business',
-        },
-        seller: {
-            verified: false,
-            websiteLink: 'https://dataviz.io',
-            user: {
-                id: 'u3',
-                username: 'dataviz',
-                email: 'hello@dataviz.io',
-                profile: {
-                    firstName: 'Data',
-                    lastName: 'Viz',
-                    phone: '+1122334455',
-                },
-            },
-        },
-        isWishlisted: false,
-    },
-    {
-        id: '4',
-        name: 'SecureShield Pro',
-        description: 'Advanced security and privacy protection',
-        price: 29.99,
-        filePath: '/placeholder.svg?height=40&width=40',
-        averageRating: 4.6,
-        status: 'active',
-        sales: 1893,
-        dateAdded: '2023-03-15',
-        features: 'Malware protection, Password manager, VPN service',
-        requirements: 'Windows 7/8/10/11, macOS 10.13+',
-        category: {
-            id: 'cat4',
-            name: 'Security',
-        },
-        seller: {
-            verified: true,
-            websiteLink: 'https://secureshield.com',
-            user: {
-                id: 'u4',
-                username: 'secureshield',
-                email: 'support@secureshield.com',
-                profile: {
-                    firstName: 'Secure',
-                    lastName: 'Shield',
-                    phone: '+1555666777',
-                },
-            },
-        },
-        isWishlisted: false,
-    },
-    {
-        id: '5',
-        name: 'CloudSync Storage',
-        description: 'Secure cloud storage and file synchronization',
-        price: 19.99,
-        filePath: '/placeholder.svg?height=40&width=40',
-        averageRating: 4.5,
-        status: 'inactive',
-        sales: 723,
-        dateAdded: '2023-04-05',
-        features: 'Automatic sync, File versioning, Cross-platform',
-        requirements: 'Windows, macOS, iOS, Android',
-        category: {
-            id: 'cat5',
-            name: 'Utilities',
-        },
-        seller: {
-            verified: true,
-            websiteLink: 'https://cloudsync.net',
-            user: {
-                id: 'u5',
-                username: 'cloudsync',
-                email: 'help@cloudsync.net',
-                profile: {
-                    firstName: 'Cloud',
-                    lastName: 'Sync',
-                    phone: '+1777888999',
-                },
-            },
-        },
-        isWishlisted: true,
-    },
-    {
-        id: '6',
-        name: 'TaskFlow Manager',
-        description: 'Streamline your workflow with task management',
-        price: 24.99,
-        filePath: '/placeholder.svg?height=40&width=40',
-        averageRating: 4.4,
-        status: 'active',
-        sales: 1056,
-        dateAdded: '2023-01-05',
-        features: 'Task tracking, Team collaboration, Calendar integration',
-        requirements: 'Web browser, mobile app available',
-        category: {
-            id: 'cat6',
-            name: 'Productivity',
-        },
-        seller: {
-            verified: false,
-            websiteLink: 'https://taskflow.io',
-            user: {
-                id: 'u6',
-                username: 'taskflow',
-                email: 'hello@taskflow.io',
-                profile: {
-                    firstName: 'Task',
-                    lastName: 'Flow',
-                    phone: '+1444555666',
-                },
-            },
-        },
-        isWishlisted: false,
-    },
-];
+const GET_PRODUCTS_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/products`;
 
 export default function ProductsPage() {
-    const [products, setProducts] = useState<any[]>(initialProducts);
+    const [products, setProducts] = useState<any[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
@@ -218,6 +21,8 @@ export default function ProductsPage() {
     const [statusChangeLoading, setStatusChangeLoading] = useState<
         string | null
     >(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [confirmDialog, setConfirmDialog] = useState<{
         isOpen: boolean;
         productId: string | null;
@@ -229,10 +34,60 @@ export default function ProductsPage() {
         currentStatus: '',
         newStatus: 'active',
     });
+    const { access_token, refresh_token } = useRootContext();
 
-    // Get unique categories
+    // Fetch products data using axios
+    useEffect(() => {
+        const fetchProducts = async () => {
+            setIsLoading(true);
+            setError(null);
+
+            try {
+                const response: any = await axios.get(GET_PRODUCTS_URL, {
+                    headers: {
+                        Authorization: `Bearer ${access_token}`,
+                        'x-refresh-token': refresh_token,
+                    },
+                });
+                if (response.data.data && Array.isArray(response.data.data)) {
+                    const processedProducts = response.data.data.map(
+                        (product: any) => ({
+                            ...product,
+                            status: product.status || 'pending', // Default status if missing
+                            sales: product.sales || 0, // Default sales if missing
+                            dateAdded:
+                                product.dateAdded ||
+                                new Date().toISOString().split('T')[0], // Default date if missing
+                        })
+                    );
+                    setProducts(processedProducts);
+                } else {
+                    throw new Error('Invalid data format received from server');
+                }
+            } catch (err) {
+                const errorMessage =
+                    err.response?.data?.message ||
+                    err.message ||
+                    'Failed to fetch products';
+                setError(errorMessage);
+                toast.error('Failed to load products', {
+                    description: errorMessage,
+                });
+
+                setProducts([]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchProducts();
+    }, [access_token, refresh_token]);
+
+    // Get unique categories from loaded products
     const categories = Array.from(
-        new Set(products.map((product) => product.category.name))
+        new Set(
+            products.map((product) => product.category?.name || 'Uncategorized')
+        )
     );
 
     // Filter and sort products
@@ -241,15 +96,16 @@ export default function ProductsPage() {
             const matchesSearch =
                 searchQuery === '' ||
                 product.name
-                    .toLowerCase()
-                    .includes(searchQuery.toLowerCase()) ||
+                    ?.toLowerCase()
+                    ?.includes(searchQuery.toLowerCase()) ||
                 product.description
-                    .toLowerCase()
-                    .includes(searchQuery.toLowerCase());
+                    ?.toLowerCase()
+                    ?.includes(searchQuery.toLowerCase());
 
             const matchesCategory =
                 categoryFilter === null ||
-                product.category.name === categoryFilter;
+                product.category?.name === categoryFilter;
+
             const matchesStatus =
                 statusFilter === null || product.status === statusFilter;
 
@@ -262,19 +118,21 @@ export default function ProductsPage() {
 
             // Handle nested fields
             if (sortField === 'category.name') {
-                comparison = a.category.name.localeCompare(b.category.name);
+                comparison = (a.category?.name || '').localeCompare(
+                    b.category?.name || ''
+                );
             } else if (sortField === 'seller.user.username') {
-                comparison = a.seller.user.username.localeCompare(
-                    b.seller.user.username
+                comparison = (a.seller?.user?.username || '').localeCompare(
+                    b.seller?.user?.username || ''
                 );
             } else {
                 // Handle top-level fields
                 switch (sortField) {
                     case 'name':
-                        comparison = a.name.localeCompare(b.name);
+                        comparison = (a.name || '').localeCompare(b.name || '');
                         break;
                     case 'price':
-                        comparison = a.price - b.price;
+                        comparison = (a.price || 0) - (b.price || 0);
                         break;
                     case 'status':
                         comparison = (a.status || '').localeCompare(
@@ -285,7 +143,8 @@ export default function ProductsPage() {
                         comparison = (a.sales || 0) - (b.sales || 0);
                         break;
                     case 'averageRating':
-                        comparison = a.averageRating - b.averageRating;
+                        comparison =
+                            (a.averageRating || 0) - (b.averageRating || 0);
                         break;
                     default:
                         return 0;
@@ -305,7 +164,7 @@ export default function ProductsPage() {
         }
     };
 
-    // Handle status change
+    // Handle status change with API integration
     const handleStatusChange = async (
         productId: string,
         newStatus: 'active' | 'inactive' | 'pending'
@@ -320,10 +179,12 @@ export default function ProductsPage() {
         setStatusChangeLoading(productId);
 
         try {
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            // Make API call to update product status
+            await axios.patch(`/api/products/${productId}`, {
+                status: newStatus,
+            });
 
-            // Update product status
+            // Update product status in local state
             setProducts((prevProducts) =>
                 prevProducts.map((product) =>
                     product.id === productId
@@ -335,9 +196,14 @@ export default function ProductsPage() {
             toast.success('Product status updated', {
                 description: `Product is now ${newStatus}`,
             });
-        } catch (error) {
+        } catch (err) {
+            let errorMessage = 'Please try again later';
+
+            errorMessage =
+                err.response?.data?.message || err.message || errorMessage;
+
             toast.error('Failed to update product status', {
-                description: 'Please try again later',
+                description: errorMessage,
             });
         } finally {
             setStatusChangeLoading(null);
@@ -390,13 +256,39 @@ export default function ProductsPage() {
                 resetFilters={resetFilters}
             />
 
-            <ProductsTable
-                products={filteredProducts}
-                sortField={sortField}
-                sortDirection={sortDirection}
-                handleSort={handleSort}
-                openConfirmDialog={openConfirmDialog}
-            />
+            {isLoading ? (
+                <div className="flex justify-center items-center p-8">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                </div>
+            ) : error ? (
+                <div
+                    className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative"
+                    role="alert"
+                >
+                    <strong className="font-bold">Error: </strong>
+                    <span className="block sm:inline">{error}</span>
+                </div>
+            ) : filteredProducts.length === 0 ? (
+                <div className="text-center py-10">
+                    <p className="text-gray-500 mb-2">No products found</p>
+                    {(searchQuery || categoryFilter || statusFilter) && (
+                        <button
+                            onClick={resetFilters}
+                            className="text-primary hover:underline"
+                        >
+                            Clear filters and try again
+                        </button>
+                    )}
+                </div>
+            ) : (
+                <ProductsTable
+                    products={filteredProducts}
+                    sortField={sortField}
+                    sortDirection={sortDirection}
+                    handleSort={handleSort}
+                    openConfirmDialog={openConfirmDialog}
+                />
+            )}
 
             <StatusChangeDialog
                 isOpen={confirmDialog.isOpen}
