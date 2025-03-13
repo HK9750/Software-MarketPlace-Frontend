@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useRootContext } from '@/lib/contexts/RootContext';
 import {
     Table,
     TableBody,
@@ -33,7 +35,6 @@ import {
     ChevronDown,
     Search,
     Shield,
-    ShieldAlert,
     ShieldCheck,
     UserIcon,
     MoreHorizontal,
@@ -44,94 +45,56 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Mock user data
 interface User {
     id: string;
     username: string;
     email: string;
-    role: 'customer' | 'seller' | 'admin';
+    role: 'CUSTOMER' | 'SELLER' | 'ADMIN';
     verified: boolean;
     avatarUrl?: string;
+    sellerProfile: {
+        verified: boolean;
+    };
     joinedDate: string;
 }
 
-const initialUsers: User[] = [
-    {
-        id: '1',
-        username: 'johndoe',
-        email: 'john@example.com',
-        role: 'customer',
-        verified: true,
-        joinedDate: '2023-01-15',
-    },
-    {
-        id: '2',
-        username: 'sarahsmith',
-        email: 'sarah@example.com',
-        role: 'seller',
-        verified: true,
-        avatarUrl: '/placeholder.svg?height=40&width=40',
-        joinedDate: '2023-02-20',
-    },
-    {
-        id: '3',
-        username: 'mikebrown',
-        email: 'mike@example.com',
-        role: 'seller',
-        verified: false,
-        joinedDate: '2023-03-10',
-    },
-    {
-        id: '4',
-        username: 'emilyjones',
-        email: 'emily@example.com',
-        role: 'customer',
-        verified: true,
-        joinedDate: '2023-03-15',
-    },
-    {
-        id: '5',
-        username: 'davidwilson',
-        email: 'david@example.com',
-        role: 'seller',
-        verified: false,
-        joinedDate: '2023-04-05',
-    },
-    {
-        id: '6',
-        username: 'alexturner',
-        email: 'alex@example.com',
-        role: 'admin',
-        verified: true,
-        joinedDate: '2023-01-05',
-    },
-    {
-        id: '7',
-        username: 'jenniferbaker',
-        email: 'jennifer@example.com',
-        role: 'seller',
-        verified: true,
-        joinedDate: '2023-05-12',
-    },
-    {
-        id: '8',
-        username: 'robertmiller',
-        email: 'robert@example.com',
-        role: 'customer',
-        verified: true,
-        joinedDate: '2023-05-20',
-    },
-];
+const GET_USERS_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/profile/users`;
+const VERIFY_SELLER_URL = (userId: string) =>
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/profile/seller/${userId}`;
 
 export default function UsersPage() {
-    const [users, setUsers] = useState<User[]>(initialUsers);
+    const [users, setUsers] = useState<User[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState<string | null>(null);
     const [verificationLoading, setVerificationLoading] = useState<
         string | null
     >(null);
+    const [loading, setLoading] = useState(true);
+    const { access_token, refresh_token } = useRootContext();
 
-    // Filter users based on search query and role filter
+    const fetchUsers = async () => {
+        try {
+            setLoading(true);
+            const response: any = await axios.get(GET_USERS_URL, {
+                headers: {
+                    Authorization: `Bearer ${access_token}`,
+                    'x-refresh-token': refresh_token,
+                },
+            });
+            setUsers(response.data.users);
+        } catch (error) {
+            toast.error('Failed to fetch users', {
+                description: 'Please try again later',
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchUsers();
+    }, []);
+
     const filteredUsers = users.filter((user) => {
         const matchesSearch =
             searchQuery === '' ||
@@ -143,15 +106,20 @@ export default function UsersPage() {
         return matchesSearch && matchesRole;
     });
 
-    // Handle verification of a seller
     const handleVerifySeller = async (userId: string) => {
         setVerificationLoading(userId);
 
         try {
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1500));
+            await axios.post(
+                VERIFY_SELLER_URL(userId),
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${access_token}`,
+                    },
+                }
+            );
 
-            // Update user verification status
             setUsers((prevUsers) =>
                 prevUsers.map((user) =>
                     user.id === userId ? { ...user, verified: true } : user
@@ -257,7 +225,6 @@ export default function UsersPage() {
                                     <TableHead>User</TableHead>
                                     <TableHead>Email</TableHead>
                                     <TableHead>Role</TableHead>
-                                    <TableHead>Joined</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead className="text-right">
                                         Actions
@@ -265,7 +232,18 @@ export default function UsersPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredUsers.length === 0 ? (
+                                {loading ? (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={6}
+                                            className="h-24 text-center"
+                                        >
+                                            <div className="flex justify-center">
+                                                <span className="h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ) : filteredUsers.length === 0 ? (
                                     <TableRow>
                                         <TableCell
                                             colSpan={6}
@@ -306,7 +284,7 @@ export default function UsersPage() {
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                {user.role === 'admin' ? (
+                                                {user.role === 'ADMIN' ? (
                                                     <Badge
                                                         variant="default"
                                                         className="bg-primary"
@@ -314,7 +292,7 @@ export default function UsersPage() {
                                                         <Shield className="mr-1 h-3 w-3" />
                                                         Admin
                                                     </Badge>
-                                                ) : user.role === 'seller' ? (
+                                                ) : user.role === 'SELLER' ? (
                                                     <Badge variant="secondary">
                                                         <ShieldCheck className="mr-1 h-3 w-3" />
                                                         Seller
@@ -327,13 +305,9 @@ export default function UsersPage() {
                                                 )}
                                             </TableCell>
                                             <TableCell>
-                                                {new Date(
-                                                    user.joinedDate
-                                                ).toLocaleDateString()}
-                                            </TableCell>
-                                            <TableCell>
-                                                {user.role === 'seller' ? (
-                                                    user.verified ? (
+                                                {user.role === 'SELLER' ? (
+                                                    user.sellerProfile
+                                                        .verified ? (
                                                         <div className="flex items-center">
                                                             <Badge
                                                                 variant="outline"
@@ -350,19 +324,25 @@ export default function UsersPage() {
                                                                 className="border-amber-200 bg-amber-50 text-amber-700"
                                                             >
                                                                 <AlertCircle className="mr-1 h-3 w-3" />
-                                                                Pending
+                                                                Not Verfied
                                                             </Badge>
                                                         </div>
                                                     )
                                                 ) : (
-                                                    <span className="text-muted-foreground">
-                                                        N/A
-                                                    </span>
+                                                    <div className="flex items-center">
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="border-amber-200 bg-amber-50 text-amber-700"
+                                                        >
+                                                            <AlertCircle className="mr-1 h-3 w-3" />
+                                                            Not Verfied
+                                                        </Badge>
+                                                    </div>
                                                 )}
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                {user.role === 'seller' &&
-                                                !user.verified ? (
+                                                {user.role === 'SELLER' &&
+                                                !user.sellerProfile.verified ? (
                                                     <Button
                                                         size="sm"
                                                         onClick={() =>
