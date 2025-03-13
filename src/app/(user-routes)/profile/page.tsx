@@ -4,7 +4,6 @@ import Loader from '@/components/Loader';
 import ProfilePage from '@/components/Profile/ProfilePage';
 import { useRootContext } from '@/lib/contexts/RootContext';
 
-
 export default function Profile() {
     const { user } = useRootContext();
 

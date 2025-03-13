@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Address,  SessionUser } from '@/types/types';
+import { Address, SessionUser } from '@/types/types';
 import { useRouter } from 'next/navigation';
 import { useRootContext } from '@/lib/contexts/RootContext';
 import axios from 'axios';

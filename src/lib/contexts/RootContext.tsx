@@ -16,12 +16,12 @@ interface RootContextProps {
 
 export const RootContext = React.createContext<RootContextProps>({
     user: null,
-    setUser: () => { },
+    setUser: () => {},
     access_token: null,
     refresh_token: null,
     loading: true,
-    setAccessToken: () => { },
-    setRefreshToken: () => { },
+    setAccessToken: () => {},
+    setRefreshToken: () => {},
     refetchUserProfile: () => {},
 });
 

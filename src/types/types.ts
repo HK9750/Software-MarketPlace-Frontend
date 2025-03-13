@@ -158,5 +158,3 @@ export interface Notification {
 export interface Address {
     [key: string]: string;
 }
-
-

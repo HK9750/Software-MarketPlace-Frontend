@@ -487,7 +487,8 @@ export function CategoryTable() {
                                                     <Search className="h-8 w-8 text-muted-foreground" />
                                                     <p className="text-muted-foreground">
                                                         No categories found
-                                                        matching &quot;{searchQuery}&quot;
+                                                        matching &quot;
+                                                        {searchQuery}&quot;
                                                     </p>
                                                     <Button
                                                         variant="outline"
