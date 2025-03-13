@@ -1,28 +1,42 @@
 'use client';
-
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useRootContext } from '@/lib/contexts/RootContext';
 import {
     Card,
     CardContent,
-    CardDescription,
     CardHeader,
     CardTitle,
+    CardDescription,
 } from '@/components/ui/card';
 import {
-    LineChart,
-    Line,
     AreaChart,
     Area,
+    CartesianGrid,
     XAxis,
     YAxis,
-    CartesianGrid,
     Tooltip,
     ResponsiveContainer,
     PieChart,
     Pie,
     Cell,
-} from '@/components/ui/chart';
+    LineChart,
+    Line,
+    BarChart,
+    Bar,
+    Legend,
+} from 'recharts';
+import { Loader2 } from 'lucide-react';
 
 export default function AnalyticsPage() {
+    const [ordersOverTime, setOrdersOverTime] = useState([]);
+    const [productPerformance, setProductPerformance] = useState([]);
+    const [conversionRate, setConversionRate] = useState(null);
+    const [userSignups, setUserSignups] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const { access_token, refresh_token } = useRootContext();
+
     const COLORS = [
         'hsl(var(--primary))',
         'hsl(var(--secondary))',
@@ -30,63 +44,117 @@ export default function AnalyticsPage() {
         'hsl(var(--muted))',
     ];
 
+    const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+    const fetchData = async (url, setter) => {
+        try {
+            const response = await axios.get(`${API_BASE_URL}${url}`, {
+                headers: {
+                    Authorization: `Bearer ${access_token}`,
+                    'x-refresh-token': refresh_token,
+                },
+            });
+            setter(response.data);
+            return true;
+        } catch (err) {
+            console.error(`Error fetching data from ${url}:`, err);
+            setError(`Failed to load data from ${url}`);
+            return false;
+        }
+    };
+
+    useEffect(() => {
+        const fetchAllData = async () => {
+            setLoading(true);
+            setError(null);
+
+            const results = await Promise.all([
+                fetchData('/analytics/orders-over-time', setOrdersOverTime),
+                fetchData(
+                    '/analytics/product-performance',
+                    setProductPerformance
+                ),
+                fetchData('/analytics/conversion-rate', setConversionRate),
+                fetchData('/analytics/user-signups', setUserSignups),
+            ]);
+
+            setLoading(false);
+
+            if (!results.every(Boolean)) {
+                setError(
+                    'Some data failed to load. Please try refreshing the page.'
+                );
+            }
+        };
+
+        if (access_token) {
+            fetchAllData();
+        }
+    }, [access_token, refresh_token]);
+
+    // Transform product performance data for bar chart
+    const transformedProductData = productPerformance
+        .slice(0, 5)
+        .map((product) => ({
+            name:
+                product.name.length > 12
+                    ? `${product.name.substring(0, 12)}...`
+                    : product.name,
+            orders: product.orderCount,
+            rating: product.averageRating,
+        }));
+
+    // Create traffic sources mock data since it's not available from the API yet
+    const trafficSources = [
+        { name: 'Direct', value: 40 },
+        { name: 'Organic', value: 30 },
+        { name: 'Referral', value: 20 },
+        { name: 'Social', value: 10 },
+    ];
+
+    if (loading) {
+        return (
+            <div className="flex h-[70vh] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <span className="ml-2 text-lg">Loading analytics data...</span>
+            </div>
+        );
+    }
+
+    if (error && !ordersOverTime.length && !productPerformance.length) {
+        return (
+            <div className="flex h-[70vh] flex-col items-center justify-center">
+                <p className="text-xl text-destructive mb-4">
+                    Unable to load analytics data
+                </p>
+                <p className="text-muted-foreground">{error}</p>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
+                <h1 className="text-3xl font-bold tracking-tight">
+                    Analytics Dashboard
+                </h1>
                 <p className="text-muted-foreground">
-                    Detailed insights and statistics about your marketplace.
+                    Detailed insights and statistics about your marketplace
                 </p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <Card className="col-span-2">
                     <CardHeader>
-                        <CardTitle>Traffic Overview</CardTitle>
+                        <CardTitle>Orders & Revenue Over Time</CardTitle>
                         <CardDescription>
-                            Website traffic over the past 30 days
+                            Monthly order volume and revenue trends
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart
-                                data={[
-                                    {
-                                        date: '2023-01-01',
-                                        visitors: 1000,
-                                        pageviews: 2200,
-                                    },
-                                    {
-                                        date: '2023-01-05',
-                                        visitors: 1200,
-                                        pageviews: 2800,
-                                    },
-                                    {
-                                        date: '2023-01-10',
-                                        visitors: 1500,
-                                        pageviews: 3300,
-                                    },
-                                    {
-                                        date: '2023-01-15',
-                                        visitors: 1300,
-                                        pageviews: 2900,
-                                    },
-                                    {
-                                        date: '2023-01-20',
-                                        visitors: 1800,
-                                        pageviews: 4100,
-                                    },
-                                    {
-                                        date: '2023-01-25',
-                                        visitors: 2000,
-                                        pageviews: 4500,
-                                    },
-                                    {
-                                        date: '2023-01-30',
-                                        visitors: 2200,
-                                        pageviews: 5000,
-                                    },
-                                ]}
+                                data={ordersOverTime}
                                 margin={{
                                     top: 10,
                                     right: 30,
@@ -98,22 +166,26 @@ export default function AnalyticsPage() {
                                     strokeDasharray="3 3"
                                     vertical={false}
                                 />
-                                <XAxis dataKey="date" />
-                                <YAxis />
+                                <XAxis dataKey="month" />
+                                <YAxis yAxisId="left" />
+                                <YAxis yAxisId="right" orientation="right" />
                                 <Tooltip />
+                                <Legend />
                                 <Area
+                                    yAxisId="left"
                                     type="monotone"
-                                    dataKey="pageviews"
+                                    dataKey="orderCount"
                                     stroke="hsl(var(--primary))"
                                     fill="hsl(var(--primary)/0.2)"
-                                    name="Page Views"
+                                    name="Orders"
                                 />
                                 <Area
+                                    yAxisId="right"
                                     type="monotone"
-                                    dataKey="visitors"
+                                    dataKey="revenue"
                                     stroke="hsl(var(--secondary))"
                                     fill="hsl(var(--secondary)/0.2)"
-                                    name="Visitors"
+                                    name="Revenue"
                                 />
                             </AreaChart>
                         </ResponsiveContainer>
@@ -131,12 +203,7 @@ export default function AnalyticsPage() {
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
-                                    data={[
-                                        { name: 'Direct', value: 400 },
-                                        { name: 'Social', value: 300 },
-                                        { name: 'Organic', value: 300 },
-                                        { name: 'Referral', value: 200 },
-                                    ]}
+                                    data={trafficSources}
                                     cx="50%"
                                     cy="50%"
                                     innerRadius={60}
@@ -149,12 +216,7 @@ export default function AnalyticsPage() {
                                     }
                                     labelLine={false}
                                 >
-                                    {[
-                                        { name: 'Direct', value: 400 },
-                                        { name: 'Social', value: 300 },
-                                        { name: 'Organic', value: 300 },
-                                        { name: 'Referral', value: 200 },
-                                    ].map((entry, index) => (
+                                    {trafficSources.map((entry, index) => (
                                         <Cell
                                             key={`cell-${index}`}
                                             fill={COLORS[index % COLORS.length]}
@@ -173,26 +235,38 @@ export default function AnalyticsPage() {
                     <CardHeader>
                         <CardTitle>Conversion Rate</CardTitle>
                         <CardDescription>
-                            Visitor to customer conversion rate
+                            Cart to purchase conversion rate
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="h-[300px] flex flex-col justify-center items-center">
+                        {conversionRate ? (
+                            <>
+                                <div className="text-5xl font-bold text-primary mb-4">
+                                    {conversionRate.conversionRate}
+                                </div>
+                                <p className="text-muted-foreground text-center">
+                                    of carts are converted to orders
+                                </p>
+                            </>
+                        ) : (
+                            <p className="text-muted-foreground">
+                                No conversion data available
+                            </p>
+                        )}
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>User Signups</CardTitle>
+                        <CardDescription>
+                            New user registrations by month
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart
-                                data={[
-                                    { month: 'Jan', rate: 2.4 },
-                                    { month: 'Feb', rate: 2.8 },
-                                    { month: 'Mar', rate: 3.2 },
-                                    { month: 'Apr', rate: 3.6 },
-                                    { month: 'May', rate: 4.0 },
-                                    { month: 'Jun', rate: 4.5 },
-                                    { month: 'Jul', rate: 4.3 },
-                                    { month: 'Aug', rate: 4.6 },
-                                    { month: 'Sep', rate: 4.8 },
-                                    { month: 'Oct', rate: 5.0 },
-                                    { month: 'Nov', rate: 5.2 },
-                                    { month: 'Dec', rate: 5.5 },
-                                ]}
+                                data={userSignups}
                                 margin={{
                                     top: 20,
                                     right: 30,
@@ -205,17 +279,13 @@ export default function AnalyticsPage() {
                                     vertical={false}
                                 />
                                 <XAxis dataKey="month" />
-                                <YAxis tickFormatter={(value) => `${value}%`} />
-                                <Tooltip
-                                    formatter={(value) => [
-                                        `${value}%`,
-                                        'Conversion Rate',
-                                    ]}
-                                />
+                                <YAxis />
+                                <Tooltip />
                                 <Line
                                     type="monotone"
-                                    dataKey="rate"
+                                    dataKey="signups"
                                     stroke="hsl(var(--primary))"
+                                    name="New Users"
                                     strokeWidth={2}
                                     dot={{ r: 4 }}
                                     activeDot={{ r: 6 }}
@@ -224,85 +294,55 @@ export default function AnalyticsPage() {
                         </ResponsiveContainer>
                     </CardContent>
                 </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>User Engagement</CardTitle>
-                        <CardDescription>
-                            Average time spent on site and pages per session
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <LineChart
-                                data={[
-                                    {
-                                        month: 'Jan',
-                                        timeSpent: 2.5,
-                                        pagesPerSession: 3.2,
-                                    },
-                                    {
-                                        month: 'Feb',
-                                        timeSpent: 2.8,
-                                        pagesPerSession: 3.5,
-                                    },
-                                    {
-                                        month: 'Mar',
-                                        timeSpent: 3.1,
-                                        pagesPerSession: 3.8,
-                                    },
-                                    {
-                                        month: 'Apr',
-                                        timeSpent: 3.4,
-                                        pagesPerSession: 4.0,
-                                    },
-                                    {
-                                        month: 'May',
-                                        timeSpent: 3.6,
-                                        pagesPerSession: 4.2,
-                                    },
-                                    {
-                                        month: 'Jun',
-                                        timeSpent: 3.9,
-                                        pagesPerSession: 4.5,
-                                    },
-                                ]}
-                                margin={{
-                                    top: 20,
-                                    right: 30,
-                                    left: 20,
-                                    bottom: 5,
-                                }}
-                            >
-                                <CartesianGrid
-                                    strokeDasharray="3 3"
-                                    vertical={false}
-                                />
-                                <XAxis dataKey="month" />
-                                <YAxis yAxisId="left" />
-                                <YAxis yAxisId="right" orientation="right" />
-                                <Tooltip />
-                                <Line
-                                    yAxisId="left"
-                                    type="monotone"
-                                    dataKey="timeSpent"
-                                    stroke="hsl(var(--primary))"
-                                    name="Avg. Time (min)"
-                                    strokeWidth={2}
-                                />
-                                <Line
-                                    yAxisId="right"
-                                    type="monotone"
-                                    dataKey="pagesPerSession"
-                                    stroke="hsl(var(--secondary))"
-                                    name="Pages/Session"
-                                    strokeWidth={2}
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </CardContent>
-                </Card>
             </div>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Top Performing Products</CardTitle>
+                    <CardDescription>
+                        Products with highest order counts and ratings
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                            data={transformedProductData}
+                            margin={{
+                                top: 20,
+                                right: 30,
+                                left: 20,
+                                bottom: 5,
+                            }}
+                        >
+                            <CartesianGrid
+                                strokeDasharray="3 3"
+                                vertical={false}
+                            />
+                            <XAxis dataKey="name" />
+                            <YAxis yAxisId="left" />
+                            <YAxis
+                                yAxisId="right"
+                                orientation="right"
+                                domain={[0, 5]}
+                            />
+                            <Tooltip />
+                            <Legend />
+                            <Bar
+                                yAxisId="left"
+                                dataKey="orders"
+                                fill="hsl(var(--primary))"
+                                name="Orders"
+                            />
+                            <Bar
+                                yAxisId="right"
+                                dataKey="rating"
+                                fill="hsl(var(--secondary))"
+                                name="Rating (0-5)"
+                            />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
         </div>
     );
 }
