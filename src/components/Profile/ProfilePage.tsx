@@ -29,17 +29,17 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Address, MyProfile } from '@/types/types';
+import { Address,  SessionUser } from '@/types/types';
 import { useRouter } from 'next/navigation';
 import { useRootContext } from '@/lib/contexts/RootContext';
 import axios from 'axios';
 
 interface ProfilePageProps {
-    userData: MyProfile;
+    userData: SessionUser;
 }
 
 export default function ProfilePage({ userData }: ProfilePageProps) {
-    const [user, setUser] = useState<MyProfile>(userData);
+    const [user, setUser] = useState<SessionUser>(userData);
     const [editMode, setEditMode] = useState(false);
     const [updating, setUpdating] = useState(false);
     const { access_token, refresh_token } = useRootContext();
@@ -111,7 +111,7 @@ export default function ProfilePage({ userData }: ProfilePageProps) {
         try {
             setUpdating(true);
             const changedFields: Partial<
-                MyProfile['profile'] & { websiteLink?: string }
+                SessionUser['profile'] & { websiteLink?: string }
             > = {};
 
             if (formData.firstName !== originalFormData.firstName) {
@@ -139,7 +139,7 @@ export default function ProfilePage({ userData }: ProfilePageProps) {
 
             const response = await axios.put<{
                 success: boolean;
-                data: MyProfile;
+                data: SessionUser;
             }>(`${backendUrl}/profile/update`, changedFields, {
                 headers: {
                     Authorization: `Bearer ${access_token}`,

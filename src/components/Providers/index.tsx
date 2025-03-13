@@ -18,18 +18,20 @@ type ProvidersProps = {
 export const Providers = ({ children }: ProvidersProps) => {
     useSetCookies();
 
-    const {
-        access_token,
-        refresh_token,
-        loading: cookiesLoading,
-        error,
-    } = useGetCookies();
+    const { access_token: cookieAccess, refresh_token: cookieRefresh, loading: cookiesLoading, error } = useGetCookies();
 
     const [user, setUser] = useState<SessionUser | null>(null);
     const [userLoading, setUserLoading] = useState<boolean>(true);
+    const [access_token, setAccessToken] = useState<string | null>(cookieAccess);
+    const [refresh_token, setRefreshToken] = useState<string | null>(cookieRefresh);
 
     useEffect(() => {
+        if (!access_token && !refresh_token) {
+            setAccessToken(cookieAccess);
+            setRefreshToken(cookieRefresh);
+        }
         let isMounted = true;
+
 
         if (!cookiesLoading && access_token && !error) {
             (async () => {
@@ -61,7 +63,7 @@ export const Providers = ({ children }: ProvidersProps) => {
         return () => {
             isMounted = false;
         };
-    }, [cookiesLoading, access_token, refresh_token, error]);
+    }, [cookiesLoading, access_token, refresh_token, error, cookieAccess, cookieRefresh]);
 
     const combinedLoading = cookiesLoading || userLoading;
 
@@ -86,11 +88,14 @@ export const Providers = ({ children }: ProvidersProps) => {
             <RootContext.Provider
                 value={{
                     user,
+                    setUser,
                     access_token,
                     refresh_token,
                     loading: combinedLoading,
+                    setAccessToken,
+                    setRefreshToken,
                     refetchUserProfile,
-                }}
+                }} 
             >
                 {children}
             </RootContext.Provider>

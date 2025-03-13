@@ -8,14 +8,20 @@ interface RootContextProps {
     access_token: string | null | undefined;
     refresh_token: string | null | undefined;
     loading: boolean;
+    setUser: (user: SessionUser | null) => void;
+    setAccessToken: (token: string | null) => void; // ✅ New setter
+    setRefreshToken: (token: string | null) => void;
     refetchUserProfile: () => void;
 }
 
 export const RootContext = React.createContext<RootContextProps>({
     user: null,
+    setUser: () => { },
     access_token: null,
     refresh_token: null,
     loading: true,
+    setAccessToken: () => { },
+    setRefreshToken: () => { },
     refetchUserProfile: () => {},
 });
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -82,7 +83,7 @@ export default function UsersPage() {
                 },
             });
             setUsers(response.data.users);
-        } catch (error) {
+        } catch  {
             toast.error('Failed to fetch users', {
                 description: 'Please try again later',
             });
@@ -130,7 +131,7 @@ export default function UsersPage() {
                 description:
                     'The seller can now list products on the marketplace',
             });
-        } catch (error) {
+        } catch  {
             toast.error('Failed to verify seller', {
                 description: 'Please try again later',
             });

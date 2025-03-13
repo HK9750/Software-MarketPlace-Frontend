@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import React, { useState } from 'react';
@@ -22,6 +23,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import { SessionUser } from '@/types/types';
+import { useRootContext } from '@/lib/contexts/RootContext';
 
 const SIGNIN_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`;
 
@@ -35,6 +37,7 @@ const SignInPage = () => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const { setAccessToken, setRefreshToken } = useRootContext();
 
     const {
         register,
@@ -72,7 +75,14 @@ const SignInPage = () => {
                     sameSite: 'Strict',
                 });
 
+                setAccessToken(response.data.accessToken);
+                setRefreshToken(response.data.refreshToken);
+
+                // console.log("Access token",Cookies.get('access_token'));
+                // console.log("Refresh Token", Cookies.get('refresh_token'));
+                // refetchUserProfile();
                 toast.success('Signed in successfully!');
+                // router.refresh();
                 router.push('/profile');
             } else {
                 toast.error('Invalid response from server.');
@@ -234,7 +244,7 @@ const SignInPage = () => {
 
                     <CardFooter className="flex justify-center border-t border-border bg-muted/50 py-6">
                         <p className="text-center text-muted-foreground">
-                            Don't have an account?{' '}
+                            Don&apos;t have an account?{' '}
                             <Link
                                 href="/sign-up"
                                 className="text-primary font-semibold hover:underline transition-colors"

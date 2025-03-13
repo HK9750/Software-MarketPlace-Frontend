@@ -6,8 +6,18 @@ export type SessionUser = {
     name: string;
     role: string;
     profile: {
+        id: string;
         firstName: string;
         lastName: string;
+        phone: string;
+        address: Address | string;
+        userId: string;
+    };
+    sellerProfile?: {
+        id: string;
+        verified: boolean;
+        websiteLink: string;
+        userId: string;
     };
     cart: any;
     notifications: Notification[];
@@ -149,23 +159,4 @@ export interface Address {
     [key: string]: string;
 }
 
-export interface MyProfile {
-    id: string;
-    username: string;
-    email: string;
-    role: string;
-    profile: {
-        id: string;
-        firstName: string;
-        lastName: string;
-        phone: string;
-        address: Address | string;
-        userId: string;
-    };
-    sellerProfile?: {
-        id: string;
-        verified: boolean;
-        websiteLink: string;
-        userId: string;
-    };
-}
+

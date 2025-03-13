@@ -9,7 +9,7 @@ import { useEffect } from 'react';
 const SocialAuth = () => {
     const rootContext = useRootContext();
     const router = useRouter();
-    console.log('SocialAuth', process.env.NEXTAUTH_URL);
+    // console.log('SocialAuth', process.env.NEXTAUTH_URL);
 
     useEffect(() => {
         const handleSocialAuth = async () => {
