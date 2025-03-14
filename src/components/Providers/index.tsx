@@ -25,7 +25,7 @@ export const Providers = ({ children }: ProvidersProps) => {
         error,
     } = useGetCookies();
 
-    const [user, setUser] = useState<SessionUser | null>(null);
+    const [user, setUser] = useState<SessionUser | null | undefined>(undefined);
     const [userLoading, setUserLoading] = useState<boolean>(true);
     const [access_token, setAccessToken] = useState<string | null>(
         cookieAccess
@@ -40,7 +40,6 @@ export const Providers = ({ children }: ProvidersProps) => {
             setRefreshToken(cookieRefresh);
         }
         let isMounted = true;
-
         if (!cookiesLoading && access_token && !error) {
             (async () => {
                 try {
@@ -57,7 +56,9 @@ export const Providers = ({ children }: ProvidersProps) => {
                         setUser(response.data.user);
                     }
                 } catch (err) {
-                    console.error('Error fetching user profile:', err);
+                    if (isMounted) {
+                        setUser(null);
+                    }
                 } finally {
                     if (isMounted) {
                         setUserLoading(false);
@@ -67,7 +68,6 @@ export const Providers = ({ children }: ProvidersProps) => {
         } else if (!cookiesLoading) {
             setUserLoading(false);
         }
-
         return () => {
             isMounted = false;
         };
@@ -93,7 +93,7 @@ export const Providers = ({ children }: ProvidersProps) => {
                 });
                 setUser(response.data.user);
             } catch (err) {
-                console.error('Error re-fetching user profile:', err);
+                setUser(null);
             }
         }
     };

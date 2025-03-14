@@ -12,6 +12,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SessionUser } from '@/types/types';
+import { useRouter } from 'next/navigation';
 
 interface DashboardHeaderProps {
     user?: SessionUser;
@@ -22,8 +23,8 @@ export const DashboardHeader = ({ user }: DashboardHeaderProps) => {
     return (
         <header className="border-b border-border bg-card">
             <div className="flex h-16 items-center justify-between px-4 py-3">
-                <SidebarTrigger className="mr-2" />
-                <div>
+                <div></div>
+                <div className="flex gap-2">
                     <NotificationsButton />
                     <UserMenu initials={initials} />
                 </div>
@@ -48,6 +49,7 @@ function NotificationsButton() {
 }
 
 function UserMenu({ initials }: { initials: string }) {
+    const router = useRouter();
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -56,7 +58,7 @@ function UserMenu({ initials }: { initials: string }) {
                     size="icon"
                     className="rounded-full ml-2"
                 >
-                    <Avatar className="h-8 w-8">
+                    <Avatar className="h-9 w-9">
                         <AvatarImage
                             src="/placeholder.svg?height=32&width=32"
                             alt="User"
@@ -68,7 +70,7 @@ function UserMenu({ initials }: { initials: string }) {
             <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push('/profile')}>
                     <User className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                 </DropdownMenuItem>

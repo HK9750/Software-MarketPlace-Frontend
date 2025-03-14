@@ -12,7 +12,7 @@ interface AdminProtectedProps {
 const AdminProtected: React.FC<AdminProtectedProps> = ({ children }) => {
     const { user, loading } = useRootContext();
 
-    if (loading) return <Loader />;
+    if (loading || user === undefined) return <Loader />;
     if (!user || user.role !== 'SELLER') return <Unauthorized />;
 
     return <>{children}</>;
