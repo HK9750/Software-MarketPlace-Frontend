@@ -191,7 +191,10 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
                                             variant="secondary"
                                             className="mt-1"
                                         >
-                                            {item.subscription.subscriptionPlan.name}
+                                            {
+                                                item.subscription
+                                                    .subscriptionPlan.name
+                                            }
                                         </Badge>
                                         <div className="flex items-center mt-2">
                                             <span className="text-lg font-bold text-primary">

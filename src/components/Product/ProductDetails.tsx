@@ -53,13 +53,14 @@ export default function ProductDetails({
     const [selectedPrice, setSelectedPrice] = useState(0);
 
     useEffect(() => {
-        const option = subscriptionOptions.find((option) => option.id === selectedsubscription);
+        const option = subscriptionOptions.find(
+            (option) => option.id === selectedsubscription
+        );
         setSelectedOption(option);
         setSelectedPrice(option ? option.price : 0);
     }, [selectedsubscription]);
 
     console.log('Selected Id:', selectedsubscription);
-
 
     const websiteUrl = product?.seller.websiteLink.startsWith('http')
         ? product?.seller.websiteLink
@@ -105,7 +106,7 @@ export default function ProductDetails({
     };
 
     if (!product) {
-        return <Loader /> ;
+        return <Loader />;
     }
 
     return (

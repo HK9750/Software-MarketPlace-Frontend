@@ -62,24 +62,24 @@ export interface ProductDetail {
     requirements: Record<string, string>; // Allows dynamic key-value pairs
     filePath: string;
     category: {
-      id: string;
-      name: string;
+        id: string;
+        name: string;
     };
     seller: Seller;
-    reviews: Review[]; 
+    reviews: Review[];
     averageRating: number;
     subscriptions: Subscription[];
     isWishlisted: boolean;
     isInCart: boolean;
-  }
+}
 
-  interface Subscription {
+interface Subscription {
     id: string;
     name: string;
     price: number;
     duration: string; // e.g., "1 month", "1 year"
     basePrice: number; // The original price before any discounts
-  }
+}
 
 interface Seller {
     user: User;

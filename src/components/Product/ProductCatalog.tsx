@@ -157,7 +157,8 @@ export default function ProductCatalog({ products }: ProductCatalogProps) {
                                                       {i.software.name}
                                                   </h4>
                                                   <p className="text-sm text-muted-foreground">
-                                                      $ {i.software.subscriptions}
+                                                      ${' '}
+                                                      {i.software.subscriptions}
                                                   </p>
                                               </div>
                                           </div>
