@@ -26,7 +26,7 @@ const ProductCard = ({ software, onWishlistToggle }: ProductCardProps) => {
         id,
         name,
         description,
-        price,
+        subscriptions,
         filePath,
         averageRating,
         isWishlisted: initialWishlist,
@@ -103,7 +103,7 @@ const ProductCard = ({ software, onWishlistToggle }: ProductCardProps) => {
                     <span className="text-sm font-medium">{averageRating}</span>
                 </div>
                 <div className="flex items-center gap-4">
-                    <span className="font-bold">From {price}</span>
+                    <span className="font-bold">From ${subscriptions}</span>
                     <Button size="sm">
                         <MoveRight className="h-4 w-4 mr-2" />
                         View

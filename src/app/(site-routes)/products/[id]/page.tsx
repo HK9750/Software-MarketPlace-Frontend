@@ -3,13 +3,13 @@
 import { useGetCookies } from '@/hooks/useGetCookies';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Product } from '@/types/types';
+import { ProductDetail } from '@/types/types';
 import ProductDetails from '@/components/Product/ProductDetails';
 import Loader from '@/components/Loader';
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 const Page = ({ params }: { params: Promise<{ id: string }> }) => {
-    const [product, setProduct] = useState<Product | null>(null);
+    const [product, setProduct] = useState<ProductDetail | null>(null);
     const [productLoading, setProductLoading] = useState<boolean>(false);
     const { access_token, refresh_token, loading, error } = useGetCookies();
 
@@ -19,7 +19,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
                 const { id } = await params; // Await the params Promise
                 if (!loading && access_token && !error) {
                     setProductLoading(true);
-                    const response = await axios.get<{ data: Product }>(
+                    const response = await axios.get<{ data: ProductDetail }>(
                         `${backendUrl}/products/${id}`,
                         {
                             headers: {

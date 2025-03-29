@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import {
     Star,
@@ -25,24 +26,17 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import type { Product } from '@/types/types';
+import type { ProductDetail } from '@/types/types';
 import { useGetCookies } from '@/hooks/useGetCookies';
 import axios from 'axios';
 import { useRootContext } from '@/lib/contexts/RootContext';
+import Loader from '../Loader';
 
-interface LicenseOption {
-    duration: string;
-    price: number;
-}
-
-// Hardcoded license options
-const hardcodedLicenseOptions: LicenseOption[] = [
-    { duration: '1 Month', price: 9.99 },
-    { duration: '6 Months', price: 49.99 },
-    { duration: '1 Year', price: 89.99 },
-];
-
-export default function ProductDetails({ product }: { product: Product }) {
+export default function ProductDetails({
+    product,
+}: {
+    product: ProductDetail;
+}) {
     const [isInCart, setIsInCart] = useState(product?.isInCart);
     const [isInWishlist, setIsInWishlist] = useState(product?.isWishlisted);
     const [isInCartLoading, setIsInCartLoading] = useState(false);
@@ -50,9 +44,23 @@ export default function ProductDetails({ product }: { product: Product }) {
 
     const { access_token, refresh_token } = useGetCookies();
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-    const [selectedLicense, setSelectedLicense] = useState<string>(
-        hardcodedLicenseOptions[0].duration
+    const subscriptionOptions = product?.subscriptions || [];
+    const [selectedsubscription, setselectedsubscription] = useState<string>(
+        subscriptionOptions[0]?.id || ''
     );
+
+    const [selectedOption, setSelectedOption] = useState(null);
+    const [selectedPrice, setSelectedPrice] = useState(0);
+
+    useEffect(() => {
+        const option = subscriptionOptions.find((option) => option.id === selectedsubscription);
+        setSelectedOption(option);
+        setSelectedPrice(option ? option.price : 0);
+    }, [selectedsubscription]);
+
+    console.log('Selected Id:', selectedsubscription);
+
+
     const websiteUrl = product?.seller.websiteLink.startsWith('http')
         ? product?.seller.websiteLink
         : `https://${product?.seller.websiteLink}`;
@@ -63,7 +71,7 @@ export default function ProductDetails({ product }: { product: Product }) {
             const response = await axios.post<{ success: boolean }>(
                 `${backendUrl}/cart`,
                 {
-                    softwareId: product.id,
+                    subscriptionId: selectedsubscription,
                 },
                 {
                     headers: {
@@ -96,13 +104,8 @@ export default function ProductDetails({ product }: { product: Product }) {
         setIsInWishlist(response.data.toggled);
     };
 
-    const selectedPrice =
-        hardcodedLicenseOptions.find(
-            (option) => option.duration === selectedLicense
-        )?.price || product.price;
-
     if (!product) {
-        return <div>Loading...</div>;
+        return <Loader /> ;
     }
 
     return (
@@ -129,23 +132,26 @@ export default function ProductDetails({ product }: { product: Product }) {
                             </CardHeader>
                             <CardContent>
                                 <RadioGroup
-                                    value={selectedLicense}
-                                    onValueChange={setSelectedLicense}
+                                    value={selectedsubscription}
+                                    onValueChange={setselectedsubscription}
                                     className="grid grid-cols-3 gap-4"
                                 >
-                                    {hardcodedLicenseOptions.map((option) => (
-                                        <div key={option.duration}>
+                                    {subscriptionOptions.map((option) => (
+                                        <div key={option.id}>
                                             <RadioGroupItem
-                                                value={option.duration}
-                                                id={option.duration}
+                                                value={option.id}
+                                                id={option.id}
                                                 className="peer sr-only"
                                             />
                                             <Label
-                                                htmlFor={option.duration}
+                                                htmlFor={option.id}
                                                 className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
                                             >
                                                 <span className="mb-3">
-                                                    {option.duration}
+                                                    {option.name}
+                                                </span>
+                                                <span className="text-sm text-muted-foreground">
+                                                    {option.duration} months
                                                 </span>
                                                 <span className="text-sm font-bold">
                                                     ${option.price.toFixed(2)}

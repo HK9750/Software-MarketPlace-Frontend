@@ -41,7 +41,7 @@ export interface Product {
     id: string;
     name: string;
     description: string;
-    price: number;
+    subscriptions: number;
     averageRating: number;
     reviews: Review[];
     category: {
@@ -53,6 +53,33 @@ export interface Product {
     filePath?: string;
     seller: Seller;
 }
+
+export interface ProductDetail {
+    id: string;
+    name: string;
+    description: string;
+    features: Record<string, string>; // Allows dynamic key-value pairs
+    requirements: Record<string, string>; // Allows dynamic key-value pairs
+    filePath: string;
+    category: {
+      id: string;
+      name: string;
+    };
+    seller: Seller;
+    reviews: Review[]; 
+    averageRating: number;
+    subscriptions: Subscription[];
+    isWishlisted: boolean;
+    isInCart: boolean;
+  }
+
+  interface Subscription {
+    id: string;
+    name: string;
+    price: number;
+    duration: string; // e.g., "1 month", "1 year"
+    basePrice: number; // The original price before any discounts
+  }
 
 interface Seller {
     user: User;

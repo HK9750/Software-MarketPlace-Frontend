@@ -22,14 +22,18 @@ import { useRootContext } from '@/lib/contexts/RootContext';
 
 interface CartItem {
     id: string;
-    software: {
+    subscription: {
         id: string;
-        name: string;
         price: number;
-        discount: number;
-        filePath: string;
+        subscriptionPlan: {
+            name: string;
+        };
+        software: {
+            name: string;
+            description: string;
+            filePath: string;
+        };
     };
-    license: string;
 }
 
 interface CartModalProps {
@@ -124,12 +128,10 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
     };
 
     const calculateTotal = () => {
-        return cartItems.reduce((total, item) => {
-            const discountedPrice =
-                item.software.price -
-                (item.software.price * item.software.discount) / 100;
-            return total + discountedPrice;
-        }, 0);
+        return cartItems.reduce(
+            (total, item) => total + item.subscription.price,
+            0
+        );
     };
 
     return (
@@ -168,12 +170,13 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
                                     <div className="h-20 w-20 rounded-md overflow-hidden mr-4 flex-shrink-0">
                                         <Image
                                             src={
-                                                item.software.filePath ||
+                                                item.subscription.software
+                                                    .filePath ||
                                                 '/placeholder.svg'
                                             }
                                             alt={
-                                                item.software.name ||
-                                                'Product Image'
+                                                item.subscription.software
+                                                    .name || 'Product Image'
                                             }
                                             width={80}
                                             height={80}
@@ -182,40 +185,25 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
                                     </div>
                                     <div className="flex-grow">
                                         <h4 className="font-semibold text-lg">
-                                            {item.software.name}
+                                            {item.subscription.software.name}
                                         </h4>
                                         <Badge
                                             variant="secondary"
                                             className="mt-1"
                                         >
-                                            {'Monthly Subscription'}
+                                            {item.subscription.subscriptionPlan.name}
                                         </Badge>
                                         <div className="flex items-center mt-2">
                                             <span className="text-lg font-bold text-primary">
-                                                $
-                                                {(
-                                                    item.software.price -
-                                                    (item.software.price *
-                                                        item.software
-                                                            .discount) /
-                                                        100
-                                                ).toFixed(2)}
+                                                ${item.subscription.price}
                                             </span>
-                                            {item.software.discount > 0 && (
-                                                <span className="text-sm text-muted-foreground line-through ml-2">
-                                                    $
-                                                    {item.software.price.toFixed(
-                                                        2
-                                                    )}
-                                                </span>
-                                            )}
                                         </div>
                                     </div>
                                     <Button
                                         variant="ghost"
                                         size="icon"
                                         onClick={() =>
-                                            removeItem(item.software.id)
+                                            removeItem(item.subscription.id)
                                         }
                                         className="flex-shrink-0"
                                     >

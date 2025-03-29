@@ -83,7 +83,7 @@ export default function ProductCatalog({ products }: ProductCatalogProps) {
         if (selectedCategory && p.category.name !== selectedCategory)
             return false;
         if (selectedPrice) {
-            const num = parseInt(p.price.toString());
+            const num = parseInt(p.subscriptions.toString());
             const range = priceRanges.find((r) => r.id === selectedPrice);
             if (range && (num < range.min || num > range.max)) return false;
         }
@@ -157,7 +157,7 @@ export default function ProductCatalog({ products }: ProductCatalogProps) {
                                                       {i.software.name}
                                                   </h4>
                                                   <p className="text-sm text-muted-foreground">
-                                                      $ {i.software.price}
+                                                      $ {i.software.subscriptions}
                                                   </p>
                                               </div>
                                           </div>
