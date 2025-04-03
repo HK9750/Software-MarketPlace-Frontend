@@ -1,5 +1,6 @@
 import React from 'react';
 import UserProtected from '@/components/UserProtected';
+import Header from '@/components/Home/Header';
 
 export default function RootLayout({
     children,
@@ -8,7 +9,10 @@ export default function RootLayout({
 }) {
     return (
         <UserProtected>
-            <div>{children}</div>
+            <div>
+                <Header />
+                {children}
+            </div>
         </UserProtected>
     );
 }

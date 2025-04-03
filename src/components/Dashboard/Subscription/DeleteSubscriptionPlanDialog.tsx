@@ -15,7 +15,6 @@ import { Loader2 } from 'lucide-react';
 interface DeleteSubscriptionPlanDialogProps {
     isOpen: boolean;
     planName: string;
-    subscriberCount: number;
     onClose: () => void;
     onDelete: () => void;
 }
@@ -23,7 +22,6 @@ interface DeleteSubscriptionPlanDialogProps {
 export function DeleteSubscriptionPlanDialog({
     isOpen,
     planName,
-    subscriberCount,
     onClose,
     onDelete,
 }: DeleteSubscriptionPlanDialogProps) {
@@ -32,9 +30,7 @@ export function DeleteSubscriptionPlanDialog({
     const handleDelete = async () => {
         setIsDeleting(true);
         try {
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            onDelete();
+            await onDelete();
         } finally {
             setIsDeleting(false);
         }
@@ -49,13 +45,6 @@ export function DeleteSubscriptionPlanDialog({
                         Are you sure you want to delete{' '}
                         <span className="font-medium">{planName}</span>? This
                         action cannot be undone.
-                        {subscriberCount > 0 && (
-                            <div className="mt-2 text-amber-600">
-                                Warning: This plan has {subscriberCount} active
-                                subscribers. Deleting it will affect these
-                                users.
-                            </div>
-                        )}
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>

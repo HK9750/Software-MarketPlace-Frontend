@@ -6,6 +6,5 @@ import { useRootContext } from '@/lib/contexts/RootContext';
 
 export default function Profile() {
     const { user } = useRootContext();
-
     return user ? <ProfilePage userData={user} /> : <Loader />;
 }
