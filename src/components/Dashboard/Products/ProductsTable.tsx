@@ -1,40 +1,33 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-    ArrowUpDown,
-    CheckCircle,
-    Eye,
-    MoreHorizontal,
-    AlertCircle,
-    XCircle,
-    ExternalLink,
-    Edit,
-    Trash,
-} from 'lucide-react';
-import { Product } from '@/types/types';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+
+interface Product {
+    id: string;
+    name: string;
+    description: string;
+    filePath?: string;
+    category?: {
+        id: string;
+        name: string;
+    };
+    status: string;
+    sales?: number;
+    averageRating?: number;
+    dateAdded?: string;
+    seller?: {
+        verified?: boolean;
+        user?: {
+            id: string;
+            username: string;
+        };
+    };
+}
 
 interface ProductsTableProps {
-    products: any[];
+    products: Product[];
     sortField: string | null;
     sortDirection: 'asc' | 'desc';
     handleSort: (field: string) => void;
@@ -52,333 +45,334 @@ export function ProductsTable({
     handleSort,
     openConfirmDialog,
 }: ProductsTableProps) {
-    const router = useRouter();
+    // State for tracking expanded product descriptions
+    const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>(
+        {}
+    );
 
-    const getStatusBadge = (status: string | undefined) => {
+    // Toggle row expansion
+    const toggleRowExpand = (productId: string) => {
+        setExpandedRows((prev) => ({
+            ...prev,
+            [productId]: !prev[productId],
+        }));
+    };
+
+    // Sort indicator component
+    const SortIndicator = ({ field }: { field: string }) => {
+        if (sortField !== field) return null;
+
+        return (
+            <span className="ml-1">
+                {sortDirection === 'asc' ? (
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="inline"
+                    >
+                        <path d="m5 15 7-7 7 7" />
+                    </svg>
+                ) : (
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="inline"
+                    >
+                        <path d="m19 9-7 7-7-7" />
+                    </svg>
+                )}
+            </span>
+        );
+    };
+
+    // Status badge component
+    const StatusBadge = ({ status }: { status: string }) => {
+        let colorClass;
+
         switch (status) {
             case 'active':
+                colorClass = 'bg-green-100 text-green-800';
+                break;
+            case 'inactive':
+                colorClass = 'bg-red-100 text-red-800';
+                break;
+            default:
+                colorClass = 'bg-yellow-100 text-yellow-800'; // pending
+        }
+
+        return (
+            <span
+                className={`px-2 py-1 rounded-full text-xs font-medium ${colorClass}`}
+            >
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+            </span>
+        );
+    };
+
+    // Generate status actions based on current status
+    const renderStatusActions = (product: Product) => {
+        switch (product.status) {
+            case 'active':
                 return (
-                    <Badge
-                        variant="outline"
-                        className="border-green-200 bg-green-50 text-green-700"
+                    <button
+                        onClick={() =>
+                            openConfirmDialog(
+                                product.id,
+                                product.status,
+                                'inactive'
+                            )
+                        }
+                        className="text-red-600 hover:text-red-800"
                     >
-                        <CheckCircle className="mr-1 h-3 w-3" />
-                        Active
-                    </Badge>
+                        Deactivate
+                    </button>
                 );
             case 'inactive':
                 return (
-                    <Badge
-                        variant="outline"
-                        className="border-red-200 bg-red-50 text-red-700"
+                    <button
+                        onClick={() =>
+                            openConfirmDialog(
+                                product.id,
+                                product.status,
+                                'active'
+                            )
+                        }
+                        className="text-green-600 hover:text-green-800"
                     >
-                        <XCircle className="mr-1 h-3 w-3" />
-                        Inactive
-                    </Badge>
+                        Activate
+                    </button>
                 );
             case 'pending':
                 return (
-                    <Badge
-                        variant="outline"
-                        className="border-amber-200 bg-amber-50 text-amber-700"
+                    <button
+                        onClick={() =>
+                            openConfirmDialog(
+                                product.id,
+                                product.status,
+                                'active'
+                            )
+                        }
+                        className="text-green-600 hover:text-green-800"
                     >
-                        <AlertCircle className="mr-1 h-3 w-3" />
-                        Pending
-                    </Badge>
+                        Approve
+                    </button>
                 );
             default:
-                return (
-                    <Badge
-                        variant="outline"
-                        className="border-amber-200 bg-amber-50 text-amber-700"
-                    >
-                        <AlertCircle className="mr-1 h-3 w-3" />
-                        Pending
-                    </Badge>
-                );
+                return null;
         }
     };
 
     return (
-        <Card>
-            <CardContent className="p-0">
-                <div className="rounded-md border">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[250px]">
-                                    <Button
-                                        variant="ghost"
-                                        onClick={() => handleSort('name')}
-                                        className="flex items-center gap-1 p-0 font-medium"
-                                    >
-                                        Product
-                                        {sortField === 'name' && (
-                                            <ArrowUpDown
-                                                className={`h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''} transition-transform`}
+        <div className="border rounded-md overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                    <tr>
+                        <th
+                            scope="col"
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                            onClick={() => handleSort('name')}
+                        >
+                            Product
+                            <SortIndicator field="name" />
+                        </th>
+                        <th
+                            scope="col"
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                            onClick={() => handleSort('category.name')}
+                        >
+                            Category
+                            <SortIndicator field="category.name" />
+                        </th>
+                        <th
+                            scope="col"
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                            onClick={() => handleSort('status')}
+                        >
+                            Status
+                            <SortIndicator field="status" />
+                        </th>
+                        <th
+                            scope="col"
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                            onClick={() => handleSort('seller.user.username')}
+                        >
+                            Seller
+                            <SortIndicator field="seller.user.username" />
+                        </th>
+                        <th
+                            scope="col"
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                            onClick={() => handleSort('averageRating')}
+                        >
+                            Rating
+                            <SortIndicator field="averageRating" />
+                        </th>
+                        <th
+                            scope="col"
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                            onClick={() => handleSort('sales')}
+                        >
+                            Sales
+                            <SortIndicator field="sales" />
+                        </th>
+                        <th
+                            scope="col"
+                            className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                    {products.map((product) => (
+                        <tr key={product.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4">
+                                <div className="flex items-start">
+                                    {product.filePath ? (
+                                        <div className="flex-shrink-0 h-10 w-10 rounded overflow-hidden">
+                                            <Image
+                                                src={product.filePath}
+                                                alt={product.name}
+                                                width={40}
+                                                height={40}
+                                                className="h-10 w-10 object-cover"
                                             />
-                                        )}
-                                    </Button>
-                                </TableHead>
-                                <TableHead>
-                                    <Button
-                                        variant="ghost"
-                                        onClick={() => handleSort('price')}
-                                        className="flex items-center gap-1 p-0 font-medium"
-                                    >
-                                        Price
-                                        {sortField === 'price' && (
-                                            <ArrowUpDown
-                                                className={`h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''} transition-transform`}
-                                            />
-                                        )}
-                                    </Button>
-                                </TableHead>
-                                <TableHead>
-                                    <Button
-                                        variant="ghost"
-                                        onClick={() =>
-                                            handleSort('category.name')
-                                        }
-                                        className="flex items-center gap-1 p-0 font-medium"
-                                    >
-                                        Category
-                                        {sortField === 'category.name' && (
-                                            <ArrowUpDown
-                                                className={`h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''} transition-transform`}
-                                            />
-                                        )}
-                                    </Button>
-                                </TableHead>
-                                <TableHead>
-                                    <Button
-                                        variant="ghost"
-                                        onClick={() => handleSort('status')}
-                                        className="flex items-center gap-1 p-0 font-medium"
-                                    >
-                                        Status
-                                        {sortField === 'status' && (
-                                            <ArrowUpDown
-                                                className={`h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''} transition-transform`}
-                                            />
-                                        )}
-                                    </Button>
-                                </TableHead>
-                                <TableHead>
-                                    <Button
-                                        variant="ghost"
-                                        onClick={() =>
-                                            handleSort('seller.user.username')
-                                        }
-                                        className="flex items-center gap-1 p-0 font-medium"
-                                    >
-                                        Seller
-                                        {sortField ===
-                                            'seller.user.username' && (
-                                            <ArrowUpDown
-                                                className={`h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''} transition-transform`}
-                                            />
-                                        )}
-                                    </Button>
-                                </TableHead>
-                                <TableHead>
-                                    <Button
-                                        variant="ghost"
-                                        onClick={() => handleSort('sales')}
-                                        className="flex items-center gap-1 p-0 font-medium"
-                                    >
-                                        Sales
-                                        {sortField === 'sales' && (
-                                            <ArrowUpDown
-                                                className={`h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''} transition-transform`}
-                                            />
-                                        )}
-                                    </Button>
-                                </TableHead>
-                                <TableHead className="text-right">
-                                    Actions
-                                </TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {products.length === 0 ? (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={7}
-                                        className="h-24 text-center"
-                                    >
-                                        No products found.
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                products.map((product) => (
-                                    <TableRow key={product.id}>
-                                        <TableCell className="font-medium">
-                                            <div className="flex items-center gap-3">
-                                                <img
-                                                    src={
-                                                        product.filePath ||
-                                                        '/placeholder.svg'
-                                                    }
-                                                    alt={product.name}
-                                                    className="h-10 w-10 rounded-md object-cover"
-                                                />
-                                                <div>
-                                                    <span className="line-clamp-1 font-medium">
-                                                        {product.name}
-                                                    </span>
-                                                    <span className="text-xs text-muted-foreground line-clamp-1">
-                                                        {product.description}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            ${product.price.toFixed(2)}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge
-                                                variant="secondary"
-                                                className="font-normal"
+                                        </div>
+                                    ) : (
+                                        <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded flex items-center justify-center">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="20"
+                                                height="20"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                className="text-gray-500"
                                             >
-                                                {product.category.name}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            {getStatusBadge(product.status)}
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-1">
-                                                <span className="text-sm">
-                                                    {
-                                                        product.seller.user
-                                                            .username
-                                                    }
-                                                </span>
-                                                {product.seller.verified && (
-                                                    <Badge
-                                                        variant="outline"
-                                                        className="ml-1 border-blue-200 bg-blue-50 text-blue-700 text-xs"
-                                                    >
-                                                        Verified
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            {product.sales?.toLocaleString() ||
-                                                '0'}
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="h-8 w-8 p-0"
-                                                    onClick={() =>
-                                                        router.push(
-                                                            `/products/${product.id}`
-                                                        )
-                                                    }
-                                                >
-                                                    <Eye className="h-4 w-4" />
-                                                    <span className="sr-only">
-                                                        View product
-                                                    </span>
-                                                </Button>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger
-                                                        asChild
-                                                    >
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            className="h-8 w-8 p-0"
-                                                        >
-                                                            <MoreHorizontal className="h-4 w-4" />
-                                                            <span className="sr-only">
-                                                                More options
-                                                            </span>
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuLabel>
-                                                            Actions
-                                                        </DropdownMenuLabel>
-                                                        <DropdownMenuSeparator />
-                                                        <DropdownMenuItem>
-                                                            <Edit className="mr-2 h-4 w-4" />
-                                                            Edit Product
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem>
-                                                            <ExternalLink className="mr-2 h-4 w-4" />
-                                                            View in Store
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuSeparator />
-                                                        {product.status !==
-                                                            'active' && (
-                                                            <DropdownMenuItem
-                                                                onClick={() =>
-                                                                    openConfirmDialog(
-                                                                        product.id,
-                                                                        product.status ||
-                                                                            'pending',
-                                                                        'active'
-                                                                    )
-                                                                }
-                                                            >
-                                                                <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
-                                                                Set as Active
-                                                            </DropdownMenuItem>
-                                                        )}
-                                                        {product.status !==
-                                                            'inactive' && (
-                                                            <DropdownMenuItem
-                                                                onClick={() =>
-                                                                    openConfirmDialog(
-                                                                        product.id,
-                                                                        product.status ||
-                                                                            'pending',
-                                                                        'inactive'
-                                                                    )
-                                                                }
-                                                            >
-                                                                <XCircle className="mr-2 h-4 w-4 text-red-600" />
-                                                                Set as Inactive
-                                                            </DropdownMenuItem>
-                                                        )}
-                                                        {product.status !==
-                                                            'pending' && (
-                                                            <DropdownMenuItem
-                                                                onClick={() =>
-                                                                    openConfirmDialog(
-                                                                        product.id,
-                                                                        product.status ||
-                                                                            'active',
-                                                                        'pending'
-                                                                    )
-                                                                }
-                                                            >
-                                                                <AlertCircle className="mr-2 h-4 w-4 text-amber-600" />
-                                                                Set as Pending
-                                                            </DropdownMenuItem>
-                                                        )}
-                                                        <DropdownMenuSeparator />
-                                                        <DropdownMenuItem className="text-destructive focus:text-destructive">
-                                                            <Trash className="mr-2 h-4 w-4" />
-                                                            Delete Product
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-            </CardContent>
-        </Card>
+                                                <rect
+                                                    width="18"
+                                                    height="18"
+                                                    x="3"
+                                                    y="3"
+                                                    rx="2"
+                                                />
+                                                <path d="M3 9h18" />
+                                            </svg>
+                                        </div>
+                                    )}
+                                    <div className="ml-4">
+                                        <div className="font-medium text-gray-900">
+                                            {product.name}
+                                        </div>
+                                        <div className="text-sm text-gray-500">
+                                            {expandedRows[product.id] ? (
+                                                product.description
+                                            ) : (
+                                                <>
+                                                    {product.description
+                                                        ?.length > 60
+                                                        ? `${product.description.substring(0, 60)}...`
+                                                        : product.description}
+                                                </>
+                                            )}
+                                        </div>
+                                        {product.description?.length > 60 && (
+                                            <button
+                                                onClick={() =>
+                                                    toggleRowExpand(product.id)
+                                                }
+                                                className="text-xs text-primary hover:underline mt-1"
+                                            >
+                                                {expandedRows[product.id]
+                                                    ? 'Show less'
+                                                    : 'Show more'}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {product.category?.name || 'Uncategorized'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                                <StatusBadge status={product.status} />
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {product.seller?.user?.username || 'Unknown'}
+                                {product.seller?.verified && (
+                                    <span className="ml-1 text-blue-500">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="14"
+                                            height="14"
+                                            viewBox="0 0 24 24"
+                                            fill="currentColor"
+                                            stroke="none"
+                                            className="inline"
+                                        >
+                                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                                        </svg>
+                                    </span>
+                                )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {product.averageRating ? (
+                                    <div className="flex items-center">
+                                        <span className="mr-1">
+                                            {product.averageRating.toFixed(1)}
+                                        </span>
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="14"
+                                            height="14"
+                                            viewBox="0 0 24 24"
+                                            fill="gold"
+                                            stroke="currentColor"
+                                            strokeWidth="1"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        >
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                                        </svg>
+                                    </div>
+                                ) : (
+                                    'No ratings'
+                                )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {product.sales || 0}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                                <Link
+                                    href={`/dashboard/products/${product.id}/edit`}
+                                    className="text-primary hover:text-primary-dark"
+                                >
+                                    Edit
+                                </Link>
+                                <span className="text-gray-300">|</span>
+                                {renderStatusActions(product)}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
     );
 }

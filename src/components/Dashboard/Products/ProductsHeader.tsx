@@ -1,24 +1,14 @@
-import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+'use client';
 
 export function ProductsHeader() {
     return (
-        <Card>
-            <CardHeader>
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <CardTitle>Product Management</CardTitle>
-                        <CardDescription>
-                            View and manage all products on the marketplace
-                        </CardDescription>
-                    </div>
-                </div>
-            </CardHeader>
-        </Card>
+        <div className="flex justify-between items-center">
+            <div>
+                <h1 className="text-2xl font-bold tracking-tight">Products</h1>
+                <p className="text-muted-foreground">
+                    Manage your product listings and inventory.
+                </p>
+            </div>
+        </div>
     );
 }

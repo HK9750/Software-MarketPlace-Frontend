@@ -1,75 +1,70 @@
-'use client';
-
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import React from 'react';
 
-export function RecentSales() {
-    const sales = [
-        {
-            name: 'Olivia Martin',
-            email: 'olivia.martin@email.com',
-            amount: '+$1,999.00',
-        },
-        {
-            name: 'Jackson Lee',
-            email: 'jackson.lee@email.com',
-            amount: '+$39.00',
-        },
-        {
-            name: 'Isabella Nguyen',
-            email: 'isabella.nguyen@email.com',
-            amount: '+$299.00',
-        },
-        {
-            name: 'William Kim',
-            email: 'will@email.com',
-            amount: '+$99.00',
-        },
-        {
-            name: 'Sofia Davis',
-            email: 'sofia.davis@email.com',
-            amount: '+$39.00',
-        },
-    ];
+interface Sale {
+    id: string;
+    user: {
+        name: string;
+        email: string;
+    };
+    amount: number;
+    status: string;
+    date: string;
+    softwareName: string;
+}
+
+interface RecentSalesProps {
+    sales: Sale[];
+}
+
+export function RecentSales({ sales }: RecentSalesProps) {
+    if (sales.length === 0) {
+        return (
+            <p className="text-sm text-muted-foreground">
+                No recent sales data available
+            </p>
+        );
+    }
 
     return (
-        <Card className="col-span-3">
-            <CardHeader>
-                <CardTitle>Recent Sales</CardTitle>
-                <CardDescription>
-                    You made 265 sales this month.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-8">
-                    {sales.map((sale, index) => (
-                        <div key={index} className="flex items-center">
-                            <Avatar className="h-9 w-9">
-                                <AvatarFallback>
-                                    {sale.name.charAt(0)}
-                                </AvatarFallback>
-                            </Avatar>
-                            <div className="ml-4 space-y-1">
-                                <p className="text-sm font-medium leading-none">
-                                    {sale.name}
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                    {sale.email}
-                                </p>
-                            </div>
-                            <div className="ml-auto font-medium">
-                                {sale.amount}
-                            </div>
+        <div className="space-y-6">
+            {sales.map((sale) => (
+                <div key={sale.id} className="flex items-center">
+                    <Avatar className="h-9 w-9">
+                        <AvatarFallback>
+                            {sale.user.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                    </Avatar>
+                    <div className="ml-4 space-y-1">
+                        <p className="text-sm font-medium leading-none">
+                            {sale.user.name}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                            {sale.user.email}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                            {sale.softwareName}
+                        </p>
+                    </div>
+                    <div className="ml-auto text-right">
+                        <p className="text-sm font-medium">${sale.amount}</p>
+                        <div
+                            className={`text-xs ${
+                                sale.status === 'COMPLETED'
+                                    ? 'text-green-500'
+                                    : sale.status === 'PENDING'
+                                      ? 'text-yellow-500'
+                                      : 'text-red-500'
+                            }`}
+                        >
+                            {sale.status.toLowerCase()}
                         </div>
-                    ))}
+                        <p className="text-xs text-muted-foreground">
+                            {new Date(sale.date).toLocaleDateString()}
+                        </p>
+                    </div>
                 </div>
-            </CardContent>
-        </Card>
+            ))}
+        </div>
     );
 }
