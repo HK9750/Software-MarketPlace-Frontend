@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -7,6 +6,7 @@ import { ProductsHeader } from './ProductsHeader';
 import { ProductsFilters } from './ProductsFilters';
 import { ProductsTable } from './ProductsTable';
 import { StatusChangeDialog } from './StatusChangeDialog';
+import { ProductsSkeleton } from './ProductsSkeleton'; // Import the skeleton component
 import { toast } from 'sonner';
 import { useRootContext } from '@/lib/contexts/RootContext';
 import { debounce } from '@/utils/debounce';
@@ -230,10 +230,15 @@ export default function ProductsPage() {
         try {
             // Convert string status to numeric value for API
             const numericStatus = STATUS_VALUE_MAP[newStatus];
-
+            console.log(
+                `Changing status of product ${productId} to ${newStatus} (${numericStatus})`
+            );
             // Make API call to update product status - corrected URL to match backend
+            console.log(
+                `${GET_PRODUCTS_URL}/${productId}/status/${numericStatus}`
+            );
             const response: any = await axios.put(
-                `${process.env.NEXT_PUBLIC_BACKEND_URL}/products/${productId}/status/${numericStatus}`,
+                `${GET_PRODUCTS_URL}/${productId}/status/${numericStatus}`,
                 {},
                 {
                     headers: {
@@ -297,7 +302,7 @@ export default function ProductsPage() {
         setSortField(null);
         setSortDirection('asc');
     };
-
+    console.log('Products:', products);
     return (
         <div className="space-y-6">
             <ProductsHeader />
@@ -322,12 +327,10 @@ export default function ProductsPage() {
             />
 
             {isLoading ? (
-                <div className="flex justify-center items-center p-8">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                </div>
+                <ProductsSkeleton />
             ) : error ? (
                 <div
-                    className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative"
+                    className="bg-red-50 border border-red-200 text-destructive px-4 py-3 rounded relative"
                     role="alert"
                 >
                     <strong className="font-bold">Error: </strong>

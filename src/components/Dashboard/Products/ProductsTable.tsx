@@ -105,13 +105,16 @@ export function ProductsTable({
 
         switch (status) {
             case 'active':
-                colorClass = 'bg-green-100 text-green-800';
+                colorClass =
+                    'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100';
                 break;
             case 'inactive':
-                colorClass = 'bg-red-100 text-red-800';
+                colorClass =
+                    'bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive-foreground';
                 break;
             default:
-                colorClass = 'bg-yellow-100 text-yellow-800'; // pending
+                colorClass =
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100'; // pending
         }
 
         return (
@@ -136,7 +139,7 @@ export function ProductsTable({
                                 'inactive'
                             )
                         }
-                        className="text-red-600 hover:text-red-800"
+                        className="text-destructive hover:text-destructive/80 font-medium"
                     >
                         Deactivate
                     </button>
@@ -151,7 +154,7 @@ export function ProductsTable({
                                 'active'
                             )
                         }
-                        className="text-green-600 hover:text-green-800"
+                        className="text-primary hover:text-primary/80 font-medium"
                     >
                         Activate
                     </button>
@@ -166,7 +169,7 @@ export function ProductsTable({
                                 'active'
                             )
                         }
-                        className="text-green-600 hover:text-green-800"
+                        className="text-primary hover:text-primary/80 font-medium"
                     >
                         Approve
                     </button>
@@ -177,13 +180,13 @@ export function ProductsTable({
     };
 
     return (
-        <div className="border rounded-md overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+        <div className="border rounded-md shadow-sm overflow-hidden">
+            <table className="w-full">
+                <thead className="bg-muted/50">
                     <tr>
                         <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                            className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer"
                             onClick={() => handleSort('name')}
                         >
                             Product
@@ -191,7 +194,7 @@ export function ProductsTable({
                         </th>
                         <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                            className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer"
                             onClick={() => handleSort('category.name')}
                         >
                             Category
@@ -199,7 +202,7 @@ export function ProductsTable({
                         </th>
                         <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                            className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer"
                             onClick={() => handleSort('status')}
                         >
                             Status
@@ -207,7 +210,7 @@ export function ProductsTable({
                         </th>
                         <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                            className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer"
                             onClick={() => handleSort('seller.user.username')}
                         >
                             Seller
@@ -215,7 +218,7 @@ export function ProductsTable({
                         </th>
                         <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                            className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer"
                             onClick={() => handleSort('averageRating')}
                         >
                             Rating
@@ -223,7 +226,7 @@ export function ProductsTable({
                         </th>
                         <th
                             scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                            className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer"
                             onClick={() => handleSort('sales')}
                         >
                             Sales
@@ -231,15 +234,18 @@ export function ProductsTable({
                         </th>
                         <th
                             scope="col"
-                            className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider"
                         >
                             Actions
                         </th>
                     </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-background divide-y divide-border">
                     {products.map((product) => (
-                        <tr key={product.id} className="hover:bg-gray-50">
+                        <tr
+                            key={product.id}
+                            className="hover:bg-muted/40 transition-colors"
+                        >
                             <td className="px-6 py-4">
                                 <div className="flex items-start">
                                     {product.filePath ? (
@@ -253,7 +259,7 @@ export function ProductsTable({
                                             />
                                         </div>
                                     ) : (
-                                        <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded flex items-center justify-center">
+                                        <div className="flex-shrink-0 h-10 w-10 bg-muted rounded flex items-center justify-center">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 width="20"
@@ -264,7 +270,7 @@ export function ProductsTable({
                                                 strokeWidth="2"
                                                 strokeLinecap="round"
                                                 strokeLinejoin="round"
-                                                className="text-gray-500"
+                                                className="text-muted-foreground"
                                             >
                                                 <rect
                                                     width="18"
@@ -278,10 +284,10 @@ export function ProductsTable({
                                         </div>
                                     )}
                                     <div className="ml-4">
-                                        <div className="font-medium text-gray-900">
+                                        <div className="font-medium text-foreground">
                                             {product.name}
                                         </div>
-                                        <div className="text-sm text-gray-500">
+                                        <div className="text-sm text-muted-foreground">
                                             {expandedRows[product.id] ? (
                                                 product.description
                                             ) : (
@@ -298,7 +304,7 @@ export function ProductsTable({
                                                 onClick={() =>
                                                     toggleRowExpand(product.id)
                                                 }
-                                                className="text-xs text-primary hover:underline mt-1"
+                                                className="text-xs text-primary hover:text-primary/80 hover:underline mt-1"
                                             >
                                                 {expandedRows[product.id]
                                                     ? 'Show less'
@@ -308,16 +314,16 @@ export function ProductsTable({
                                     </div>
                                 </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                                 {product.category?.name || 'Uncategorized'}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                                 <StatusBadge status={product.status} />
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                                 {product.seller?.user?.username || 'Unknown'}
                                 {product.seller?.verified && (
-                                    <span className="ml-1 text-blue-500">
+                                    <span className="ml-1 text-primary">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             width="14"
@@ -332,7 +338,7 @@ export function ProductsTable({
                                     </span>
                                 )}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                                 {product.averageRating ? (
                                     <div className="flex items-center">
                                         <span className="mr-1">
@@ -356,17 +362,10 @@ export function ProductsTable({
                                     'No ratings'
                                 )}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                                 {product.sales || 0}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                <Link
-                                    href={`/dashboard/products/${product.id}/edit`}
-                                    className="text-primary hover:text-primary-dark"
-                                >
-                                    Edit
-                                </Link>
-                                <span className="text-gray-300">|</span>
                                 {renderStatusActions(product)}
                             </td>
                         </tr>

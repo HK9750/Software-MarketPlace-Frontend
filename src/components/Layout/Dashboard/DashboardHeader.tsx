@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SessionUser } from '@/types/types';
 import { useRouter } from 'next/navigation';
+import { useSignOut } from '@/hooks/useSignOut';
 
 interface DashboardHeaderProps {
     user?: SessionUser;
@@ -50,6 +51,15 @@ function NotificationsButton() {
 
 function UserMenu({ initials }: { initials: string }) {
     const router = useRouter();
+
+    const signOut = useSignOut(
+        typeof window !== 'undefined' ? window.location.origin : ''
+    );
+
+    const handleLogout = async () => {
+        await signOut();
+    };
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -74,12 +84,8 @@ function UserMenu({ initials }: { initials: string }) {
                     <User className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
-                </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Log out</span>
                 </DropdownMenuItem>

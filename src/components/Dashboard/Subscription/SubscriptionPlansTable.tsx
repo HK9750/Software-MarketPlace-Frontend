@@ -35,6 +35,7 @@ import { DeleteSubscriptionPlanDialog } from './DeleteSubscriptionPlanDialog';
 import { toast } from 'sonner';
 import { useRootContext } from '@/lib/contexts/RootContext';
 import axios from 'axios';
+import { SubscriptionPlansTableSkeleton } from './SubscriptionPlansTableSkeleton';
 
 // Subscription plan type to match backend model
 interface SubscriptionPlan {
@@ -190,6 +191,10 @@ export function SubscriptionPlansTable() {
             ? `1 year, ${remainingMonths} ${remainingMonths === 1 ? 'month' : 'months'}`
             : `${years} years, ${remainingMonths} ${remainingMonths === 1 ? 'month' : 'months'}`;
     };
+
+    if (loading) {
+        return <SubscriptionPlansTableSkeleton />;
+    }
 
     return (
         <>

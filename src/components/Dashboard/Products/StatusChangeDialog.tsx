@@ -57,11 +57,11 @@ export function StatusChangeDialog({
     const getButtonColor = () => {
         switch (newStatus) {
             case 'active':
-                return 'bg-green-600 hover:bg-green-700 focus:ring-green-500';
+                return 'bg-primary hover:bg-primary/90 focus:ring-primary/50';
             case 'inactive':
-                return 'bg-red-600 hover:bg-red-700 focus:ring-red-500';
+                return 'bg-destructive hover:bg-destructive/90 focus:ring-destructive/50';
             default:
-                return 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500';
+                return 'bg-amber-500 hover:bg-amber-600 focus:ring-amber-400';
         }
     };
 
@@ -79,12 +79,12 @@ export function StatusChangeDialog({
     };
 
     return (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-30 flex items-center justify-center">
-            <div className="bg-white rounded-lg max-w-md w-full mx-4 p-6 shadow-xl">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-foreground/20 backdrop-blur-sm flex items-center justify-center">
+            <div className="bg-background rounded-lg max-w-md w-full mx-4 p-6 shadow-lg border">
+                <h3 className="text-lg font-semibold text-foreground mb-2">
                     {getDialogTitle()}
                 </h3>
-                <p className="text-sm text-gray-500 mb-6">
+                <p className="text-sm text-muted-foreground mb-6">
                     {getDialogDescription()}
                 </p>
 
@@ -92,23 +92,25 @@ export function StatusChangeDialog({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                        className="px-4 py-2 text-sm font-medium text-foreground bg-secondary rounded-md hover:bg-secondary/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring"
                         disabled={isLoading}
                     >
                         Cancel
                     </button>
                     <button
                         type="button"
-                        onClick={() =>
-                            productId && onConfirm(productId, newStatus)
-                        }
-                        className={`px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${getButtonColor()}`}
+                        onClick={() => {
+                            if (productId) {
+                                onConfirm(productId, newStatus);
+                            }
+                        }}
+                        className={`px-4 py-2 text-sm font-medium text-primary-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${getButtonColor()}`}
                         disabled={isLoading}
                     >
                         {isLoading ? (
                             <div className="flex items-center">
                                 <svg
-                                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary-foreground"
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 24 24"

@@ -41,6 +41,20 @@ const Header = () => {
         user?.notifications &&
         user?.notifications.filter((n) => !n.isRead).length;
 
+    // Check if user should see dashboard link
+    const showDashboard =
+        user && (user.role === 'ADMIN' || user.role === 'SELLER');
+
+    // Get appropriate dashboard URL based on role
+    const getDashboardUrl = () => {
+        if (user?.role === 'ADMIN') {
+            return '/dashboard';
+        } else if (user?.role === 'SELLER') {
+            return '/seller-dashboard';
+        }
+        return '';
+    };
+
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 font-sans shadow-sm">
             <div className="container flex h-14 items-center justify-between px-4 md:px-6 max-w-7xl mx-auto">
@@ -165,14 +179,16 @@ const Header = () => {
                                             {user.email}
                                         </p>
                                     </div>
-                                    <DropdownMenuItem asChild>
-                                        <Link
-                                            href="/dashboard"
-                                            className="cursor-pointer"
-                                        >
-                                            Dashboard
-                                        </Link>
-                                    </DropdownMenuItem>
+                                    {showDashboard && (
+                                        <DropdownMenuItem asChild>
+                                            <Link
+                                                href={getDashboardUrl()}
+                                                className="cursor-pointer"
+                                            >
+                                                Dashboard
+                                            </Link>
+                                        </DropdownMenuItem>
+                                    )}
                                     <DropdownMenuItem asChild>
                                         <Link
                                             href="/profile"
