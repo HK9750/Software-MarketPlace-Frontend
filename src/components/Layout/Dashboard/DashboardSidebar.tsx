@@ -1,4 +1,5 @@
 'use client';
+
 import Link from 'next/link';
 import { Package } from 'lucide-react';
 import {
@@ -15,9 +16,21 @@ import {
     SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { UserProfile } from '@/components/Layout/Dashboard/UserProfile';
-import { navigationItems } from '@/components/Layout/Dashboard/Items';
+import {
+    navigationItems,
+    sellerNavigationItems,
+} from '@/components/Layout/Dashboard/Items';
 
-export function DashboardSidebar({ pathname }) {
+interface DashboardSidebarProps {
+    pathname: string;
+    type?: 'ADMIN' | 'SELLER';
+}
+
+export function DashboardSidebar({ pathname, type }: DashboardSidebarProps) {
+    // Determine which navigation items to show based on the type prop
+    const navItems =
+        type === 'SELLER' ? sellerNavigationItems : navigationItems;
+
     return (
         <Sidebar>
             <SidebarHeader className="border-b border-border">
@@ -30,16 +43,20 @@ export function DashboardSidebar({ pathname }) {
             </SidebarHeader>
             <SidebarContent>
                 <SidebarGroup>
-                    <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+                    <SidebarGroupLabel>
+                        {type === 'SELLER' ? 'Seller Navigation' : 'Navigation'}
+                    </SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
-                            {navigationItems.map((item) => (
-                                <NavigationItem
-                                    key={item.name}
-                                    item={item}
-                                    isActive={pathname === item.href}
-                                />
-                            ))}
+                            {navItems.map((item) => {
+                                return (
+                                    <NavigationItem
+                                        key={item.name}
+                                        item={item}
+                                        isActive={pathname === item.href}
+                                    />
+                                );
+                            })}
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>

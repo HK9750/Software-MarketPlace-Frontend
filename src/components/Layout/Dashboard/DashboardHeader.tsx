@@ -2,7 +2,6 @@
 import { Bell, User, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { SidebarTrigger } from '@/components/ui/sidebar';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -14,6 +13,7 @@ import {
 import { SessionUser } from '@/types/types';
 import { useRouter } from 'next/navigation';
 import { useSignOut } from '@/hooks/useSignOut';
+import { BackButton } from '@/components/BackButton/BackButton';
 
 interface DashboardHeaderProps {
     user?: SessionUser;
@@ -24,7 +24,7 @@ export const DashboardHeader = ({ user }: DashboardHeaderProps) => {
     return (
         <header className="border-b border-border bg-card">
             <div className="flex h-16 items-center justify-between px-4 py-3">
-                <div></div>
+                <BackButton variant="default" />
                 <div className="flex gap-2">
                     <NotificationsButton />
                     <UserMenu initials={initials} />

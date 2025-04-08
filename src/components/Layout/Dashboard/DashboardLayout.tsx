@@ -6,7 +6,14 @@ import { DashboardSidebar } from '@/components/Layout/Dashboard/DashboardSidebar
 import { DashboardHeader } from '@/components/Layout/Dashboard/DashboardHeader';
 import { useRootContext } from '@/lib/contexts/RootContext';
 
-export default function DashboardLayout({ children }) {
+interface DashboardLayoutProps {
+    children: React.ReactNode;
+    type?: 'ADMIN' | 'SELLER';
+}
+export default function DashboardLayout({
+    children,
+    type = 'ADMIN',
+}: DashboardLayoutProps) {
     const pathname = usePathname();
     const [isMounted, setIsMounted] = useState(false);
     const { user } = useRootContext();
@@ -23,7 +30,7 @@ export default function DashboardLayout({ children }) {
         <SidebarProvider>
             <div className="flex min-h-screen bg-background w-full">
                 <div className="w-64">
-                    <DashboardSidebar pathname={pathname} />
+                    <DashboardSidebar pathname={pathname} type={type} />
                 </div>
                 <main className="flex-grow flex flex-col w-full">
                     <DashboardHeader user={user} />
