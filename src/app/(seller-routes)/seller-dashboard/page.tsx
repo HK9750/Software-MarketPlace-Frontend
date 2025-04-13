@@ -1,8 +1,5 @@
 'use client';
 
-import { ProductsTableSkeleton } from '@/components/SellerDashboard/Products/ProductsTableSkeleton';
-import { SellerProductsTable } from '@/components/SellerDashboard/Products/SellerProductsTable';
-
 export default function SellerDashboardPage() {
     return (
         <div className="space-y-6">

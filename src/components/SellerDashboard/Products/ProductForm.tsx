@@ -1,12 +1,12 @@
 'use client';
 
 import type React from 'react';
-
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -31,6 +31,43 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Upload } from 'lucide-react';
 import type { Product } from '@/types/types';
 import { toast } from 'sonner';
+import { useRootContext } from '@/lib/contexts/RootContext';
+
+// Define types based on the API response
+interface ProductFeatures {
+    [key: string]: string;
+}
+
+interface ProductRequirements {
+    [key: string]: string;
+}
+
+interface Subscription {
+    id: string;
+    basePrice: number;
+    price: number;
+    name: string;
+    duration: number;
+}
+
+interface ProductResponse {
+    id: string;
+    name: string;
+    description: string;
+    features: ProductFeatures;
+    requirements: ProductRequirements;
+    filePath: string;
+    category: {
+        id: string;
+        name: string;
+    };
+    subscriptions: Subscription[];
+    seller: any;
+    reviews: any[];
+    averageRating: number;
+    isWishlisted: boolean;
+    isInCart: boolean;
+}
 
 // Form schema
 const productFormSchema = z.object({
@@ -46,14 +83,11 @@ const productFormSchema = z.object({
     categoryId: z.string({ required_error: 'Please select a category' }),
     features: z.string().optional(),
     requirements: z.string().optional(),
-    status: z.enum(['active', 'inactive', 'pending'], {
-        required_error: 'Please select a status',
-    }),
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
 
-// Mock categories
+// Mock categories - replace with your actual category data or API call
 const categories = [
     { id: 'cat1', name: 'Design' },
     { id: 'cat2', name: 'Development' },
@@ -63,59 +97,194 @@ const categories = [
     { id: 'cat6', name: 'Productivity' },
 ];
 
+const GET_PRODUCT_BY_ID = `${process.env.NEXT_PUBLIC_BACKEND_URL}/products`;
+
 interface ProductFormProps {
-    product?: any;
+    id?: string;
 }
 
-export function ProductForm({ product }: ProductFormProps) {
+export function ProductForm({ id }: ProductFormProps) {
     const router = useRouter();
+    const { access_token, refresh_token } = useRootContext();
+
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('basic');
-    const [imagePreview, setImagePreview] = useState<string | null>(
-        product?.filePath || null
-    );
+    const [product, setProduct] = useState<ProductResponse | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-    // Default values
-    const defaultValues: Partial<ProductFormValues> = {
-        name: product?.name || '',
-        description: product?.description || '',
-        price: product?.price || 0,
-        categoryId: product?.category.id || '',
-        features: product?.features || '',
-        requirements: product?.requirements || '',
-        status:
-            (product?.status as 'active' | 'inactive' | 'pending') || 'pending',
-    };
-
+    // Initialize form with empty values
     const form = useForm<ProductFormValues>({
         resolver: zodResolver(productFormSchema),
-        defaultValues,
+        defaultValues: {
+            name: '',
+            description: '',
+            price: 0,
+            categoryId: '',
+            features: '',
+            requirements: '',
+        },
         mode: 'onChange',
     });
+
+    // Fetch product if id is provided
+    useEffect(() => {
+        if (id) {
+            fetchProduct();
+        }
+    }, [id]);
+
+    // Helper to convert object to string representation
+    const objectToString = (obj: Record<string, string>): string => {
+        return Object.entries(obj)
+            .map(([key, value]) => `${key}: ${value}`)
+            .join('\n');
+    };
+
+    // Helper to convert string representation back to object
+    const stringToObject = (str: string): Record<string, string> => {
+        const result: Record<string, string> = {};
+
+        str.split('\n').forEach((line) => {
+            const trimmedLine = line.trim();
+            if (trimmedLine) {
+                const colonIndex = trimmedLine.indexOf(':');
+                if (colonIndex !== -1) {
+                    const key = trimmedLine.slice(0, colonIndex).trim();
+                    const value = trimmedLine.slice(colonIndex + 1).trim();
+                    if (key) result[key] = value;
+                }
+            }
+        });
+
+        return result;
+    };
+
+    const fetchProduct = async () => {
+        if (!id) return;
+
+        setIsLoading(true);
+        try {
+            const res: any = await axios.get(`${GET_PRODUCT_BY_ID}/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${access_token}`,
+                    'x-refresh-token': refresh_token,
+                },
+            });
+
+            if (res.status === 200 && res.data.success) {
+                const productData: ProductResponse = res.data.data;
+                setProduct(productData);
+
+                // Convert features and requirements objects to strings for form
+                const featuresString = objectToString(productData.features);
+                const requirementsString = objectToString(
+                    productData.requirements
+                );
+
+                // Get base price from first subscription or use 0
+                const basePrice =
+                    productData.subscriptions &&
+                    productData.subscriptions.length > 0
+                        ? productData.subscriptions[0].price
+                        : 0;
+
+                // Update form values
+                form.reset({
+                    name: productData.name || '',
+                    description: productData.description || '',
+                    price: basePrice,
+                    categoryId: productData.category?.id || '',
+                    features: featuresString,
+                    requirements: requirementsString,
+                });
+
+                // Set image preview if available
+                if (productData.filePath) {
+                    setImagePreview(productData.filePath);
+                }
+            } else {
+                toast.error('Failed to load product data');
+            }
+        } catch (error: any) {
+            console.error('Error fetching product:', error);
+            toast.error('Error loading product data', {
+                description: error.message || 'Please try again later',
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const onSubmit = async (data: ProductFormValues) => {
         setIsSubmitting(true);
 
         try {
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1500));
+            // Convert string inputs back to objects for API
+            const features = stringToObject(data.features || '');
+            const requirements = stringToObject(data.requirements || '');
 
-            console.log('Form data:', data);
+            // Prepare data for API (format may need adjusting based on API requirements)
+            const apiData = {
+                name: data.name,
+                description: data.description,
+                features,
+                requirements,
+                categoryId: data.categoryId,
+                // Handle any subscription data as needed
+                subscriptions: [
+                    {
+                        price: data.price,
+                        basePrice: data.price,
+                        // Keep other subscription data if editing
+                        ...(product?.subscriptions &&
+                        product.subscriptions.length > 0
+                            ? {
+                                  name: product.subscriptions[0].name,
+                                  duration: product.subscriptions[0].duration,
+                              }
+                            : {
+                                  name: 'Basic Plan',
+                                  duration: 1,
+                              }),
+                    },
+                ],
+            };
+
+            let url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/products`;
+            let method = 'post';
+
+            // If editing, use PUT method and include ID in URL
+            if (id) {
+                url = `${url}/${id}`;
+                method = 'put';
+            }
+
+            // Make API request
+            const response = await axios({
+                method,
+                url,
+                data: apiData,
+                headers: {
+                    Authorization: `Bearer ${access_token}`,
+                    'x-refresh-token': refresh_token,
+                },
+            });
 
             // Show success message
             toast.success(
-                product
+                id
                     ? 'Product updated successfully'
                     : 'Product created successfully',
                 {
-                    description: product
+                    description: id
                         ? 'Your product has been updated'
                         : 'Your product has been added to the marketplace',
                 }
             );
 
             // Redirect to products list
-            router.push('/dashboard/seller');
+            router.push('/dashboard/seller/products');
         } catch (error: any) {
             console.error('Error submitting form:', error);
             toast.error('Something went wrong', {
@@ -136,6 +305,17 @@ export function ProductForm({ product }: ProductFormProps) {
             reader.readAsDataURL(file);
         }
     };
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="p-6 flex items-center justify-center h-64">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <span className="ml-2">Loading product data...</span>
+                </CardContent>
+            </Card>
+        );
+    }
 
     return (
         <Card>
@@ -216,7 +396,9 @@ export function ProductForm({ product }: ProductFormProps) {
                                         name="price"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Price ($)</FormLabel>
+                                                <FormLabel>
+                                                    Base Price ($)
+                                                </FormLabel>
                                                 <FormControl>
                                                     <Input
                                                         type="number"
@@ -226,8 +408,8 @@ export function ProductForm({ product }: ProductFormProps) {
                                                     />
                                                 </FormControl>
                                                 <FormDescription>
-                                                    Set the price for your
-                                                    product
+                                                    Set the base price for your
+                                                    product's basic subscription
                                                 </FormDescription>
                                                 <FormMessage />
                                             </FormItem>
@@ -302,14 +484,17 @@ export function ProductForm({ product }: ProductFormProps) {
                                             <FormLabel>Features</FormLabel>
                                             <FormControl>
                                                 <Textarea
-                                                    placeholder="List the key features of your product"
+                                                    placeholder="List features in key: value format (one per line)
+Example:
+feature1: value1
+feature2: value2"
                                                     className="min-h-[120px]"
                                                     {...field}
                                                 />
                                             </FormControl>
                                             <FormDescription>
-                                                Separate features with commas or
-                                                new lines
+                                                Enter features in key: value
+                                                format, one per line
                                             </FormDescription>
                                             <FormMessage />
                                         </FormItem>
@@ -326,14 +511,17 @@ export function ProductForm({ product }: ProductFormProps) {
                                             </FormLabel>
                                             <FormControl>
                                                 <Textarea
-                                                    placeholder="List the system requirements for your product"
+                                                    placeholder="List requirements in key: value format (one per line)
+Example:
+os: Windows
+ram: 4GB"
                                                     className="min-h-[120px]"
                                                     {...field}
                                                 />
                                             </FormControl>
                                             <FormDescription>
-                                                Specify any hardware or software
-                                                requirements
+                                                Enter requirements in key: value
+                                                format, one per line
                                             </FormDescription>
                                             <FormMessage />
                                         </FormItem>
@@ -367,10 +555,7 @@ export function ProductForm({ product }: ProductFormProps) {
                                         <div className="border rounded-md p-2 w-32 h-32 flex items-center justify-center overflow-hidden">
                                             {imagePreview ? (
                                                 <img
-                                                    src={
-                                                        imagePreview ||
-                                                        '/placeholder.svg'
-                                                    }
+                                                    src={imagePreview}
                                                     alt="Product preview"
                                                     className="max-w-full max-h-full object-contain"
                                                 />
@@ -398,44 +583,6 @@ export function ProductForm({ product }: ProductFormProps) {
                                     </div>
                                 </div>
 
-                                <FormField
-                                    control={form.control}
-                                    name="status"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>
-                                                Product Status
-                                            </FormLabel>
-                                            <Select
-                                                onValueChange={field.onChange}
-                                                defaultValue={field.value}
-                                            >
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select a status" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    <SelectItem value="active">
-                                                        Active
-                                                    </SelectItem>
-                                                    <SelectItem value="inactive">
-                                                        Inactive
-                                                    </SelectItem>
-                                                    <SelectItem value="pending">
-                                                        Pending
-                                                    </SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                            <FormDescription>
-                                                Set the visibility status of
-                                                your product
-                                            </FormDescription>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
                                 <div className="flex justify-between">
                                     <Button
                                         type="button"
@@ -451,11 +598,11 @@ export function ProductForm({ product }: ProductFormProps) {
                                         {isSubmitting ? (
                                             <>
                                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                {product
+                                                {id
                                                     ? 'Updating...'
                                                     : 'Creating...'}
                                             </>
-                                        ) : product ? (
+                                        ) : id ? (
                                             'Update Product'
                                         ) : (
                                             'Create Product'

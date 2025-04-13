@@ -13,7 +13,7 @@ import {
 import { SessionUser } from '@/types/types';
 import { useRouter } from 'next/navigation';
 import { useSignOut } from '@/hooks/useSignOut';
-import { BackButton } from '@/components/BackButton/BackButton';
+import BackButton from '@/components/BackButton';
 
 interface DashboardHeaderProps {
     user?: SessionUser;

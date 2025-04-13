@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRootContext } from '@/lib/contexts/RootContext';
 
 interface Product {
     id: string;
@@ -49,7 +50,8 @@ export function ProductsTable({
     const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>(
         {}
     );
-
+    const { user } = useRootContext();
+    const isSeller = user?.role === 'SELLER';
     // Toggle row expansion
     const toggleRowExpand = (productId: string) => {
         setExpandedRows((prev) => ({
@@ -365,9 +367,20 @@ export function ProductsTable({
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                                 {product.sales || 0}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                {renderStatusActions(product)}
-                            </td>
+                            {isSeller ? (
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <Link
+                                        href={`/seller-dashboard/products/${product.id}/edit`}
+                                        className="text-primary hover:text-primary/80 font-medium"
+                                    >
+                                        Edit
+                                    </Link>
+                                </td>
+                            ) : (
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                                    {renderStatusActions(product)}
+                                </td>
+                            )}
                         </tr>
                     ))}
                 </tbody>

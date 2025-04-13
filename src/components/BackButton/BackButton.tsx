@@ -15,7 +15,7 @@ interface BackButtonProps {
     onBack?: () => void;
 }
 
-export const BackButton = ({
+const BackButton = ({
     label = 'Back',
     icon = true,
     variant = 'back',
@@ -58,3 +58,5 @@ export const BackButton = ({
         </Button>
     );
 };
+
+export default BackButton;
