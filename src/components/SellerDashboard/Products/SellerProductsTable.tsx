@@ -33,117 +33,11 @@ import {
     Trash,
     XCircle,
 } from 'lucide-react';
-import type { Product } from '@/types/types';
 import { DeleteProductDialog } from './DeleteProductDialog';
-
-// Mock data for seller's products
-const initialProducts: any[] = [
-    {
-        id: '1',
-        name: 'DesignPro Studio',
-        description: 'Professional design software for creative professionals',
-        price: 49.99,
-        filePath: '/placeholder.svg?height=40&width=40',
-        averageRating: 4.8,
-        status: 'active',
-        sales: 1245,
-        dateAdded: '2023-01-15',
-        badge: 'Popular',
-        features:
-            'Advanced design tools, Cloud collaboration, Template library',
-        requirements: 'Windows 10/11 or macOS 10.15+, 8GB RAM, 4GB storage',
-        category: {
-            id: 'cat1',
-            name: 'Design',
-        },
-        seller: {
-            verified: true,
-            websiteLink: 'https://designpro.com',
-            user: {
-                id: 'u1',
-                username: 'designpro',
-                email: 'info@designpro.com',
-                profile: {
-                    firstName: 'Design',
-                    lastName: 'Studio',
-                    phone: '+1234567890',
-                },
-            },
-        },
-        isWishlisted: false,
-    },
-    {
-        id: '2',
-        name: 'CodeMaster IDE',
-        description: 'Powerful integrated development environment for coders',
-        price: 39.99,
-        filePath: '/placeholder.svg?height=40&width=40',
-        averageRating: 4.7,
-        status: 'active',
-        sales: 982,
-        dateAdded: '2023-02-20',
-        badge: 'Trending',
-        features: 'Code completion, Debugging tools, Git integration',
-        requirements: 'Windows 10/11, macOS, or Linux, 4GB RAM',
-        category: {
-            id: 'cat2',
-            name: 'Development',
-        },
-        seller: {
-            verified: true,
-            websiteLink: 'https://codemaster.dev',
-            user: {
-                id: 'u1',
-                username: 'designpro',
-                email: 'info@designpro.com',
-                profile: {
-                    firstName: 'Design',
-                    lastName: 'Studio',
-                    phone: '+1234567890',
-                },
-            },
-        },
-        isWishlisted: true,
-    },
-    {
-        id: '3',
-        name: 'DataViz Analytics',
-        description: 'Data visualization and analytics platform',
-        price: 59.99,
-        filePath: '/placeholder.svg?height=40&width=40',
-        averageRating: 4.9,
-        status: 'pending',
-        sales: 567,
-        dateAdded: '2023-03-10',
-        badge: 'New',
-        features:
-            'Interactive dashboards, Real-time data processing, Export capabilities',
-        requirements: 'Any modern browser, 2GB RAM',
-        category: {
-            id: 'cat3',
-            name: 'Business',
-        },
-        seller: {
-            verified: true,
-            websiteLink: 'https://dataviz.io',
-            user: {
-                id: 'u1',
-                username: 'designpro',
-                email: 'info@designpro.com',
-                profile: {
-                    firstName: 'Design',
-                    lastName: 'Studio',
-                    phone: '+1234567890',
-                },
-            },
-        },
-        isWishlisted: false,
-    },
-];
 
 export function SellerProductsTable() {
     const router = useRouter();
-    const [products, setProducts] = useState<any[]>(initialProducts);
+    const [products, setProducts] = useState<any[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [sortField, setSortField] = useState<keyof any | null>('name');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');

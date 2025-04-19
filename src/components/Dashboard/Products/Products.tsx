@@ -6,7 +6,7 @@ import { ProductsHeader } from './ProductsHeader';
 import { ProductsFilters } from './ProductsFilters';
 import { ProductsTable } from './ProductsTable';
 import { StatusChangeDialog } from './StatusChangeDialog';
-import { ProductsSkeleton } from './ProductsSkeleton'; // Import the skeleton component
+import { ProductsSkeleton } from './ProductsSkeleton';
 import { toast } from 'sonner';
 import { useRootContext } from '@/lib/contexts/RootContext';
 import { debounce } from '@/utils/debounce';
@@ -34,6 +34,16 @@ interface Product {
     };
 }
 
+interface Category {
+    id: string;
+    name: string;
+}
+
+interface ProductsPageprops {
+    id?: string;
+    type?: 'seller' | 'admin';
+}
+
 // Map numeric status values to string representations
 const STATUS_MAP: Record<number, string> = {
     0: 'pending',
@@ -49,9 +59,15 @@ const STATUS_VALUE_MAP: Record<string, number> = {
 };
 
 const GET_PRODUCTS_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/products`;
+const GET_PRODUCTS_URL_SELLER = `${process.env.NEXT_PUBLIC_BACKEND_URL}/products/seller`;
+const GET_CATEGORIES_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/categories`;
 
-export default function ProductsPage() {
+export default function ProductsPage({
+    id,
+    type = 'admin',
+}: ProductsPageprops) {
     const [products, setProducts] = useState<Product[]>([]);
+    const [categories, setCategories] = useState<string[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
@@ -61,6 +77,7 @@ export default function ProductsPage() {
         string | null
     >(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [categoriesLoading, setCategoriesLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [confirmDialog, setConfirmDialog] = useState<{
         isOpen: boolean;
@@ -78,14 +95,13 @@ export default function ProductsPage() {
         setSearchQuery(query);
     }, 500);
 
-    // Fetch products data using axios
+    // Fetch categories data
     useEffect(() => {
-        const fetchProducts = async () => {
-            setIsLoading(true);
-            setError(null);
+        const fetchCategories = async () => {
+            setCategoriesLoading(true);
 
             try {
-                const response: any = await axios.get(GET_PRODUCTS_URL, {
+                const response: any = await axios.get(GET_CATEGORIES_URL, {
                     headers: {
                         Authorization: `Bearer ${access_token}`,
                         'x-refresh-token': refresh_token,
@@ -97,7 +113,51 @@ export default function ProductsPage() {
                     response.data.data &&
                     Array.isArray(response.data.data)
                 ) {
-                    const processedProducts = response.data.data.map(
+                    // Extract category names
+                    const categoryNames = response.data.data.map(
+                        (category: Category) => category.name
+                    );
+                    setCategories(categoryNames);
+                } else {
+                    console.warn('Invalid categories data format received');
+                    setCategories([]);
+                }
+            } catch (err: any) {
+                console.error('Failed to fetch categories:', err);
+                setCategories([]);
+            } finally {
+                setCategoriesLoading(false);
+            }
+        };
+
+        fetchCategories();
+    }, [access_token, refresh_token]);
+
+    const url =
+        type === 'admin'
+            ? GET_PRODUCTS_URL
+            : `${GET_PRODUCTS_URL_SELLER}/${id}`;
+
+    // Fetch products data using axios
+    useEffect(() => {
+        const fetchProducts = async () => {
+            setIsLoading(true);
+            setError(null);
+
+            try {
+                const response: any = await axios.get(url, {
+                    headers: {
+                        Authorization: `Bearer ${access_token}`,
+                        'x-refresh-token': refresh_token,
+                    },
+                });
+
+                if (
+                    response.data.success &&
+                    response.data.products &&
+                    Array.isArray(response.data.products)
+                ) {
+                    const processedProducts = response.data.products.map(
                         (product: any) => ({
                             ...product,
                             // Convert numeric status to string representation for UI
@@ -129,14 +189,7 @@ export default function ProductsPage() {
         };
 
         fetchProducts();
-    }, [access_token, refresh_token]);
-
-    // Get unique categories from loaded products
-    const categories = Array.from(
-        new Set(
-            products.map((product) => product.category?.name || 'Uncategorized')
-        )
-    );
+    }, [access_token, refresh_token, url]);
 
     // Filter and sort products
     const filteredProducts: any = products
@@ -302,7 +355,20 @@ export default function ProductsPage() {
         setSortField(null);
         setSortDirection('asc');
     };
-    console.log('Products:', products);
+
+    // Get empty state message based on user type and filter status
+    const getEmptyStateMessage = () => {
+        if (searchQuery || categoryFilter || statusFilter) {
+            return 'No products match your current filters';
+        }
+
+        if (type === 'seller') {
+            return "You haven't created any products yet";
+        }
+
+        return 'No products found in the system';
+    };
+
     return (
         <div className="space-y-6">
             <ProductsHeader />
@@ -324,6 +390,7 @@ export default function ProductsPage() {
                     )
                 }
                 resetFilters={resetFilters}
+                isLoading={categoriesLoading}
             />
 
             {isLoading ? (
@@ -338,11 +405,24 @@ export default function ProductsPage() {
                 </div>
             ) : filteredProducts.length === 0 ? (
                 <div className="text-center py-10">
-                    <p className="text-gray-500 mb-2">No products found</p>
+                    <p className="text-gray-500 mb-4">
+                        {getEmptyStateMessage()}
+                    </p>
+                    {type === 'seller' &&
+                        !searchQuery &&
+                        !categoryFilter &&
+                        !statusFilter && (
+                            <a
+                                href="/seller-dashboard/products/new"
+                                className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90"
+                            >
+                                Create your first product
+                            </a>
+                        )}
                     {(searchQuery || categoryFilter || statusFilter) && (
                         <button
                             onClick={resetFilters}
-                            className="text-primary hover:underline"
+                            className="text-primary hover:underline mt-2 block mx-auto"
                         >
                             Clear filters and try again
                         </button>

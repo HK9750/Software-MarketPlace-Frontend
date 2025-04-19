@@ -1,7 +1,7 @@
 'use client';
 
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -29,7 +29,6 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Upload } from 'lucide-react';
-import type { Product } from '@/types/types';
 import { toast } from 'sonner';
 import { useRootContext } from '@/lib/contexts/RootContext';
 
@@ -48,6 +47,7 @@ interface Subscription {
     price: number;
     name: string;
     duration: number;
+    subscriptionPlanId: string;
 }
 
 interface ProductResponse {
@@ -69,6 +69,12 @@ interface ProductResponse {
     isInCart: boolean;
 }
 
+interface SubscriptionPlan {
+    id: string;
+    name: string;
+    duration: number;
+}
+
 // Form schema
 const productFormSchema = z.object({
     name: z
@@ -81,23 +87,16 @@ const productFormSchema = z.object({
         .number()
         .positive({ message: 'Price must be a positive number' }),
     categoryId: z.string({ required_error: 'Please select a category' }),
+    subscriptionPlanId: z.string().optional(),
     features: z.string().optional(),
     requirements: z.string().optional(),
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
 
-// Mock categories - replace with your actual category data or API call
-const categories = [
-    { id: 'cat1', name: 'Design' },
-    { id: 'cat2', name: 'Development' },
-    { id: 'cat3', name: 'Business' },
-    { id: 'cat4', name: 'Security' },
-    { id: 'cat5', name: 'Utilities' },
-    { id: 'cat6', name: 'Productivity' },
-];
-
 const GET_PRODUCT_BY_ID = `${process.env.NEXT_PUBLIC_BACKEND_URL}/products`;
+const CREATE_PRODUCT_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/products`;
+const GET_SUBSCRIPTION_PLANS_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/subscriptions/plans`;
 
 interface ProductFormProps {
     id?: string;
@@ -106,12 +105,22 @@ interface ProductFormProps {
 export function ProductForm({ id }: ProductFormProps) {
     const router = useRouter();
     const { access_token, refresh_token } = useRootContext();
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('basic');
     const [product, setProduct] = useState<ProductResponse | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [categories, setCategories] = useState<
+        { id: string; name: string }[]
+    >([]);
+    const [subscriptionPlans, setSubscriptionPlans] = useState<
+        SubscriptionPlan[]
+    >([]);
+    const [isLoadingSubscriptionPlans, setIsLoadingSubscriptionPlans] =
+        useState(false);
 
     // Initialize form with empty values
     const form = useForm<ProductFormValues>({
@@ -121,6 +130,7 @@ export function ProductForm({ id }: ProductFormProps) {
             description: '',
             price: 0,
             categoryId: '',
+            subscriptionPlanId: '',
             features: '',
             requirements: '',
         },
@@ -132,6 +142,8 @@ export function ProductForm({ id }: ProductFormProps) {
         if (id) {
             fetchProduct();
         }
+        fetchCategories();
+        fetchSubscriptionPlans();
     }, [id]);
 
     // Helper to convert object to string representation
@@ -158,6 +170,64 @@ export function ProductForm({ id }: ProductFormProps) {
         });
 
         return result;
+    };
+
+    const fetchCategories = async () => {
+        try {
+            const res: any = await axios.get(
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}/categories`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${access_token}`,
+                        'x-refresh-token': refresh_token,
+                    },
+                }
+            );
+
+            if (res.status === 200 && res.data.success) {
+                setCategories(res.data.data);
+            } else {
+                toast.error('Failed to load categories');
+            }
+        } catch (error: any) {
+            console.error('Error fetching categories:', error);
+            toast.error('Error loading categories', {
+                description: error.message || 'Please try again later',
+            });
+        }
+    };
+
+    const fetchSubscriptionPlans = async () => {
+        setIsLoadingSubscriptionPlans(true);
+        try {
+            const res: any = await axios.get(GET_SUBSCRIPTION_PLANS_URL, {
+                headers: {
+                    Authorization: `Bearer ${access_token}`,
+                    'x-refresh-token': refresh_token,
+                },
+            });
+
+            if (res.status === 200 && res.data.success) {
+                setSubscriptionPlans(res.data.data);
+
+                // Set the first subscription plan as default if available
+                if (
+                    res.data.data.length > 0 &&
+                    !form.getValues('subscriptionPlanId')
+                ) {
+                    form.setValue('subscriptionPlanId', res.data.data[0].id);
+                }
+            } else {
+                toast.error('Failed to load subscription plans');
+            }
+        } catch (error: any) {
+            console.error('Error fetching subscription plans:', error);
+            toast.error('Error loading subscription plans', {
+                description: error.message || 'Please try again later',
+            });
+        } finally {
+            setIsLoadingSubscriptionPlans(false);
+        }
     };
 
     const fetchProduct = async () => {
@@ -189,12 +259,20 @@ export function ProductForm({ id }: ProductFormProps) {
                         ? productData.subscriptions[0].price
                         : 0;
 
+                // Get subscription plan ID if available
+                const subscriptionPlanId =
+                    productData.subscriptions &&
+                    productData.subscriptions.length > 0
+                        ? productData.subscriptions[0].subscriptionPlanId
+                        : '';
+
                 // Update form values
                 form.reset({
                     name: productData.name || '',
                     description: productData.description || '',
                     price: basePrice,
                     categoryId: productData.category?.id || '',
+                    subscriptionPlanId: subscriptionPlanId,
                     features: featuresString,
                     requirements: requirementsString,
                 });
@@ -217,6 +295,27 @@ export function ProductForm({ id }: ProductFormProps) {
     };
 
     const onSubmit = async (data: ProductFormValues) => {
+        if (!selectedFile && !id) {
+            toast.error('Please select a product image');
+            return;
+        }
+
+        // Make sure we have subscription plans loaded
+        if (subscriptionPlans.length === 0) {
+            toast.error(
+                'No subscription plans available. Please try again later.'
+            );
+            return;
+        }
+
+        // Make sure we have a selected subscription plan
+        const subscriptionPlanId =
+            data.subscriptionPlanId || subscriptionPlans[0].id;
+        if (!subscriptionPlanId) {
+            toast.error('Please select a subscription plan');
+            return;
+        }
+
         setIsSubmitting(true);
 
         try {
@@ -224,38 +323,40 @@ export function ProductForm({ id }: ProductFormProps) {
             const features = stringToObject(data.features || '');
             const requirements = stringToObject(data.requirements || '');
 
-            // Prepare data for API (format may need adjusting based on API requirements)
-            const apiData = {
+            // Create FormData for multipart/form-data submission
+            const formData = new FormData();
+
+            // Use the selected subscription plan
+            const subscriptionOptions = [
+                {
+                    subscriptionPlanId: subscriptionPlanId,
+                    price: data.price,
+                },
+            ];
+
+            // Prepare JSON data
+            const jsonData = {
                 name: data.name,
                 description: data.description,
                 features,
                 requirements,
                 categoryId: data.categoryId,
-                // Handle any subscription data as needed
-                subscriptions: [
-                    {
-                        price: data.price,
-                        basePrice: data.price,
-                        // Keep other subscription data if editing
-                        ...(product?.subscriptions &&
-                        product.subscriptions.length > 0
-                            ? {
-                                  name: product.subscriptions[0].name,
-                                  duration: product.subscriptions[0].duration,
-                              }
-                            : {
-                                  name: 'Basic Plan',
-                                  duration: 1,
-                              }),
-                    },
-                ],
+                subscriptionOptions,
             };
 
-            let url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/products`;
+            // Add JSON data as a string
+            formData.append('data', JSON.stringify(jsonData));
+
+            // Add image file if available
+            if (selectedFile) {
+                formData.append('image', selectedFile);
+            }
+
+            let url = CREATE_PRODUCT_URL;
             let method = 'post';
 
             // If editing, use PUT method and include ID in URL
-            if (id) {
+            if (id !== undefined) {
                 url = `${url}/${id}`;
                 method = 'put';
             }
@@ -264,10 +365,11 @@ export function ProductForm({ id }: ProductFormProps) {
             const response = await axios({
                 method,
                 url,
-                data: apiData,
+                data: formData,
                 headers: {
                     Authorization: `Bearer ${access_token}`,
                     'x-refresh-token': refresh_token,
+                    'Content-Type': 'multipart/form-data',
                 },
             });
 
@@ -284,11 +386,14 @@ export function ProductForm({ id }: ProductFormProps) {
             );
 
             // Redirect to products list
-            router.push('/dashboard/seller/products');
+            router.push('/seller-dashboard/products');
         } catch (error: any) {
             console.error('Error submitting form:', error);
             toast.error('Something went wrong', {
-                description: error.message || 'Please try again later',
+                description:
+                    error.response?.data?.message ||
+                    error.message ||
+                    'Please try again later',
             });
         } finally {
             setIsSubmitting(false);
@@ -298,6 +403,7 @@ export function ProductForm({ id }: ProductFormProps) {
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            setSelectedFile(file);
             const reader = new FileReader();
             reader.onload = (e) => {
                 setImagePreview(e.target?.result as string);
@@ -324,6 +430,7 @@ export function ProductForm({ id }: ProductFormProps) {
                     <form
                         onSubmit={form.handleSubmit(onSubmit)}
                         className="space-y-6"
+                        encType="multipart/form-data"
                     >
                         <Tabs
                             defaultValue="basic"
@@ -409,7 +516,7 @@ export function ProductForm({ id }: ProductFormProps) {
                                                 </FormControl>
                                                 <FormDescription>
                                                     Set the base price for your
-                                                    product's basic subscription
+                                                    product's subscription
                                                 </FormDescription>
                                                 <FormMessage />
                                             </FormItem>
@@ -434,21 +541,32 @@ export function ProductForm({ id }: ProductFormProps) {
                                                         </SelectTrigger>
                                                     </FormControl>
                                                     <SelectContent>
-                                                        {categories.map(
-                                                            (category) => (
-                                                                <SelectItem
-                                                                    key={
-                                                                        category.id
-                                                                    }
-                                                                    value={
-                                                                        category.id
-                                                                    }
-                                                                >
-                                                                    {
-                                                                        category.name
-                                                                    }
-                                                                </SelectItem>
+                                                        {categories.length >
+                                                        0 ? (
+                                                            categories.map(
+                                                                (category) => (
+                                                                    <SelectItem
+                                                                        key={
+                                                                            category.id
+                                                                        }
+                                                                        value={
+                                                                            category.id
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            category.name
+                                                                        }
+                                                                    </SelectItem>
+                                                                )
                                                             )
+                                                        ) : (
+                                                            <SelectItem
+                                                                value="loading"
+                                                                disabled
+                                                            >
+                                                                Loading
+                                                                categories...
+                                                            </SelectItem>
                                                         )}
                                                     </SelectContent>
                                                 </Select>
@@ -461,6 +579,71 @@ export function ProductForm({ id }: ProductFormProps) {
                                         )}
                                     />
                                 </div>
+
+                                <FormField
+                                    control={form.control}
+                                    name="subscriptionPlanId"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>
+                                                Subscription Plan
+                                            </FormLabel>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                defaultValue={field.value}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select a subscription plan" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {isLoadingSubscriptionPlans ? (
+                                                        <SelectItem
+                                                            value="loading"
+                                                            disabled
+                                                        >
+                                                            Loading plans...
+                                                        </SelectItem>
+                                                    ) : subscriptionPlans.length >
+                                                      0 ? (
+                                                        subscriptionPlans.map(
+                                                            (plan) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        plan.id
+                                                                    }
+                                                                    value={
+                                                                        plan.id
+                                                                    }
+                                                                >
+                                                                    {plan.name}{' '}
+                                                                    (
+                                                                    {
+                                                                        plan.duration
+                                                                    }{' '}
+                                                                    months)
+                                                                </SelectItem>
+                                                            )
+                                                        )
+                                                    ) : (
+                                                        <SelectItem
+                                                            value="none"
+                                                            disabled
+                                                        >
+                                                            No plans available
+                                                        </SelectItem>
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormDescription>
+                                                Choose the subscription plan for
+                                                your product
+                                            </FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
                                 <div className="flex justify-end">
                                     <Button
@@ -570,6 +753,7 @@ ram: 4GB"
                                         </div>
                                         <div className="flex-1">
                                             <Input
+                                                ref={fileInputRef}
                                                 type="file"
                                                 accept="image/*"
                                                 onChange={handleImageChange}
@@ -579,6 +763,11 @@ ram: 4GB"
                                                 Upload a product image.
                                                 Recommended size: 800x600px.
                                             </p>
+                                            {!selectedFile && !id && (
+                                                <p className="text-sm text-destructive mt-1">
+                                                    *Required for new products
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

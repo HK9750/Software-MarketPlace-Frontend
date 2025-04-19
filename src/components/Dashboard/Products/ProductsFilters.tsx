@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -11,6 +11,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ProductsFiltersProps {
     searchQuery: string;
@@ -22,6 +23,7 @@ interface ProductsFiltersProps {
     categories: string[];
     hasFilters: boolean;
     resetFilters: () => void;
+    isLoading?: boolean;
 }
 
 export function ProductsFilters({
@@ -34,6 +36,7 @@ export function ProductsFilters({
     categories,
     hasFilters,
     resetFilters,
+    isLoading = false,
 }: ProductsFiltersProps) {
     const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -65,6 +68,9 @@ export function ProductsFilters({
                             onClick={(e) => {
                                 e.stopPropagation();
                                 setSearchQuery('');
+                                if (searchInputRef.current) {
+                                    searchInputRef.current.focus();
+                                }
                             }}
                             className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
                         >
@@ -74,22 +80,32 @@ export function ProductsFilters({
                 </div>
 
                 {/* Category filter */}
-                <Select
-                    value={categoryFilter || 'all'}
-                    onValueChange={handleCategoryChange}
-                >
-                    <SelectTrigger className="w-full md:w-48">
-                        <SelectValue placeholder="All Categories" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Categories</SelectItem>
-                        {categories.map((category) => (
-                            <SelectItem key={category} value={category}>
-                                {category}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                {isLoading ? (
+                    <Skeleton className="h-10 w-full md:w-48" />
+                ) : (
+                    <Select
+                        value={categoryFilter || 'all'}
+                        onValueChange={handleCategoryChange}
+                    >
+                        <SelectTrigger className="w-full md:w-48">
+                            <SelectValue placeholder="All Categories" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Categories</SelectItem>
+                            {categories.length > 0 ? (
+                                categories.map((category) => (
+                                    <SelectItem key={category} value={category}>
+                                        {category}
+                                    </SelectItem>
+                                ))
+                            ) : (
+                                <SelectItem value="no-categories" disabled>
+                                    No categories available
+                                </SelectItem>
+                            )}
+                        </SelectContent>
+                    </Select>
+                )}
 
                 {/* Status filter */}
                 <Select
