@@ -154,10 +154,10 @@ export default function ProductsPage({
 
                 if (
                     response.data.success &&
-                    response.data.products &&
-                    Array.isArray(response.data.products)
+                    response.data.data &&
+                    Array.isArray(response.data.data)
                 ) {
-                    const processedProducts = response.data.products.map(
+                    const processedProducts = response.data.data.map(
                         (product: any) => ({
                             ...product,
                             // Convert numeric status to string representation for UI

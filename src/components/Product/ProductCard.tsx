@@ -18,7 +18,7 @@ import axios from 'axios';
 
 interface ProductCardProps {
     software: Product;
-    onWishlistToggle: () => void;
+    onWishlistToggle?: () => void;
 }
 
 const ProductCard = ({ software, onWishlistToggle }: ProductCardProps) => {

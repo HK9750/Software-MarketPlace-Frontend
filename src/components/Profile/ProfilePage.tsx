@@ -14,7 +14,6 @@ import {
     X,
     ShieldCheck,
     UserCog,
-    ArrowLeft,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,6 +32,7 @@ import { Address, SessionUser } from '@/types/types';
 import { useRouter } from 'next/navigation';
 import { useRootContext } from '@/lib/contexts/RootContext';
 import axios from 'axios';
+import BackButton from '../BackButton';
 
 interface ProfilePageProps {
     userData: SessionUser;
@@ -180,15 +180,7 @@ export default function ProfilePage({ userData }: ProfilePageProps) {
 
     return (
         <div className="container mx-auto py-8 px-8">
-            <Button
-                variant="default"
-                size="lg"
-                className="w-full sm:w-auto gap-2 font-medium my-6"
-                onClick={() => router.push('/')}
-            >
-                <ArrowLeft size={16} />
-                <span>Go Back</span>
-            </Button>
+            <BackButton className="mb-6" />
             <div className="">
                 {/* Profile Header */}
                 <div className="flex flex-col md:flex-row items-center md:items-start gap-6 mb-8">
@@ -419,7 +411,7 @@ export default function ProfilePage({ userData }: ProfilePageProps) {
                                                     Website:
                                                 </span>
                                                 <a
-                                                    href={`https://${user.sellerProfile?.websiteLink}`}
+                                                    href={`${user.sellerProfile?.websiteLink}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="text-blue-600 hover:underline"
