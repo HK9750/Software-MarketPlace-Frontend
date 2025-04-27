@@ -502,16 +502,16 @@ export default function CheckoutPage() {
 
                                     <div className="flex items-center space-x-2 border p-4 rounded-md bg-background hover:bg-accent/5 transition-colors opacity-50">
                                         <RadioGroupItem
-                                            value="paypal"
-                                            id="paypal"
+                                            value="payfast"
+                                            id="payfast"
                                             disabled
                                         />
                                         <Label
-                                            htmlFor="paypal"
+                                            htmlFor="payfast"
                                             className="flex items-center cursor-not-allowed w-full"
                                         >
                                             <CreditCard className="h-5 w-5 mr-2" />
-                                            PayPal (Coming Soon)
+                                            PayFast (Coming Soon)
                                         </Label>
                                     </div>
                                 </RadioGroup>
