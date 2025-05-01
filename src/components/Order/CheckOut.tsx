@@ -45,7 +45,8 @@ export default function CheckoutPage() {
         city: '',
         state: '',
         zipCode: '',
-        country: 'US',
+        country: 'South Africa',
+        cellNumber: '',
     });
     const [cardInfo, setCardInfo] = useState({
         cardNumber: '',
@@ -61,6 +62,7 @@ export default function CheckoutPage() {
         access_token,
         refresh_token,
         loading: contextLoading,
+        user,
     } = useRootContext();
 
     // Fetch cart items
@@ -79,6 +81,7 @@ export default function CheckoutPage() {
                         }
                     );
                     setCartItems(response.data.data);
+                    console.log('Cart items:', response.data.data);
                 }
             } catch (err) {
                 console.error('Error fetching cart:', err);
@@ -142,6 +145,11 @@ export default function CheckoutPage() {
             }
         }
 
+        if (paymentMethod === 'payfast' && !billingInfo.cellNumber) {
+            toast.error('Please provide a cell number for PayFast payments');
+            return false;
+        }
+
         return true;
     };
 
@@ -154,6 +162,8 @@ export default function CheckoutPage() {
             // Prepare order items from cart
             const orderItems = cartItems.map((item) => ({
                 subscriptionId: item.subscription.id,
+                amount: item.subscription.price,
+                itemName: item.subscription.software.name,
             }));
 
             // Submit order
@@ -169,23 +179,86 @@ export default function CheckoutPage() {
             );
 
             // Handle successful order creation
-            setOrderId(response.data.order.id);
-            setOrderComplete(true);
+            const newOrderId = response.data.order.id;
+            setOrderId(newOrderId);
 
-            // Clear cart after successful order
-            await axios.delete(`${backendUrl}/cart`, {
+            if (paymentMethod === 'payfast') {
+                // Redirect to PayFast
+                await redirectToPayfast(newOrderId);
+            } else {
+                // Credit card payment
+                setOrderComplete(true);
+
+                // Clear cart after successful order
+                await axios.delete(`${backendUrl}/cart`, {
+                    headers: {
+                        Authorization: `Bearer ${access_token}`,
+                        'X-Refresh-Token': refresh_token || '',
+                    },
+                });
+
+                toast.success('Order placed successfully!');
+            }
+        } catch (err) {
+            console.error('Error creating order:', err);
+            toast.error('Failed to place order. Please try again later.');
+        } finally {
+            setOrderLoading(false);
+        }
+    };
+
+    const redirectToPayfast = async (orderId) => {
+        try {
+            // Construct item details
+            const itemNames = cartItems.map(
+                (item) => item.subscription.software.name
+            );
+            const itemName = itemNames.join(', ');
+            const itemDescription = `Software license${itemNames.length > 1 ? 's' : ''} - ${itemName}`;
+
+            // Generate a unique transaction ID
+            const transactionId = `PF_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+
+            // First create a payment record in the backend
+            const paymentResponse = await axios.post(
+                `${backendUrl}/payments/create`,
+                {
+                    amount: calculateTotal(),
+                    method: 'PAYFAST',
+                    transactionId: transactionId,
+                    userId: user.id,
+                    orderId: orderId,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${access_token}`,
+                        'X-Refresh-Token': refresh_token || '',
+                    },
+                }
+            );
+
+            console.log('Payment record created:', paymentResponse.data);
+
+            const clearCartRes = await axios.delete(`${backendUrl}/cart`, {
                 headers: {
                     Authorization: `Bearer ${access_token}`,
                     'X-Refresh-Token': refresh_token || '',
                 },
             });
 
-            toast.success('Order placed successfully!');
-        } catch (err) {
-            console.error('Error creating order:', err);
-            toast.error('Failed to place order. Please try again later.');
-        } finally {
-            setOrderLoading(false);
+            console.log('Cart cleared:', clearCartRes.data);
+
+            // Then redirect to PayFast
+            document.location.href = `${process.env.NEXT_PUBLIC_PAYFAST_TESTING_URL}?merchant_id=${process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_ID}&merchant_key=${process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_KEY}&return_url=${process.env.NEXT_PUBLIC_FRONTEND_URL}/products&amount=${calculateTotal().toFixed(
+                2
+            )}&item_name=${encodeURIComponent(itemName)}&item_description=${encodeURIComponent(
+                itemDescription
+            )}&email_confirmation=1&confirmation_address=${encodeURIComponent(
+                billingInfo.email
+            )}&payment_method=cc&custom_str1=${transactionId}&custom_str2=${orderId}`;
+        } catch (error) {
+            console.error('Error creating payment record:', error);
+            toast.error('Failed to process payment. Please try again later.');
         }
     };
 
@@ -376,6 +449,33 @@ export default function CheckoutPage() {
                                     </div>
                                     <div className="md:col-span-2">
                                         <Label
+                                            htmlFor="cellNumber"
+                                            className="text-sm font-medium mb-1.5 block"
+                                        >
+                                            Cell/Mobile Number{' '}
+                                            {paymentMethod === 'payfast' && (
+                                                <span className="text-red-500">
+                                                    *
+                                                </span>
+                                            )}
+                                        </Label>
+                                        <Input
+                                            id="cellNumber"
+                                            name="cellNumber"
+                                            type="tel"
+                                            value={billingInfo.cellNumber}
+                                            onChange={(e) =>
+                                                handleInputChange(e, 'billing')
+                                            }
+                                            className="h-11"
+                                            required={
+                                                paymentMethod === 'payfast'
+                                            }
+                                            placeholder="e.g. 0821234567"
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <Label
                                             htmlFor="address"
                                             className="text-sm font-medium mb-1.5 block"
                                         >
@@ -500,18 +600,49 @@ export default function CheckoutPage() {
                                         </Label>
                                     </div>
 
-                                    <div className="flex items-center space-x-2 border p-4 rounded-md bg-background hover:bg-accent/5 transition-colors opacity-50">
+                                    <div className="flex items-center space-x-2 border p-4 rounded-md bg-background hover:bg-accent/5 transition-colors">
                                         <RadioGroupItem
                                             value="payfast"
                                             id="payfast"
-                                            disabled
                                         />
                                         <Label
                                             htmlFor="payfast"
-                                            className="flex items-center cursor-not-allowed w-full"
+                                            className="flex items-center cursor-pointer w-full"
                                         >
-                                            <CreditCard className="h-5 w-5 mr-2" />
-                                            PayFast (Coming Soon)
+                                            <svg
+                                                className="h-5 w-5 mr-2"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <rect
+                                                    width="24"
+                                                    height="24"
+                                                    rx="4"
+                                                    fill="#EFEFEF"
+                                                />
+                                                <path
+                                                    d="M5 12.6H7.5V17.1H5V12.6Z"
+                                                    fill="#101C56"
+                                                />
+                                                <path
+                                                    d="M8.3 7H10.8V17.1H8.3V7Z"
+                                                    fill="#101C56"
+                                                />
+                                                <path
+                                                    d="M11.6 9.8H14.1V17.1H11.6V9.8Z"
+                                                    fill="#101C56"
+                                                />
+                                                <path
+                                                    d="M14.9 12.6H17.4V17.1H14.9V12.6Z"
+                                                    fill="#EE312A"
+                                                />
+                                                <path
+                                                    d="M18.2 7H19V17.1H18.2V7Z"
+                                                    fill="#101C56"
+                                                />
+                                            </svg>
+                                            PayFast (South Africa)
                                         </Label>
                                     </div>
                                 </RadioGroup>
@@ -604,6 +735,27 @@ export default function CheckoutPage() {
                                                 Your payment information is
                                                 encrypted and secure
                                             </span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {paymentMethod === 'payfast' && (
+                                    <div className="mt-8 space-y-6">
+                                        <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
+                                            <div className="flex items-start mb-3">
+                                                <ShieldCheck className="h-5 w-5 mr-2 text-blue-600 flex-shrink-0 mt-0.5" />
+                                                <span className="text-sm text-blue-700 font-medium">
+                                                    PayFast Information
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-blue-700 ml-7">
+                                                You will be redirected to
+                                                PayFast's secure payment page to
+                                                complete your transaction.
+                                                Please ensure your cell phone
+                                                number is provided as it may be
+                                                required for verification.
+                                            </p>
                                         </div>
                                     </div>
                                 )}
@@ -707,8 +859,46 @@ export default function CheckoutPage() {
                                         </span>
                                     ) : (
                                         <span className="flex items-center">
-                                            <CreditCard className="mr-2 h-5 w-5" />
-                                            Complete Purchase
+                                            {paymentMethod === 'payfast' ? (
+                                                <>
+                                                    <svg
+                                                        className="mr-2 h-5 w-5"
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                    >
+                                                        <rect
+                                                            width="24"
+                                                            height="24"
+                                                            rx="4"
+                                                            fill="#EFEFEF"
+                                                        />
+                                                        <path
+                                                            d="M5 12.6H7.5V17.1H5V12.6Z"
+                                                            fill="#101C56"
+                                                        />
+                                                        <path
+                                                            d="M8.3 7H10.8V17.1H8.3V7Z"
+                                                            fill="#101C56"
+                                                        />
+                                                        <path
+                                                            d="M11.6 9.8H14.1V17.1H11.6V9.8Z"
+                                                            fill="#101C56"
+                                                        />
+                                                        <path
+                                                            d="M14.9 12.6H17.4V17.1H14.9V12.6Z"
+                                                            fill="#EE312A"
+                                                        />
+                                                        <path
+                                                            d="M18.2 7H19V17.1H18.2V7Z"
+                                                            fill="#101C56"
+                                                        />
+                                                    </svg>
+                                                    Proceed to PayFast
+                                                </>
+                                            ) : (
+                                                'Complete Payment'
+                                            )}
                                         </span>
                                     )}
                                 </Button>
