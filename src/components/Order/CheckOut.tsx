@@ -71,7 +71,7 @@ export default function CheckoutPage() {
             try {
                 setLoading(true);
                 if (!contextLoading && access_token) {
-                    const response: any = await axios.get(
+                    const response = await axios.get<{ data: any[] }>(
                         `${backendUrl}/cart`,
                         {
                             headers: {
@@ -750,7 +750,7 @@ export default function CheckoutPage() {
                                             </div>
                                             <p className="text-sm text-blue-700 ml-7">
                                                 You will be redirected to
-                                                PayFast's secure payment page to
+                                                PayFast&apos;s secure payment page to
                                                 complete your transaction.
                                                 Please ensure your cell phone
                                                 number is provided as it may be

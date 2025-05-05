@@ -2,8 +2,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 const HeroSection = () => {
+    const [searchQuery, setSearchQuery] = useState('');
+    const router = useRouter();
     return (
         <section className="w-full py-16 md:py-24 lg:py-32 bg-background flex items-center justify-center">
             <div className="container px-6 md:px-12 lg:px-16">
@@ -25,9 +29,11 @@ const HeroSection = () => {
                                     type="search"
                                     placeholder="Search for software..."
                                     className="w-full pl-12 pr-4 py-4 text-base"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
                                 />
                             </div>
-                            <Button size="lg" className="px-6 py-4">
+                            <Button size="lg" className="px-6 py-4" onClick={() => router.push(`/products?search=${searchQuery}`)}>
                                 Search
                             </Button>
                         </div>

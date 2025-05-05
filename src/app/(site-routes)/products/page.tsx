@@ -4,10 +4,10 @@ import ProductCatalog from '@/components/Product';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useGetCookies } from '@/hooks/useGetCookies';
-import { Product } from '@/types/types';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
+import { ProductDetail } from '@/types/types';
+import { useSearchParams } from 'next/navigation';
 
 // ProductCardSkeleton component for loading state
 const ProductCardSkeleton = () => {
@@ -77,18 +77,25 @@ const ProductCatalogSkeleton = () => {
 };
 
 export default function ProductsPage() {
-    const [products, setProducts] = useState<Product[]>([]);
+    const [products, setProducts] = useState<ProductDetail[]>([]);
     const [productLoading, setProductLoading] = useState<boolean>(true);
+    const [query, setQuery] = useState('');
+    const searchParams = useSearchParams();
+    const searchQuery = searchParams.get('search') || '';
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
     const { access_token, refresh_token, loading, error } = useGetCookies();
+
+    useEffect(() => {
+        setQuery(searchQuery);
+    }, [searchQuery])
 
     useEffect(() => {
         if (!loading && access_token && !error) {
             (async () => {
                 setProductLoading(true);
                 try {
-                    const response = await axios.get<{ data: Product[] }>(
-                        `${backendUrl}/products`,
+                    const response = await axios.get<{ data: ProductDetail[] }>(
+                        `${backendUrl}/products?name=${query ? query : ''}`,
                         {
                             headers: {
                                 Authorization: `Bearer ${access_token}`,
@@ -104,7 +111,7 @@ export default function ProductsPage() {
                 }
             })();
         }
-    }, [loading, access_token, refresh_token, error, backendUrl]);
+    }, [loading, access_token, refresh_token, error, backendUrl, query]);
 
     return (
         <div className="container mx-auto py-8 px-4">
@@ -117,7 +124,7 @@ export default function ProductsPage() {
             {productLoading ? (
                 <ProductCatalogSkeleton />
             ) : (
-                <ProductCatalog products={products} />
+                <ProductCatalog products={products} query={query} setQuery={setQuery} />
             )}
         </div>
     );

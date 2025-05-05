@@ -37,22 +37,7 @@ interface Review {
     createdAt: string;
 }
 
-export interface Product {
-    id: string;
-    name: string;
-    description: string;
-    subscriptions: number;
-    averageRating: number;
-    reviews: Review[];
-    category: {
-        id: string;
-        name: string;
-    };
-    isInCart: boolean;
-    isWishlisted: boolean;
-    filePath?: string;
-    seller: Seller;
-}
+
 
 export interface ProductDetail {
     id: string;

@@ -4,7 +4,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { Product } from '@/types/types';
+import type { ProductDetail } from '@/types/types';
 import ProductCard from './ProductCard';
 import ProductFilters from './ProductFilters';
 import { cn } from '@/lib/utils';
@@ -24,7 +24,9 @@ import { useGetCookies } from '@/hooks/useGetCookies';
 import Link from 'next/link';
 
 interface ProductCatalogProps {
-    products: Product[];
+    products: ProductDetail[];
+    query: string;
+    setQuery: (query: string) => void;
 }
 
 interface WishlistItem {
@@ -32,11 +34,15 @@ interface WishlistItem {
     userId: string;
     softwareId: string;
     createdAt: string;
-    software: Product;
+    software: ProductDetail;
 }
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-export default function ProductCatalog({ products }: ProductCatalogProps) {
+export default function ProductCatalog({
+    products,
+    query,
+    setQuery,
+}: ProductCatalogProps) {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(
         null
     );
@@ -83,9 +89,16 @@ export default function ProductCatalog({ products }: ProductCatalogProps) {
         if (selectedCategory && p.category.name !== selectedCategory)
             return false;
         if (selectedPrice) {
-            const num = parseInt(p.subscriptions.toString());
+            const min = p.subscriptions[0].price;
+            const max = p.subscriptions[p.subscriptions.length - 1].price;
+
             const range = priceRanges.find((r) => r.id === selectedPrice);
-            if (range && (num < range.min || num > range.max)) return false;
+            if (
+                range &&
+                ((min < range.min && max < range.min) ||
+                    (min > range.max && max > range.max))
+            )
+                return false;
         }
         return true;
     });
@@ -93,6 +106,7 @@ export default function ProductCatalog({ products }: ProductCatalogProps) {
     const clearFilters = () => {
         setSelectedCategory(null);
         setSelectedPrice(null);
+        setQuery('');
     };
     const getPriceLabel = () =>
         (selectedPrice &&
@@ -140,7 +154,8 @@ export default function ProductCatalog({ products }: ProductCatalogProps) {
                                 {wishlist.length === 0
                                     ? 'Your wishlist is empty.'
                                     : wishlist.map((i) => (
-                                          <div
+                                          <Link
+                                              href={`/products/${i.software.id}`}
                                               key={i.software.id}
                                               className="flex items-center gap-4 border-b pb-4"
                                           >
@@ -157,11 +172,15 @@ export default function ProductCatalog({ products }: ProductCatalogProps) {
                                                       {i.software.name}
                                                   </h4>
                                                   <p className="text-sm text-muted-foreground">
-                                                      ${' '}
-                                                      {i.software.subscriptions}
+                                                      From $
+                                                      {
+                                                          i.software
+                                                              .subscriptions[0]
+                                                              .price
+                                                      }
                                                   </p>
                                               </div>
-                                          </div>
+                                          </Link>
                                       ))}
                                 {wishlist.length > 0 && (
                                     <SheetClose asChild>
@@ -321,7 +340,7 @@ export default function ProductCatalog({ products }: ProductCatalogProps) {
                                 products
                             </p>
                         </div>
-                        {(selectedCategory || selectedPrice) && (
+                        {(selectedCategory || selectedPrice || query) && (
                             <Button
                                 variant="outline"
                                 size="sm"

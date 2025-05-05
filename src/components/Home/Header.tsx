@@ -29,7 +29,7 @@ const Header = () => {
     };
 
     const getUserInitials = () => {
-        if (user && user.profile.firstName && user.profile.lastName) {
+        if (user && user.profile && user?.profile?.firstName && user?.profile?.lastName) {
             return `${user.profile.firstName[0].toUpperCase()}${user.profile.lastName[0].toUpperCase()}`;
         }
         return '';
@@ -172,8 +172,8 @@ const Header = () => {
                                 >
                                     <div className="px-4 py-2 border-b border-border/60">
                                         <p className="text-sm font-medium truncate">
-                                            {user.profile.firstName}{' '}
-                                            {user.profile.lastName}
+                                            {user?.profile?.firstName}{' '}
+                                            {user?.profile?.lastName}
                                         </p>
                                         <p className="text-xs text-muted-foreground truncate">
                                             {user.email}

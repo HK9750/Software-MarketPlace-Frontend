@@ -12,12 +12,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Star, Heart, MoveRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Product } from '@/types/types';
 import { useGetCookies } from '@/hooks/useGetCookies';
 import axios from 'axios';
+import { ProductDetail } from '@/types/types';
 
 interface ProductCardProps {
-    software: Product;
+    software: ProductDetail;
     onWishlistToggle?: () => void;
 }
 
@@ -65,11 +65,7 @@ const ProductCard = ({ software, onWishlistToggle }: ProductCardProps) => {
                     alt={name}
                     className="w-full aspect-[4/3] object-cover"
                 />
-                {/* {badge && (
-                    <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground">
-                        {badge}
-                    </Badge>
-                )} */}
+
                 <Button
                     variant="ghost"
                     size="icon"
@@ -95,7 +91,9 @@ const ProductCard = ({ software, onWishlistToggle }: ProductCardProps) => {
             </div>
             <CardHeader>
                 <CardTitle>{name}</CardTitle>
-                <CardDescription>{description}</CardDescription>
+                <CardDescription className="truncate whitespace-nowrap overflow-hidden text-ellipsis">
+                    {description}
+                </CardDescription>
             </CardHeader>
             <CardFooter className="flex justify-between items-center">
                 <div className="flex items-center gap-1">
@@ -103,7 +101,7 @@ const ProductCard = ({ software, onWishlistToggle }: ProductCardProps) => {
                     <span className="text-sm font-medium">{averageRating}</span>
                 </div>
                 <div className="flex items-center gap-4">
-                    <span className="font-bold">From ${subscriptions}</span>
+                    <span className="font-bold">From ${subscriptions[0].price}</span>
                     <Button size="sm">
                         <MoveRight className="h-4 w-4 mr-2" />
                         View
