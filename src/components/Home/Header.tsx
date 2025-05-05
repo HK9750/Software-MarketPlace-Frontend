@@ -29,7 +29,12 @@ const Header = () => {
     };
 
     const getUserInitials = () => {
-        if (user && user.profile && user?.profile?.firstName && user?.profile?.lastName) {
+        if (
+            user &&
+            user.profile &&
+            user?.profile?.firstName &&
+            user?.profile?.lastName
+        ) {
             return `${user.profile.firstName[0].toUpperCase()}${user.profile.lastName[0].toUpperCase()}`;
         }
         return '';

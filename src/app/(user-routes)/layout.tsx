@@ -8,13 +8,13 @@ export default function RootLayout({
     children,
 }: {
     children: React.ReactNode;
-    }) {
+}) {
     const path = usePathname();
     console.log(path);
     return (
         <UserProtected>
             <div>
-                {path !== "/setup-profile" && <Header />}
+                {path !== '/setup-profile' && <Header />}
                 {children}
             </div>
         </UserProtected>

@@ -30,10 +30,20 @@ const HeroSection = () => {
                                     placeholder="Search for software..."
                                     className="w-full pl-12 pr-4 py-4 text-base"
                                     value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onChange={(e) =>
+                                        setSearchQuery(e.target.value)
+                                    }
                                 />
                             </div>
-                            <Button size="lg" className="px-6 py-4" onClick={() => router.push(`/products?search=${searchQuery}`)}>
+                            <Button
+                                size="lg"
+                                className="px-6 py-4"
+                                onClick={() =>
+                                    router.push(
+                                        `/products?search=${searchQuery}`
+                                    )
+                                }
+                            >
                                 Search
                             </Button>
                         </div>

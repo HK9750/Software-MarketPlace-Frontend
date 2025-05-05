@@ -87,7 +87,7 @@ export default function ProductsPage() {
 
     useEffect(() => {
         setQuery(searchQuery);
-    }, [searchQuery])
+    }, [searchQuery]);
 
     useEffect(() => {
         if (!loading && access_token && !error) {
@@ -124,7 +124,11 @@ export default function ProductsPage() {
             {productLoading ? (
                 <ProductCatalogSkeleton />
             ) : (
-                <ProductCatalog products={products} query={query} setQuery={setQuery} />
+                <ProductCatalog
+                    products={products}
+                    query={query}
+                    setQuery={setQuery}
+                />
             )}
         </div>
     );

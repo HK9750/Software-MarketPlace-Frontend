@@ -750,11 +750,12 @@ export default function CheckoutPage() {
                                             </div>
                                             <p className="text-sm text-blue-700 ml-7">
                                                 You will be redirected to
-                                                PayFast&apos;s secure payment page to
-                                                complete your transaction.
-                                                Please ensure your cell phone
-                                                number is provided as it may be
-                                                required for verification.
+                                                PayFast&apos;s secure payment
+                                                page to complete your
+                                                transaction. Please ensure your
+                                                cell phone number is provided as
+                                                it may be required for
+                                                verification.
                                             </p>
                                         </div>
                                     </div>
