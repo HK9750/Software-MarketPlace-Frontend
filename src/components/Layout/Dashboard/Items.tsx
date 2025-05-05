@@ -24,6 +24,5 @@ export const navigationItems = [
 // Seller navigation items
 export const sellerNavigationItems = [
     { name: 'Seller Dashboard', href: '/seller-dashboard', icon: Store },
-    { name: 'Analytics', href: '/seller-dashboard/analytics', icon: BarChart3 },
     { name: 'Products', href: '/seller-dashboard/products', icon: Package },
 ];

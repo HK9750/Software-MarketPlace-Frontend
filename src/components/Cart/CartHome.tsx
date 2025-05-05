@@ -14,7 +14,6 @@ import {
     CardFooter,
     CardHeader,
 } from '@/components/ui/card';
-import { useGetCookies } from '@/hooks/useGetCookies';
 import axios from 'axios';
 import Loader from '../Loader';
 import { useRootContext } from '@/lib/contexts/RootContext';

@@ -26,7 +26,7 @@ export const DashboardHeader = ({ user }: DashboardHeaderProps) => {
             <div className="flex h-16 items-center justify-between px-4 py-3">
                 <BackButton variant="default" />
                 <div className="flex gap-2">
-                    <NotificationsButton />
+                    {/* <NotificationsButton /> */}
                     <UserMenu initials={initials} />
                 </div>
             </div>

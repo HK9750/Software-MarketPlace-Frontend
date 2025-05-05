@@ -1,23 +1,23 @@
 'use client';
 
-import { useGetCookies } from '@/hooks/useGetCookies';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { ProductDetail } from '@/types/types';
 import ProductDetails from '@/components/Product/ProductDetails';
 import Loader from '@/components/Loader';
+import { useRootContext } from '@/lib/contexts/RootContext';
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 const Page = ({ params }: { params: Promise<{ id: string }> }) => {
     const [product, setProduct] = useState<ProductDetail | null>(null);
     const [productLoading, setProductLoading] = useState<boolean>(false);
-    const { access_token, refresh_token, loading, error } = useGetCookies();
+    const { access_token, refresh_token, loading } = useRootContext();
 
     useEffect(() => {
         const fetchProduct = async () => {
             try {
                 const { id } = await params; // Await the params Promise
-                if (!loading && access_token && !error) {
+                if (!loading && access_token) {
                     setProductLoading(true);
                     const response = await axios.get<{ data: ProductDetail }>(
                         `${backendUrl}/products/${id}`,
@@ -38,7 +38,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
         };
 
         fetchProduct();
-    }, [params, loading, access_token, refresh_token, error]);
+    }, [params, loading, access_token, refresh_token]);
 
     return (
         <div className="container mx-auto py-8 px-4">

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Package } from 'lucide-react';
+import { Package, Zap } from 'lucide-react';
 import {
     Sidebar,
     SidebarHeader,
@@ -38,7 +38,11 @@ export function DashboardSidebar({ pathname, type }: DashboardSidebarProps) {
                     <div className="flex items-center justify-center w-8 h-8 rounded-md bg-primary text-primary-foreground">
                         <Package className="h-5 w-5" />
                     </div>
-                    <span className="font-semibold text-lg">SoftMarket</span>
+                    <Link href="/" className="flex items-center space-x-2 py-1">
+                        <span className="font-bold text-xl tracking-tight">
+                            SoftMarket
+                        </span>
+                    </Link>
                 </div>
             </SidebarHeader>
             <SidebarContent>

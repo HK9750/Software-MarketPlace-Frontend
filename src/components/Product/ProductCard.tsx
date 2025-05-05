@@ -8,13 +8,12 @@ import {
     CardDescription,
     CardFooter,
 } from '@/components/ui/card';
-// import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Star, Heart, MoveRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useGetCookies } from '@/hooks/useGetCookies';
-import axios from 'axios';
 import { ProductDetail } from '@/types/types';
+import axios from 'axios';
+import { useRootContext } from '@/lib/contexts/RootContext';
 
 interface ProductCardProps {
     software: ProductDetail;
@@ -31,7 +30,7 @@ const ProductCard = ({ software, onWishlistToggle }: ProductCardProps) => {
         averageRating,
         isWishlisted: initialWishlist,
     } = software;
-    const { access_token, refresh_token } = useGetCookies();
+    const { access_token, refresh_token } = useRootContext();
     const [isWishlisted, setIsWishlisted] = useState(initialWishlist);
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -51,28 +50,26 @@ const ProductCard = ({ software, onWishlistToggle }: ProductCardProps) => {
                 }
             );
             setIsWishlisted(response.data.toggled);
-            onWishlistToggle();
+            if (onWishlistToggle) onWishlistToggle();
         } catch (error) {
             console.error('Error toggling wishlist:', error);
         }
     };
 
     return (
-        <Card className="overflow-hidden transition-all hover:shadow-lg">
-            <div className="relative">
+        <Card className="h-full flex flex-col overflow-hidden transition-all hover:shadow-lg border border-gray-200">
+            <div className="relative h-48">
                 <img
                     src={filePath || '/placeholder.svg'}
                     alt={name}
-                    className="w-full aspect-[4/3] object-cover"
+                    className="w-full h-full object-cover"
                 />
-
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-30"></div>
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm hover:bg-background/90"
-                    onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-                        toggleWishlist(e)
-                    }
+                    className="absolute top-3 right-3 bg-white/90 shadow-sm hover:bg-white rounded-full h-8 w-8"
+                    onClick={toggleWishlist}
                     aria-label={
                         isWishlisted
                             ? 'Remove from wishlist'
@@ -81,7 +78,7 @@ const ProductCard = ({ software, onWishlistToggle }: ProductCardProps) => {
                 >
                     <Heart
                         className={cn(
-                            'h-5 w-5 transition-colors',
+                            'h-4 w-4 transition-colors',
                             isWishlisted
                                 ? 'fill-red-500 text-red-500'
                                 : 'text-muted-foreground'
@@ -89,26 +86,33 @@ const ProductCard = ({ software, onWishlistToggle }: ProductCardProps) => {
                     />
                 </Button>
             </div>
-            <CardHeader>
-                <CardTitle>{name}</CardTitle>
-                <CardDescription className="truncate whitespace-nowrap overflow-hidden text-ellipsis">
+            <CardHeader className="flex-grow pb-0">
+                <CardTitle className="text-lg font-bold line-clamp-1 mb-2">
+                    {name}
+                </CardTitle>
+                <CardDescription className="line-clamp-2 h-10 text-gray-600">
                     {description}
                 </CardDescription>
             </CardHeader>
-            <CardFooter className="flex justify-between items-center">
-                <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-primary text-primary" />
-                    <span className="text-sm font-medium">{averageRating}</span>
-                </div>
-                <div className="flex items-center gap-4">
-                    <span className="font-bold">
-                        From ${subscriptions[0].price}
+            <CardFooter className="flex justify-between items-center pt-2 pb-4">
+                <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-md">
+                    <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                    <span className="text-sm font-medium">
+                        {averageRating || '0.0'}
                     </span>
-                    <Button size="sm">
-                        <MoveRight className="h-4 w-4 mr-2" />
-                        View
-                    </Button>
                 </div>
+                <div className="flex flex-col items-end gap-1">
+                    <div className="text-sm font-semibold text-gray-500">
+                        From
+                    </div>
+                    <div className="text-lg font-bold text-primary">
+                        ${subscriptions[0].price}
+                    </div>
+                </div>
+                <Button size="sm" className="h-9 ml-2 px-4 font-medium">
+                    <MoveRight className="h-4 w-4 mr-2" />
+                    View
+                </Button>
             </CardFooter>
         </Card>
     );

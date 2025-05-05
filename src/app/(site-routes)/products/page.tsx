@@ -3,11 +3,11 @@
 import ProductCatalog from '@/components/Product';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useGetCookies } from '@/hooks/useGetCookies';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ProductDetail } from '@/types/types';
 import { useSearchParams } from 'next/navigation';
+import { useRootContext } from '@/lib/contexts/RootContext';
 
 // ProductCardSkeleton component for loading state
 const ProductCardSkeleton = () => {
@@ -83,14 +83,14 @@ export default function ProductsPage() {
     const searchParams = useSearchParams();
     const searchQuery = searchParams.get('search') || '';
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-    const { access_token, refresh_token, loading, error } = useGetCookies();
+    const { access_token, refresh_token, loading } = useRootContext();
 
     useEffect(() => {
         setQuery(searchQuery);
     }, [searchQuery]);
 
     useEffect(() => {
-        if (!loading && access_token && !error) {
+        if (!loading && access_token) {
             (async () => {
                 setProductLoading(true);
                 try {
@@ -111,7 +111,7 @@ export default function ProductsPage() {
                 }
             })();
         }
-    }, [loading, access_token, refresh_token, error, backendUrl, query]);
+    }, [loading, access_token, refresh_token, backendUrl, query]);
 
     return (
         <div className="container mx-auto py-8 px-4">

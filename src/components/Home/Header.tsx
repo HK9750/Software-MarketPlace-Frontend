@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Zap, Bell, ChevronDown } from 'lucide-react';
+import { ShoppingCart, Zap, Bell, ChevronDown, Package } from 'lucide-react';
 import { useSignOut } from '@/hooks/useSignOut';
 import { useRootContext } from '@/lib/contexts/RootContext';
 import {
@@ -65,12 +65,19 @@ const Header = () => {
             <div className="container flex h-14 items-center justify-between px-4 md:px-6 max-w-7xl mx-auto">
                 {/* Logo Section - Left */}
                 <div className="flex-shrink-0">
-                    <Link href="/" className="flex items-center space-x-2 py-1">
-                        <Zap className="h-6 w-6 text-primary" />
-                        <span className="font-bold text-xl tracking-tight">
-                            SoftMarket
-                        </span>
-                    </Link>
+                    <div className="flex items-center gap-2 px-4 py-3">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-md bg-primary text-primary-foreground">
+                            <Package className="h-5 w-5" />
+                        </div>
+                        <Link
+                            href="/"
+                            className="flex items-center space-x-2 py-1"
+                        >
+                            <span className="font-bold text-xl tracking-tight">
+                                SoftMarket
+                            </span>
+                        </Link>
+                    </div>
                 </div>
 
                 {/* Navigation Section - Center */}

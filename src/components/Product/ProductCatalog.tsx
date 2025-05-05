@@ -20,8 +20,8 @@ import {
 } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import axios from 'axios';
-import { useGetCookies } from '@/hooks/useGetCookies';
 import Link from 'next/link';
+import { useRootContext } from '@/lib/contexts/RootContext';
 
 interface ProductCatalogProps {
     products: ProductDetail[];
@@ -49,10 +49,10 @@ export default function ProductCatalog({
     const [selectedPrice, setSelectedPrice] = useState<string | null>(null);
     const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const { access_token, refresh_token, loading, error } = useGetCookies();
+    const { access_token, refresh_token, loading } = useRootContext();
 
     const fetchWishlist = async () => {
-        if (!loading && access_token && !error) {
+        if (!loading && access_token) {
             try {
                 const response: any = await axios.get(
                     `${backendUrl}/wishlist`,
@@ -72,7 +72,7 @@ export default function ProductCatalog({
 
     useEffect(() => {
         fetchWishlist();
-    }, [access_token, refresh_token, loading, error]);
+    }, [access_token, refresh_token, loading]);
 
     const categories = Array.from(
         new Set(products.map((p) => p.category.name))

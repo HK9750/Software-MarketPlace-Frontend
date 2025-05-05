@@ -27,7 +27,6 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import type { ProductDetail } from '@/types/types';
-import { useGetCookies } from '@/hooks/useGetCookies';
 import axios from 'axios';
 import { useRootContext } from '@/lib/contexts/RootContext';
 import Loader from '../Loader';
@@ -42,7 +41,7 @@ export default function ProductDetails({
     const [isInCartLoading, setIsInCartLoading] = useState(false);
     const { refetchUserProfile } = useRootContext();
 
-    const { access_token, refresh_token } = useGetCookies();
+    const { access_token, refresh_token } = useRootContext();
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
     const subscriptionOptions = product?.subscriptions || [];
     const [selectedsubscription, setselectedsubscription] = useState<string>(

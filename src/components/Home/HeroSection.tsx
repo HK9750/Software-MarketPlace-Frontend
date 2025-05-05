@@ -8,6 +8,22 @@ import { useState } from 'react';
 const HeroSection = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const router = useRouter();
+
+    const handleSearch = () => {
+        if (searchQuery.trim()) {
+            router.push(`/products?search=${encodeURIComponent(searchQuery)}`);
+        }
+    };
+
+    const handleKeyDown = (e) => {
+        // Only handle Enter key
+        if (e.key === 'Enter') {
+            // Prevent default behavior (form submission)
+            e.preventDefault();
+            handleSearch();
+        }
+    };
+
     return (
         <section className="w-full py-16 md:py-24 lg:py-32 bg-background flex items-center justify-center">
             <div className="container px-6 md:px-12 lg:px-16">
@@ -33,16 +49,13 @@ const HeroSection = () => {
                                     onChange={(e) =>
                                         setSearchQuery(e.target.value)
                                     }
+                                    onKeyDown={handleKeyDown}
                                 />
                             </div>
                             <Button
                                 size="lg"
                                 className="px-6 py-4"
-                                onClick={() =>
-                                    router.push(
-                                        `/products?search=${searchQuery}`
-                                    )
-                                }
+                                onClick={handleSearch}
                             >
                                 Search
                             </Button>
