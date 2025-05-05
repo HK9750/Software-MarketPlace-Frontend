@@ -14,6 +14,9 @@ import {
     X,
     ShieldCheck,
     UserCog,
+    EyeOff,
+    Eye,
+    Lock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,13 +29,21 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Address, SessionUser } from '@/types/types';
-import { useRouter } from 'next/navigation';
 import { useRootContext } from '@/lib/contexts/RootContext';
 import axios from 'axios';
 import BackButton from '../BackButton';
+import { toast } from 'sonner';
 
 interface ProfilePageProps {
     userData: SessionUser;
@@ -42,10 +53,15 @@ export default function ProfilePage({ userData }: ProfilePageProps) {
     const [user, setUser] = useState<SessionUser>(userData);
     const [editMode, setEditMode] = useState(false);
     const [updating, setUpdating] = useState(false);
+    const [changepassword, setChangePassword] = useState(false);
+    const [showOldPassword, setShowOldPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const { access_token, refresh_token } = useRootContext();
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-
-    const router = useRouter();
+    const [oldPassword, setOldPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
 
     const [formData, setFormData] = useState({
         firstName: user.profile.firstName,
@@ -150,7 +166,7 @@ export default function ProfilePage({ userData }: ProfilePageProps) {
             if (response.data.success) {
                 setUser(response.data.data);
                 setEditMode(false);
-                console.log('Profile updated successfully');
+                toast.success('Profile updated successfully');
             }
         } catch (error) {
             console.error('Error updating profile:', error);
@@ -172,6 +188,39 @@ export default function ProfilePage({ userData }: ProfilePageProps) {
         });
 
         setEditMode(false);
+    };
+
+    const handleChangePassword = async () => {
+        if (newPassword !== confirmPassword) {
+            toast.error('Passwords donot match');
+            return;
+        }
+
+        try {
+            const response = await axios.put<{
+                success: boolean;
+            }>(
+                `${backendUrl}/auth/change-password`,
+                { oldPassword, newPassword },
+                {
+                    headers: {
+                        Authorization: `Bearer ${access_token}`,
+                        'X-Refresh-Token': refresh_token || '',
+                    },
+                }
+            );
+
+            if (response.data.success) {
+                setChangePassword(false);
+                setOldPassword('');
+                setNewPassword('');
+                setConfirmPassword('');
+                toast.success('Password changed successfully');
+            }
+        } catch (err) {
+            console.error('Error changing password:', err);
+            toast.error('Error changing password');
+        }
     };
 
     const getUserInitials = () => {
@@ -498,12 +547,181 @@ export default function ProfilePage({ userData }: ProfilePageProps) {
                                 </div>
                             </CardContent>
                             <CardFooter>
-                                <Button variant="outline" className="w-full">
+                                <Button
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() =>
+                                        setChangePassword((prev) => !prev)
+                                    }
+                                >
                                     Change Password
                                 </Button>
                             </CardFooter>
                         </Card>
                     </div>
+                    <Dialog
+                        open={changepassword}
+                        onOpenChange={setChangePassword}
+                    >
+                        <DialogContent className="sm:max-w-[425px]">
+                            <DialogHeader>
+                                <DialogTitle>Change Password</DialogTitle>
+                                <DialogDescription>
+                                    Enter your current password and a new
+                                    password to update your credentials.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="grid gap-4 py-4">
+                                <div className="space-y-2">
+                                    <label
+                                        htmlFor="oldPassword"
+                                        className="text-sm font-medium"
+                                    >
+                                        Current Password
+                                    </label>
+                                    <div className="relative">
+                                        <Input
+                                            id="oldPassword"
+                                            type={
+                                                showOldPassword
+                                                    ? 'text'
+                                                    : 'password'
+                                            }
+                                            value={oldPassword}
+                                            onChange={(e) =>
+                                                setOldPassword(e.target.value)
+                                            }
+                                            className="pr-10"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="absolute right-0 top-0 h-full px-3"
+                                            onClick={() =>
+                                                setShowOldPassword(
+                                                    !showOldPassword
+                                                )
+                                            }
+                                        >
+                                            {showOldPassword ? (
+                                                <EyeOff className="h-4 w-4" />
+                                            ) : (
+                                                <Eye className="h-4 w-4" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label
+                                        htmlFor="newPassword"
+                                        className="text-sm font-medium"
+                                    >
+                                        New Password
+                                    </label>
+                                    <div className="relative">
+                                        <Input
+                                            id="newPassword"
+                                            type={
+                                                showNewPassword
+                                                    ? 'text'
+                                                    : 'password'
+                                            }
+                                            value={newPassword}
+                                            onChange={(e) =>
+                                                setNewPassword(e.target.value)
+                                            }
+                                            className="pr-10"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="absolute right-0 top-0 h-full px-3"
+                                            onClick={() =>
+                                                setShowNewPassword(
+                                                    !showNewPassword
+                                                )
+                                            }
+                                        >
+                                            {showNewPassword ? (
+                                                <EyeOff className="h-4 w-4" />
+                                            ) : (
+                                                <Eye className="h-4 w-4" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">
+                                        Password must be at least 6 characters
+                                        long.
+                                    </p>
+                                </div>
+                                <div className="space-y-2">
+                                    <label
+                                        htmlFor="confirmPassword"
+                                        className="text-sm font-medium"
+                                    >
+                                        Confirm New Password
+                                    </label>
+                                    <div className="relative">
+                                        <Input
+                                            id="confirmPassword"
+                                            type={
+                                                showConfirmPassword
+                                                    ? 'text'
+                                                    : 'password'
+                                            }
+                                            value={confirmPassword}
+                                            onChange={(e) =>
+                                                setConfirmPassword(
+                                                    e.target.value
+                                                )
+                                            }
+                                            className="pr-10"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="absolute right-0 top-0 h-full px-3"
+                                            onClick={() =>
+                                                setShowConfirmPassword(
+                                                    !showConfirmPassword
+                                                )
+                                            }
+                                        >
+                                            {showConfirmPassword ? (
+                                                <EyeOff className="h-4 w-4" />
+                                            ) : (
+                                                <Eye className="h-4 w-4" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setChangePassword(false)}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    onClick={handleChangePassword}
+                                    disabled={
+                                        !oldPassword ||
+                                        !newPassword ||
+                                        !confirmPassword
+                                    }
+                                >
+                                    <>
+                                        <Lock className="mr-2 h-4 w-4" />
+                                        Update Password
+                                    </>
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </div>
             </div>
         </div>
