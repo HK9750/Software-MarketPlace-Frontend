@@ -8,7 +8,6 @@ import {
     Check,
     ShieldCheck,
     ArrowRight,
-    PlayIcon,
 } from 'lucide-react';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
@@ -22,7 +21,6 @@ import {
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -36,7 +34,6 @@ export default function CheckoutPage() {
     const [cartItems, setCartItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [orderLoading, setOrderLoading] = useState(false);
-    const [paymentMethod, setPaymentMethod] = useState('credit_card');
     const [billingInfo, setBillingInfo] = useState({
         firstName: '',
         lastName: '',
@@ -45,16 +42,9 @@ export default function CheckoutPage() {
         city: '',
         state: '',
         zipCode: '',
-        country: 'South Africa',
+        country: 'Pakistan',
         cellNumber: '',
     });
-    const [cardInfo, setCardInfo] = useState({
-        cardNumber: '',
-        cardName: '',
-        expiryDate: '',
-        cvv: '',
-    });
-    const [orderComplete, setOrderComplete] = useState(false);
     const [orderId, setOrderId] = useState(null);
 
     const router = useRouter();
@@ -66,33 +56,30 @@ export default function CheckoutPage() {
     } = useRootContext();
 
     // Fetch cart items
-    useEffect(() => {
-        const fetchCart = async () => {
-            try {
-                setLoading(true);
-                if (!contextLoading && access_token) {
-                    const response = await axios.get<{ data: any[] }>(
-                        `${backendUrl}/cart`,
-                        {
-                            headers: {
-                                Authorization: `Bearer ${access_token}`,
-                                'X-Refresh-Token': refresh_token || '',
-                            },
-                        }
-                    );
-                    setCartItems(response.data.data);
-                    console.log('Cart items:', response.data.data);
-                }
-            } catch (err) {
-                console.error('Error fetching cart:', err);
-                toast.error(
-                    'Failed to fetch cart items. Please try again later.'
+    const fetchCart = async () => {
+        try {
+            setLoading(true);
+            if (!contextLoading && access_token) {
+                const response = await axios.get<{ data: any[] }>(
+                    `${backendUrl}/cart`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${access_token}`,
+                            'X-Refresh-Token': refresh_token || '',
+                        },
+                    }
                 );
-            } finally {
-                setLoading(false);
+                setCartItems(response.data.data);
+                console.log('Cart items:', response.data.data);
             }
-        };
-
+        } catch (err) {
+            console.error('Error fetching cart:', err);
+            toast.error('Failed to fetch cart items. Please try again later.');
+        } finally {
+            setLoading(false);
+        }
+    };
+    useEffect(() => {
         fetchCart();
     }, [contextLoading, access_token, refresh_token]);
 
@@ -103,13 +90,9 @@ export default function CheckoutPage() {
         );
     };
 
-    const handleInputChange = (e, type) => {
+    const handleInputChange = (e) => {
         const { name, value } = e.target;
-        if (type === 'billing') {
-            setBillingInfo((prev) => ({ ...prev, [name]: value }));
-        } else if (type === 'card') {
-            setCardInfo((prev) => ({ ...prev, [name]: value }));
-        }
+        setBillingInfo((prev) => ({ ...prev, [name]: value }));
     };
 
     const validateForm = () => {
@@ -128,26 +111,6 @@ export default function CheckoutPage() {
                 toast.error('Please fill in all required billing fields');
                 return false;
             }
-        }
-
-        if (paymentMethod === 'credit_card') {
-            const requiredCard = [
-                'cardNumber',
-                'cardName',
-                'expiryDate',
-                'cvv',
-            ];
-            for (const field of requiredCard) {
-                if (!cardInfo[field]) {
-                    toast.error('Please fill in all required card fields');
-                    return false;
-                }
-            }
-        }
-
-        if (paymentMethod === 'payfast' && !billingInfo.cellNumber) {
-            toast.error('Please provide a cell number for PayFast payments');
-            return false;
         }
 
         return true;
@@ -182,83 +145,19 @@ export default function CheckoutPage() {
             const newOrderId = response.data.order.id;
             setOrderId(newOrderId);
 
-            if (paymentMethod === 'payfast') {
-                // Redirect to PayFast
-                await redirectToPayfast(newOrderId);
-            } else {
-                // Credit card payment
-                setOrderComplete(true);
+            const stripeRes: any = await axios.post('/api/stripe', {
+                orderId: newOrderId,
+                orderItems,
+                userId: user.id,
+            });
 
-                // Clear cart after successful order
-                await axios.delete(`${backendUrl}/cart`, {
-                    headers: {
-                        Authorization: `Bearer ${access_token}`,
-                        'X-Refresh-Token': refresh_token || '',
-                    },
-                });
-
-                toast.success('Order placed successfully!');
-            }
+            // Redirect to Stripe Checkout
+            window.location.href = stripeRes.data.url;
         } catch (err) {
             console.error('Error creating order:', err);
             toast.error('Failed to place order. Please try again later.');
         } finally {
             setOrderLoading(false);
-        }
-    };
-
-    const redirectToPayfast = async (orderId) => {
-        try {
-            // Construct item details
-            const itemNames = cartItems.map(
-                (item) => item.subscription.software.name
-            );
-            const itemName = itemNames.join(', ');
-            const itemDescription = `Software license${itemNames.length > 1 ? 's' : ''} - ${itemName}`;
-
-            // Generate a unique transaction ID
-            const transactionId = `PF_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
-
-            // First create a payment record in the backend
-            const paymentResponse = await axios.post(
-                `${backendUrl}/payments/create`,
-                {
-                    amount: calculateTotal(),
-                    method: 'PAYFAST',
-                    transactionId: transactionId,
-                    userId: user.id,
-                    orderId: orderId,
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${access_token}`,
-                        'X-Refresh-Token': refresh_token || '',
-                    },
-                }
-            );
-
-            console.log('Payment record created:', paymentResponse.data);
-
-            const clearCartRes = await axios.delete(`${backendUrl}/cart`, {
-                headers: {
-                    Authorization: `Bearer ${access_token}`,
-                    'X-Refresh-Token': refresh_token || '',
-                },
-            });
-
-            console.log('Cart cleared:', clearCartRes.data);
-
-            // Then redirect to PayFast
-            document.location.href = `${process.env.NEXT_PUBLIC_PAYFAST_TESTING_URL}?merchant_id=${process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_ID}&merchant_key=${process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_KEY}&return_url=${process.env.NEXT_PUBLIC_FRONTEND_URL}/products&amount=${calculateTotal().toFixed(
-                2
-            )}&item_name=${encodeURIComponent(itemName)}&item_description=${encodeURIComponent(
-                itemDescription
-            )}&email_confirmation=1&confirmation_address=${encodeURIComponent(
-                billingInfo.email
-            )}&payment_method=cc&custom_str1=${transactionId}&custom_str2=${orderId}`;
-        } catch (error) {
-            console.error('Error creating payment record:', error);
-            toast.error('Failed to process payment. Please try again later.');
         }
     };
 
@@ -270,7 +169,7 @@ export default function CheckoutPage() {
         );
     }
 
-    if (cartItems.length === 0 && !orderComplete) {
+    if (cartItems.length === 0) {
         return (
             <div className="min-h-screen bg-muted/30 py-16">
                 <div className="container max-w-4xl mx-auto px-4 sm:px-6">
@@ -289,60 +188,10 @@ export default function CheckoutPage() {
                                 <Button
                                     size="lg"
                                     className="px-10 py-6 text-lg font-medium"
-                                    onClick={() => router.push('/marketplace')}
+                                    onClick={() => router.push('/products')}
                                 >
                                     Browse Marketplace
                                 </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
-        );
-    }
-
-    if (orderComplete) {
-        return (
-            <div className="min-h-screen bg-muted/30 py-16">
-                <div className="container max-w-4xl mx-auto px-4 sm:px-6">
-                    <Card className="border shadow-lg overflow-hidden">
-                        <CardContent className="p-0">
-                            <div className="flex flex-col items-center justify-center py-20 px-6">
-                                <div className="bg-green-100 p-6 rounded-full mb-8">
-                                    <Check className="h-16 w-16 text-green-600" />
-                                </div>
-                                <h2 className="text-3xl font-bold mb-4 text-center">
-                                    Order Confirmed!
-                                </h2>
-                                <p className="text-muted-foreground mb-3 max-w-md text-center text-lg">
-                                    Thank you for your purchase. Your order has
-                                    been successfully processed.
-                                </p>
-                                <p className="text-primary font-medium text-lg mb-10">
-                                    Order ID: {orderId}
-                                </p>
-                                <div className="flex flex-col sm:flex-row gap-5 w-full max-w-md justify-center">
-                                    <Button
-                                        variant="outline"
-                                        size="lg"
-                                        className="px-6"
-                                        onClick={() =>
-                                            router.push('/marketplace')
-                                        }
-                                    >
-                                        Continue Shopping
-                                    </Button>
-                                    <Button
-                                        size="lg"
-                                        className="px-6"
-                                        onClick={() =>
-                                            router.push('/dashboard/licenses')
-                                        }
-                                    >
-                                        View My Licenses{' '}
-                                        <ArrowRight className="ml-2 h-4 w-4" />
-                                    </Button>
-                                </div>
                             </div>
                         </CardContent>
                     </Card>
@@ -403,9 +252,7 @@ export default function CheckoutPage() {
                                             id="firstName"
                                             name="firstName"
                                             value={billingInfo.firstName}
-                                            onChange={(e) =>
-                                                handleInputChange(e, 'billing')
-                                            }
+                                            onChange={handleInputChange}
                                             className="h-11"
                                             required
                                         />
@@ -421,9 +268,7 @@ export default function CheckoutPage() {
                                             id="lastName"
                                             name="lastName"
                                             value={billingInfo.lastName}
-                                            onChange={(e) =>
-                                                handleInputChange(e, 'billing')
-                                            }
+                                            onChange={handleInputChange}
                                             className="h-11"
                                             required
                                         />
@@ -440,9 +285,7 @@ export default function CheckoutPage() {
                                             name="email"
                                             type="email"
                                             value={billingInfo.email}
-                                            onChange={(e) =>
-                                                handleInputChange(e, 'billing')
-                                            }
+                                            onChange={handleInputChange}
                                             className="h-11"
                                             required
                                         />
@@ -452,25 +295,15 @@ export default function CheckoutPage() {
                                             htmlFor="cellNumber"
                                             className="text-sm font-medium mb-1.5 block"
                                         >
-                                            Cell/Mobile Number{' '}
-                                            {paymentMethod === 'payfast' && (
-                                                <span className="text-red-500">
-                                                    *
-                                                </span>
-                                            )}
+                                            Cell/Mobile Number
                                         </Label>
                                         <Input
                                             id="cellNumber"
                                             name="cellNumber"
                                             type="tel"
                                             value={billingInfo.cellNumber}
-                                            onChange={(e) =>
-                                                handleInputChange(e, 'billing')
-                                            }
+                                            onChange={handleInputChange}
                                             className="h-11"
-                                            required={
-                                                paymentMethod === 'payfast'
-                                            }
                                             placeholder="e.g. 0821234567"
                                         />
                                     </div>
@@ -485,9 +318,7 @@ export default function CheckoutPage() {
                                             id="address"
                                             name="address"
                                             value={billingInfo.address}
-                                            onChange={(e) =>
-                                                handleInputChange(e, 'billing')
-                                            }
+                                            onChange={handleInputChange}
                                             className="min-h-24 resize-none"
                                             required
                                         />
@@ -503,9 +334,7 @@ export default function CheckoutPage() {
                                             id="city"
                                             name="city"
                                             value={billingInfo.city}
-                                            onChange={(e) =>
-                                                handleInputChange(e, 'billing')
-                                            }
+                                            onChange={handleInputChange}
                                             className="h-11"
                                             required
                                         />
@@ -521,9 +350,7 @@ export default function CheckoutPage() {
                                             id="state"
                                             name="state"
                                             value={billingInfo.state}
-                                            onChange={(e) =>
-                                                handleInputChange(e, 'billing')
-                                            }
+                                            onChange={handleInputChange}
                                             className="h-11"
                                             required
                                         />
@@ -539,9 +366,7 @@ export default function CheckoutPage() {
                                             id="zipCode"
                                             name="zipCode"
                                             value={billingInfo.zipCode}
-                                            onChange={(e) =>
-                                                handleInputChange(e, 'billing')
-                                            }
+                                            onChange={handleInputChange}
                                             className="h-11"
                                             required
                                         />
@@ -557,9 +382,7 @@ export default function CheckoutPage() {
                                             id="country"
                                             name="country"
                                             value={billingInfo.country}
-                                            onChange={(e) =>
-                                                handleInputChange(e, 'billing')
-                                            }
+                                            onChange={handleInputChange}
                                             className="h-11"
                                             required
                                         />
@@ -577,189 +400,25 @@ export default function CheckoutPage() {
                                     Payment Method
                                 </CardTitle>
                                 <CardDescription>
-                                    Select your preferred payment method
+                                    Secure payment via Stripe
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="px-6 py-6">
-                                <RadioGroup
-                                    value={paymentMethod}
-                                    onValueChange={setPaymentMethod}
-                                    className="space-y-4"
-                                >
-                                    <div className="flex items-center space-x-2 border p-4 rounded-md bg-background hover:bg-accent/5 transition-colors">
-                                        <RadioGroupItem
-                                            value="credit_card"
-                                            id="credit_card"
-                                        />
-                                        <Label
-                                            htmlFor="credit_card"
-                                            className="flex items-center cursor-pointer w-full"
-                                        >
-                                            <CreditCard className="h-5 w-5 mr-2" />
-                                            Credit/Debit Card
-                                        </Label>
-                                    </div>
-
-                                    <div className="flex items-center space-x-2 border p-4 rounded-md bg-background hover:bg-accent/5 transition-colors">
-                                        <RadioGroupItem
-                                            value="payfast"
-                                            id="payfast"
-                                        />
-                                        <Label
-                                            htmlFor="payfast"
-                                            className="flex items-center cursor-pointer w-full"
-                                        >
-                                            <svg
-                                                className="h-5 w-5 mr-2"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <rect
-                                                    width="24"
-                                                    height="24"
-                                                    rx="4"
-                                                    fill="#EFEFEF"
-                                                />
-                                                <path
-                                                    d="M5 12.6H7.5V17.1H5V12.6Z"
-                                                    fill="#101C56"
-                                                />
-                                                <path
-                                                    d="M8.3 7H10.8V17.1H8.3V7Z"
-                                                    fill="#101C56"
-                                                />
-                                                <path
-                                                    d="M11.6 9.8H14.1V17.1H11.6V9.8Z"
-                                                    fill="#101C56"
-                                                />
-                                                <path
-                                                    d="M14.9 12.6H17.4V17.1H14.9V12.6Z"
-                                                    fill="#EE312A"
-                                                />
-                                                <path
-                                                    d="M18.2 7H19V17.1H18.2V7Z"
-                                                    fill="#101C56"
-                                                />
-                                            </svg>
-                                            PayFast (South Africa)
-                                        </Label>
-                                    </div>
-                                </RadioGroup>
-
-                                {paymentMethod === 'credit_card' && (
-                                    <div className="mt-8 space-y-6">
+                                <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
+                                    <div className="flex items-start">
+                                        <ShieldCheck className="h-5 w-5 mr-2 text-blue-600 flex-shrink-0 mt-0.5" />
                                         <div>
-                                            <Label
-                                                htmlFor="cardNumber"
-                                                className="text-sm font-medium mb-1.5 block"
-                                            >
-                                                Card Number
-                                            </Label>
-                                            <Input
-                                                id="cardNumber"
-                                                name="cardNumber"
-                                                placeholder="1234 5678 9012 3456"
-                                                value={cardInfo.cardNumber}
-                                                onChange={(e) =>
-                                                    handleInputChange(e, 'card')
-                                                }
-                                                className="h-11"
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label
-                                                htmlFor="cardName"
-                                                className="text-sm font-medium mb-1.5 block"
-                                            >
-                                                Cardholder Name
-                                            </Label>
-                                            <Input
-                                                id="cardName"
-                                                name="cardName"
-                                                placeholder="John Doe"
-                                                value={cardInfo.cardName}
-                                                onChange={(e) =>
-                                                    handleInputChange(e, 'card')
-                                                }
-                                                className="h-11"
-                                            />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-6">
-                                            <div>
-                                                <Label
-                                                    htmlFor="expiryDate"
-                                                    className="text-sm font-medium mb-1.5 block"
-                                                >
-                                                    Expiry Date
-                                                </Label>
-                                                <Input
-                                                    id="expiryDate"
-                                                    name="expiryDate"
-                                                    placeholder="MM/YY"
-                                                    value={cardInfo.expiryDate}
-                                                    onChange={(e) =>
-                                                        handleInputChange(
-                                                            e,
-                                                            'card'
-                                                        )
-                                                    }
-                                                    className="h-11"
-                                                />
-                                            </div>
-                                            <div>
-                                                <Label
-                                                    htmlFor="cvv"
-                                                    className="text-sm font-medium mb-1.5 block"
-                                                >
-                                                    CVV
-                                                </Label>
-                                                <Input
-                                                    id="cvv"
-                                                    name="cvv"
-                                                    placeholder="123"
-                                                    value={cardInfo.cvv}
-                                                    onChange={(e) =>
-                                                        handleInputChange(
-                                                            e,
-                                                            'card'
-                                                        )
-                                                    }
-                                                    className="h-11"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center p-4 bg-green-50 border border-green-200 rounded-md text-sm text-green-700 mt-6">
-                                            <ShieldCheck className="h-5 w-5 mr-2 flex-shrink-0" />
-                                            <span>
-                                                Your payment information is
-                                                encrypted and secure
+                                            <span className="text-sm text-blue-700 font-medium block mb-1">
+                                                Secure Checkout with Stripe
                                             </span>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {paymentMethod === 'payfast' && (
-                                    <div className="mt-8 space-y-6">
-                                        <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
-                                            <div className="flex items-start mb-3">
-                                                <ShieldCheck className="h-5 w-5 mr-2 text-blue-600 flex-shrink-0 mt-0.5" />
-                                                <span className="text-sm text-blue-700 font-medium">
-                                                    PayFast Information
-                                                </span>
-                                            </div>
-                                            <p className="text-sm text-blue-700 ml-7">
+                                            <p className="text-sm text-blue-700">
                                                 You will be redirected to
-                                                PayFast&apos;s secure payment
-                                                page to complete your
-                                                transaction. Please ensure your
-                                                cell phone number is provided as
-                                                it may be required for
-                                                verification.
+                                                Stripe's secure payment page to
+                                                complete your transaction.
                                             </p>
                                         </div>
                                     </div>
-                                )}
+                                </div>
                             </CardContent>
                         </Card>
                     </div>
@@ -860,46 +519,7 @@ export default function CheckoutPage() {
                                         </span>
                                     ) : (
                                         <span className="flex items-center">
-                                            {paymentMethod === 'payfast' ? (
-                                                <>
-                                                    <svg
-                                                        className="mr-2 h-5 w-5"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                    >
-                                                        <rect
-                                                            width="24"
-                                                            height="24"
-                                                            rx="4"
-                                                            fill="#EFEFEF"
-                                                        />
-                                                        <path
-                                                            d="M5 12.6H7.5V17.1H5V12.6Z"
-                                                            fill="#101C56"
-                                                        />
-                                                        <path
-                                                            d="M8.3 7H10.8V17.1H8.3V7Z"
-                                                            fill="#101C56"
-                                                        />
-                                                        <path
-                                                            d="M11.6 9.8H14.1V17.1H11.6V9.8Z"
-                                                            fill="#101C56"
-                                                        />
-                                                        <path
-                                                            d="M14.9 12.6H17.4V17.1H14.9V12.6Z"
-                                                            fill="#EE312A"
-                                                        />
-                                                        <path
-                                                            d="M18.2 7H19V17.1H18.2V7Z"
-                                                            fill="#101C56"
-                                                        />
-                                                    </svg>
-                                                    Proceed to PayFast
-                                                </>
-                                            ) : (
-                                                'Complete Payment'
-                                            )}
+                                            Proceed to Checkout
                                         </span>
                                     )}
                                 </Button>
