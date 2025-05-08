@@ -11,7 +11,7 @@ interface UserProtectedProps {
 
 const UserProtected: React.FC<UserProtectedProps> = ({ children }) => {
     const { user, loading } = useRootContext();
-    console.log("USER PROTECTED", user, loading);
+    console.log('USER PROTECTED', user, loading);
 
     if (loading || user === undefined) return <Loader />;
     if (!user) return <Unauthorized />;
