@@ -16,8 +16,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { KeyRound, LogIn, Eye, EyeOff } from 'lucide-react';
+import { LogIn, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 import Cookies from 'js-cookie';
@@ -221,16 +220,16 @@ const SignInPage = () => {
                             </Button>
                         </form>
 
-                        <div className="relative my-6">
+                        {/* <div className="relative my-6">
                             <Separator />
                             <div className="absolute inset-0 flex items-center justify-center">
                                 <span className="bg-card px-3 text-muted-foreground text-xs uppercase tracking-wider">
                                     Or continue with
                                 </span>
                             </div>
-                        </div>
+                        </div> */}
 
-                        <div className="flex gap-4">
+                        {/* <div className="flex gap-4">
                             <Button
                                 variant="outline"
                                 className="w-full hover:bg-accent hover:text-accent-foreground transition-all h-11"
@@ -239,7 +238,7 @@ const SignInPage = () => {
                                 <KeyRound className="mr-2 h-5 w-5 text-[#EB5424]" />
                                 Sign in with Auth0
                             </Button>
-                        </div>
+                        </div> */}
                     </CardContent>
 
                     <CardFooter className="flex justify-center border-t border-border bg-muted/50 py-6">

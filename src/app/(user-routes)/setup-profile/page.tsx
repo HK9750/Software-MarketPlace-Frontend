@@ -38,13 +38,14 @@ import {
 import { ProfileFormValues, profileFormSchema } from '@/schemas/profile-schema';
 import { useRootContext } from '@/lib/contexts/RootContext';
 import axios from 'axios';
+import { useRouter } from 'next/navigation';
 
 const SETUP_PROFILE_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/profile/setup`;
 
 export default function ProfileSetupPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { user, access_token, refresh_token } = useRootContext();
-    console.log('User:', user);
+    const router = useRouter();
 
     // Default values for the form
     const defaultValues: Partial<ProfileFormValues> = {
@@ -97,8 +98,7 @@ export default function ProfileSetupPage() {
                 duration: 5000,
             });
 
-            // Redirect to dashboard or home page if needed
-            // router.push('/dashboard');
+            router.push('/profile');
         } catch (error: any) {
             console.error('Error submitting form:', error);
             toast.error('Something went wrong', {

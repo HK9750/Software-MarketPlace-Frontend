@@ -41,6 +41,7 @@ export const Providers = ({ children }: ProvidersProps) => {
         }
         let isMounted = true;
         if (!cookiesLoading && access_token && !error) {
+            print('Fetching user profile');
             (async () => {
                 try {
                     const response: any = await axios.get(

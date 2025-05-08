@@ -49,14 +49,15 @@ export const profileFormSchema = z
         role: z.enum(['customer', 'seller'], {
             required_error: 'Please select a role',
         }),
-        websiteLink: z
-            .string()
-            .url({ message: 'Please enter a valid URL' })
-            .optional(),
+        websiteLink: z.union([
+            z.string().url({ message: 'Please enter a valid URL' }),
+            z.literal(''),
+            z.undefined(),
+        ]),
     })
     .superRefine((data, ctx) => {
         if (
-            data.role === 'seller' &&
+            data.role.toLocaleLowerCase() === 'seller' &&
             (!data.websiteLink || data.websiteLink.trim() === '')
         ) {
             ctx.addIssue({

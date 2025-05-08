@@ -64,24 +64,24 @@ export default function ProfilePage({ userData }: ProfilePageProps) {
     const [confirmPassword, setConfirmPassword] = useState('');
 
     const [formData, setFormData] = useState({
-        firstName: user.profile.firstName,
-        lastName: user.profile.lastName,
-        phone: user.profile.phone,
+        firstName: user?.profile?.firstName,
+        lastName: user?.profile?.lastName,
+        phone: user?.profile?.phone,
         address:
-            typeof user.profile.address === 'string'
-                ? user.profile.address
-                : JSON.stringify(user.profile.address, null, 2),
+            typeof user?.profile?.address === 'string'
+                ? user?.profile?.address
+                : JSON.stringify(user?.profile?.address, null, 2),
         websiteLink: user.sellerProfile?.websiteLink || '',
     });
 
     const [originalFormData] = useState({
-        firstName: user.profile.firstName,
-        lastName: user.profile.lastName,
-        phone: user.profile.phone,
+        firstName: user?.profile?.firstName,
+        lastName: user?.profile?.lastName,
+        phone: user?.profile?.phone,
         address:
-            typeof user.profile.address === 'string'
-                ? user.profile.address
-                : JSON.stringify(user.profile.address, null, 2),
+            typeof user?.profile?.address === 'string'
+                ? user?.profile?.address
+                : JSON.stringify(user?.profile?.address, null, 2),
         websiteLink: user.sellerProfile?.websiteLink || '',
     });
 
@@ -177,14 +177,14 @@ export default function ProfilePage({ userData }: ProfilePageProps) {
 
     const handleCancel = () => {
         setFormData({
-            firstName: user.profile.firstName,
-            lastName: user.profile.lastName,
-            phone: user.profile.phone,
+            firstName: user?.profile?.firstName,
+            lastName: user?.profile?.lastName,
+            phone: user?.profile?.phone,
             address:
-                typeof user.profile.address === 'string'
-                    ? user.profile.address
-                    : JSON.stringify(user.profile.address, null, 2),
-            websiteLink: user.sellerProfile?.websiteLink || '',
+                typeof user?.profile?.address === 'string'
+                    ? user?.profile?.address
+                    : JSON.stringify(user?.profile?.address, null, 2),
+            websiteLink: user?.sellerProfile?.websiteLink || '',
         });
 
         setEditMode(false);
@@ -224,7 +224,7 @@ export default function ProfilePage({ userData }: ProfilePageProps) {
     };
 
     const getUserInitials = () => {
-        return `${user.profile.firstName[0]}${user.profile.lastName[0]}`;
+        return `${user?.profile?.firstName[0]}${user?.profile?.lastName[0]}`;
     };
 
     return (
@@ -236,7 +236,7 @@ export default function ProfilePage({ userData }: ProfilePageProps) {
                     <Avatar className="h-24 w-24">
                         <AvatarImage
                             src="/placeholder.svg"
-                            alt={`${user.profile.firstName} ${user.profile.lastName}`}
+                            alt={`${user?.profile?.firstName} ${user?.profile?.lastName}`}
                         />
                         <AvatarFallback className="text-2xl">
                             {getUserInitials()}
@@ -245,7 +245,7 @@ export default function ProfilePage({ userData }: ProfilePageProps) {
 
                     <div className="flex-1 text-center md:text-left">
                         <h1 className="text-3xl font-bold">
-                            {user.profile.firstName} {user.profile.lastName}
+                            {user?.profile?.firstName} {user?.profile?.lastName}
                         </h1>
                         <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-2">
                             <Badge variant="outline" className="text-sm">
