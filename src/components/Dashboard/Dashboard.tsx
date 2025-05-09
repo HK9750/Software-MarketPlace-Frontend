@@ -59,7 +59,7 @@ export const Dashboard = () => {
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const  access_token = useAccessToken();
+    const access_token = useAccessToken();
 
     useEffect(() => {
         const fetchDashboardData = async () => {

@@ -13,8 +13,7 @@ interface AdminProtectedProps {
 const AdminProtected: React.FC<AdminProtectedProps> = ({ children }) => {
     const user = useSelector((state: any) => state.auth.userData);
 
-
-    if ( user === undefined) return <Loader />;
+    if (user === undefined) return <Loader />;
     if (!user || user.role !== 'ADMIN') return <Unauthorized />;
 
     return <>{children}</>;

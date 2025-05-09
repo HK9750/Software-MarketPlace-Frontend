@@ -54,21 +54,20 @@ export default function CheckoutPage() {
     const access_token = useAccessToken();
     const user = useSelector((state: any) => state.auth.userData);
 
-
     // Fetch cart items
     const fetchCart = async () => {
         try {
             setLoading(true);
-                const response = await axios.get<{ data: any[] }>(
-                    `${backendUrl}/cart`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${access_token}`,
-                        },
-                    }
-                );
-                setCartItems(response.data.data);
-                console.log('Cart items:', response.data.data);
+            const response = await axios.get<{ data: any[] }>(
+                `${backendUrl}/cart`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${access_token}`,
+                    },
+                }
+            );
+            setCartItems(response.data.data);
+            console.log('Cart items:', response.data.data);
         } catch (err) {
             console.error('Error fetching cart:', err);
             toast.error('Failed to fetch cart items. Please try again later.');
@@ -78,7 +77,7 @@ export default function CheckoutPage() {
     };
     useEffect(() => {
         fetchCart();
-    }, [ access_token]);
+    }, [access_token]);
 
     const calculateTotal = () => {
         return cartItems.reduce(
@@ -409,8 +408,9 @@ export default function CheckoutPage() {
                                             </span>
                                             <p className="text-sm text-blue-700">
                                                 You will be redirected to
-                                                Stripe&apos;s secure payment page to
-                                                complete your transaction.
+                                                Stripe&apos;s secure payment
+                                                page to complete your
+                                                transaction.
                                             </p>
                                         </div>
                                     </div>

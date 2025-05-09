@@ -48,9 +48,9 @@ export default function OrderConfirmationPage({ params }) {
         };
 
         fetchOrderDetails();
-    }, [ access_token, orderId, toast]);
+    }, [access_token, orderId, toast]);
 
-    if (loading ) {
+    if (loading) {
         return (
             <div className="min-h-screen bg-muted/30 flex items-center justify-center">
                 <Loader />
@@ -72,8 +72,8 @@ export default function OrderConfirmationPage({ params }) {
                                     Order Not Found
                                 </h2>
                                 <p className="text-muted-foreground mb-8 max-w-md text-center">
-                                    We couldn&apos;t find the order details you&apos;re
-                                    looking for.
+                                    We couldn&apos;t find the order details
+                                    you&apos;re looking for.
                                 </p>
                                 <Button
                                     size="lg"

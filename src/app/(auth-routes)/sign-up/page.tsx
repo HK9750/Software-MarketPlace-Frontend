@@ -114,7 +114,7 @@ const SignUpPage = () => {
                 }
             );
             console.log(response);
-          
+
             if (response.data.access_token && response.data.refresh_token) {
                 Cookies.set('access_token', response.data.access_token, {
                     secure: true,

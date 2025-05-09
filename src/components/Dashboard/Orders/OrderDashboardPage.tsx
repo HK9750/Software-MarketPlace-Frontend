@@ -20,7 +20,7 @@ export default function OrderDashboardPage() {
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     const access_token = useAccessToken();
-   
+
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
     const fetchOrders = async () => {
@@ -48,7 +48,7 @@ export default function OrderDashboardPage() {
     };
 
     useEffect(() => {
-            fetchOrders();
+        fetchOrders();
     }, [access_token]);
 
     const handleViewOrderDetails = (orderId) => {
