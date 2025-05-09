@@ -12,6 +12,7 @@ export type SessionUser = {
         phone: string;
         address: Address | string;
         userId: string;
+        avatar: string | null;
     };
     sellerProfile?: {
         id: string;

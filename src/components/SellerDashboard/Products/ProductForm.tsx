@@ -27,6 +27,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
@@ -67,6 +68,7 @@ interface ProductResponse {
     averageRating: number;
     isWishlisted: boolean;
     isInCart: boolean;
+    discount?: number;
 }
 
 interface SubscriptionPlan {
@@ -83,20 +85,30 @@ const productFormSchema = z.object({
     description: z
         .string()
         .min(10, { message: 'Description must be at least 10 characters' }),
-    price: z.coerce
+    discount: z.coerce
         .number()
-        .positive({ message: 'Price must be a positive number' }),
+        .min(0, { message: 'Discount cannot be negative' })
+        .max(100, { message: 'Discount cannot exceed 100%' })
+        .optional(),
     categoryId: z.string({ required_error: 'Please select a category' }),
-    subscriptionPlanId: z.string().optional(),
     features: z.string().optional(),
     requirements: z.string().optional(),
+    // We'll handle subscriptions separately
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
 
+// Type for subscription options with prices
+interface SubscriptionOption {
+    subscriptionPlanId: string;
+    price: number;
+    selected: boolean;
+}
+
 const GET_PRODUCT_BY_ID = `${process.env.NEXT_PUBLIC_BACKEND_URL}/products`;
 const CREATE_PRODUCT_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/products`;
 const GET_SUBSCRIPTION_PLANS_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/subscriptions/plans`;
+const GET_CATEGORIES_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/categories`;
 
 interface ProductFormProps {
     id?: string;
@@ -119,6 +131,9 @@ export function ProductForm({ id }: ProductFormProps) {
     const [subscriptionPlans, setSubscriptionPlans] = useState<
         SubscriptionPlan[]
     >([]);
+    const [subscriptionOptions, setSubscriptionOptions] = useState<
+        SubscriptionOption[]
+    >([]);
     const [isLoadingSubscriptionPlans, setIsLoadingSubscriptionPlans] =
         useState(false);
 
@@ -128,9 +143,8 @@ export function ProductForm({ id }: ProductFormProps) {
         defaultValues: {
             name: '',
             description: '',
-            price: 0,
+            discount: 0,
             categoryId: '',
-            subscriptionPlanId: '',
             features: '',
             requirements: '',
         },
@@ -174,15 +188,12 @@ export function ProductForm({ id }: ProductFormProps) {
 
     const fetchCategories = async () => {
         try {
-            const res: any = await axios.get(
-                `${process.env.NEXT_PUBLIC_BACKEND_URL}/categories`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${access_token}`,
-                        'x-refresh-token': refresh_token,
-                    },
-                }
-            );
+            const res: any = await axios.get(GET_CATEGORIES_URL, {
+                headers: {
+                    Authorization: `Bearer ${access_token}`,
+                    'x-refresh-token': refresh_token,
+                },
+            });
 
             if (res.status === 200 && res.data.success) {
                 setCategories(res.data.data);
@@ -210,13 +221,14 @@ export function ProductForm({ id }: ProductFormProps) {
             if (res.status === 200 && res.data.success) {
                 setSubscriptionPlans(res.data.data);
 
-                // Set the first subscription plan as default if available
-                if (
-                    res.data.data.length > 0 &&
-                    !form.getValues('subscriptionPlanId')
-                ) {
-                    form.setValue('subscriptionPlanId', res.data.data[0].id);
-                }
+                // Initialize subscription options with default values
+                const options = res.data.data.map((plan: SubscriptionPlan) => ({
+                    subscriptionPlanId: plan.id,
+                    price: 0,
+                    selected: false,
+                }));
+
+                setSubscriptionOptions(options);
             } else {
                 toast.error('Failed to load subscription plans');
             }
@@ -252,27 +264,12 @@ export function ProductForm({ id }: ProductFormProps) {
                     productData.requirements
                 );
 
-                // Get base price from first subscription or use 0
-                const basePrice =
-                    productData.subscriptions &&
-                    productData.subscriptions.length > 0
-                        ? productData.subscriptions[0].price
-                        : 0;
-
-                // Get subscription plan ID if available
-                const subscriptionPlanId =
-                    productData.subscriptions &&
-                    productData.subscriptions.length > 0
-                        ? productData.subscriptions[0].subscriptionPlanId
-                        : '';
-
                 // Update form values
                 form.reset({
                     name: productData.name || '',
                     description: productData.description || '',
-                    price: basePrice,
+                    discount: productData.discount || 0,
                     categoryId: productData.category?.id || '',
-                    subscriptionPlanId: subscriptionPlanId,
                     features: featuresString,
                     requirements: requirementsString,
                 });
@@ -280,6 +277,36 @@ export function ProductForm({ id }: ProductFormProps) {
                 // Set image preview if available
                 if (productData.filePath) {
                     setImagePreview(productData.filePath);
+                }
+
+                // Map existing subscriptions to the subscription options
+                if (
+                    productData.subscriptions &&
+                    productData.subscriptions.length > 0
+                ) {
+                    // Create a mapping of plan IDs to subscription data
+                    const existingSubscriptionsMap =
+                        productData.subscriptions.reduce(
+                            (acc: Record<string, Subscription>, sub) => {
+                                acc[sub.subscriptionPlanId] = sub;
+                                return acc;
+                            },
+                            {}
+                        );
+
+                    // Wait for subscription plans to be loaded
+                    if (subscriptionPlans.length > 0) {
+                        const updatedOptions = subscriptionPlans.map((plan) => {
+                            const existingSub =
+                                existingSubscriptionsMap[plan.id];
+                            return {
+                                subscriptionPlanId: plan.id,
+                                price: existingSub ? existingSub.basePrice : 0,
+                                selected: !!existingSub,
+                            };
+                        });
+                        setSubscriptionOptions(updatedOptions);
+                    }
                 }
             } else {
                 toast.error('Failed to load product data');
@@ -294,25 +321,76 @@ export function ProductForm({ id }: ProductFormProps) {
         }
     };
 
+    // Update subscription options when subscription plans are loaded after product data
+    useEffect(() => {
+        if (product && product.subscriptions && subscriptionPlans.length > 0) {
+            // Create a mapping of plan IDs to subscription data
+            const existingSubscriptionsMap = product.subscriptions.reduce(
+                (acc: Record<string, Subscription>, sub) => {
+                    acc[sub.subscriptionPlanId] = sub;
+                    return acc;
+                },
+                {}
+            );
+
+            const updatedOptions = subscriptionPlans.map((plan) => {
+                const existingSub = existingSubscriptionsMap[plan.id];
+                return {
+                    subscriptionPlanId: plan.id,
+                    price: existingSub ? existingSub.basePrice : 0,
+                    selected: !!existingSub,
+                };
+            });
+            setSubscriptionOptions(updatedOptions);
+        }
+    }, [product, subscriptionPlans]);
+
+    const handleSubscriptionChange = (planId: string, checked: boolean) => {
+        setSubscriptionOptions((prevOptions) =>
+            prevOptions.map((option) =>
+                option.subscriptionPlanId === planId
+                    ? { ...option, selected: checked }
+                    : option
+            )
+        );
+    };
+
+    const handlePriceChange = (planId: string, price: string) => {
+        const numericPrice = parseFloat(price) || 0;
+        setSubscriptionOptions((prevOptions) =>
+            prevOptions.map((option) =>
+                option.subscriptionPlanId === planId
+                    ? { ...option, price: numericPrice }
+                    : option
+            )
+        );
+    };
+
     const onSubmit = async (data: ProductFormValues) => {
-        if (!selectedFile && !id) {
-            toast.error('Please select a product image');
+        // Check if at least one subscription plan is selected
+        const selectedOptions = subscriptionOptions.filter(
+            (option) => option.selected
+        );
+
+        if (selectedOptions.length === 0) {
+            toast.error('Please select at least one subscription plan');
             return;
         }
 
-        // Make sure we have subscription plans loaded
-        if (subscriptionPlans.length === 0) {
+        // Check if all selected options have prices
+        const invalidPriceOptions = selectedOptions.filter(
+            (option) => option.price <= 0
+        );
+
+        if (invalidPriceOptions.length > 0) {
             toast.error(
-                'No subscription plans available. Please try again later.'
+                'All selected subscription plans must have valid prices'
             );
             return;
         }
 
-        // Make sure we have a selected subscription plan
-        const subscriptionPlanId =
-            data.subscriptionPlanId || subscriptionPlans[0].id;
-        if (!subscriptionPlanId) {
-            toast.error('Please select a subscription plan');
+        if (!selectedFile && !id) {
+            toast.error('Please select a product image');
             return;
         }
 
@@ -326,13 +404,13 @@ export function ProductForm({ id }: ProductFormProps) {
             // Create FormData for multipart/form-data submission
             const formData = new FormData();
 
-            // Use the selected subscription plan
-            const subscriptionOptions = [
-                {
-                    subscriptionPlanId: subscriptionPlanId,
-                    price: data.price,
-                },
-            ];
+            // Get only the selected subscription options
+            const subscriptionOptionsForAPI = subscriptionOptions
+                .filter((option) => option.selected)
+                .map((option) => ({
+                    subscriptionPlanId: option.subscriptionPlanId,
+                    price: option.price,
+                }));
 
             // Prepare JSON data
             const jsonData = {
@@ -341,7 +419,8 @@ export function ProductForm({ id }: ProductFormProps) {
                 features,
                 requirements,
                 categoryId: data.categoryId,
-                subscriptionOptions,
+                subscriptionOptions: subscriptionOptionsForAPI,
+                discount: data.discount,
             };
 
             // Add JSON data as a string
@@ -500,23 +579,25 @@ export function ProductForm({ id }: ProductFormProps) {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <FormField
                                         control={form.control}
-                                        name="price"
+                                        name="discount"
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>
-                                                    Base Price ($)
+                                                    Discount (%)
                                                 </FormLabel>
                                                 <FormControl>
                                                     <Input
                                                         type="number"
-                                                        step="0.01"
+                                                        step="1"
                                                         min="0"
+                                                        max="100"
                                                         {...field}
                                                     />
                                                 </FormControl>
                                                 <FormDescription>
-                                                    Set the base price for your
-                                                    product's subscription
+                                                    Set a discount percentage
+                                                    (0-100%) for all
+                                                    subscription plans
                                                 </FormDescription>
                                                 <FormMessage />
                                             </FormItem>
@@ -533,7 +614,7 @@ export function ProductForm({ id }: ProductFormProps) {
                                                     onValueChange={
                                                         field.onChange
                                                     }
-                                                    defaultValue={field.value}
+                                                    value={field.value}
                                                 >
                                                     <FormControl>
                                                         <SelectTrigger>
@@ -580,70 +661,100 @@ export function ProductForm({ id }: ProductFormProps) {
                                     />
                                 </div>
 
-                                <FormField
-                                    control={form.control}
-                                    name="subscriptionPlanId"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>
-                                                Subscription Plan
-                                            </FormLabel>
-                                            <Select
-                                                onValueChange={field.onChange}
-                                                defaultValue={field.value}
-                                            >
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select a subscription plan" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {isLoadingSubscriptionPlans ? (
-                                                        <SelectItem
-                                                            value="loading"
-                                                            disabled
+                                {/* Subscription Plans with Checkboxes */}
+                                <div className="space-y-4">
+                                    <FormLabel>Subscription Plans</FormLabel>
+                                    <FormDescription>
+                                        Select the subscription plans available
+                                        for this product and set the base price
+                                        for each
+                                    </FormDescription>
+
+                                    {isLoadingSubscriptionPlans ? (
+                                        <div className="flex items-center">
+                                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                            <span>
+                                                Loading subscription plans...
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            {subscriptionOptions.map(
+                                                (option, index) => (
+                                                    <div
+                                                        key={
+                                                            option.subscriptionPlanId
+                                                        }
+                                                        className="flex items-center space-x-4 border p-3 rounded-md"
+                                                    >
+                                                        <Checkbox
+                                                            id={`plan-${option.subscriptionPlanId}`}
+                                                            checked={
+                                                                option.selected
+                                                            }
+                                                            onCheckedChange={(
+                                                                checked
+                                                            ) =>
+                                                                handleSubscriptionChange(
+                                                                    option.subscriptionPlanId,
+                                                                    checked as boolean
+                                                                )
+                                                            }
+                                                        />
+                                                        <label
+                                                            htmlFor={`plan-${option.subscriptionPlanId}`}
+                                                            className="flex-1 text-sm font-medium cursor-pointer"
                                                         >
-                                                            Loading plans...
-                                                        </SelectItem>
-                                                    ) : subscriptionPlans.length >
-                                                      0 ? (
-                                                        subscriptionPlans.map(
-                                                            (plan) => (
-                                                                <SelectItem
-                                                                    key={
-                                                                        plan.id
-                                                                    }
-                                                                    value={
-                                                                        plan.id
-                                                                    }
-                                                                >
-                                                                    {plan.name}{' '}
-                                                                    (
-                                                                    {
-                                                                        plan.duration
-                                                                    }{' '}
-                                                                    months)
-                                                                </SelectItem>
-                                                            )
-                                                        )
-                                                    ) : (
-                                                        <SelectItem
-                                                            value="none"
-                                                            disabled
-                                                        >
-                                                            No plans available
-                                                        </SelectItem>
-                                                    )}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormDescription>
-                                                Choose the subscription plan for
-                                                your product
-                                            </FormDescription>
-                                            <FormMessage />
-                                        </FormItem>
+                                                            {
+                                                                subscriptionPlans[
+                                                                    index
+                                                                ]?.name
+                                                            }{' '}
+                                                            (
+                                                            {
+                                                                subscriptionPlans[
+                                                                    index
+                                                                ]?.duration
+                                                            }{' '}
+                                                            months)
+                                                        </label>
+                                                        <div className="w-32">
+                                                            <Input
+                                                                type="number"
+                                                                min="0"
+                                                                step="0.01"
+                                                                value={
+                                                                    option.price ||
+                                                                    ''
+                                                                }
+                                                                onChange={(e) =>
+                                                                    handlePriceChange(
+                                                                        option.subscriptionPlanId,
+                                                                        e.target
+                                                                            .value
+                                                                    )
+                                                                }
+                                                                placeholder="Price $"
+                                                                disabled={
+                                                                    !option.selected
+                                                                }
+                                                                className="w-full"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )
+                                            )}
+                                        </div>
                                     )}
-                                />
+                                    {subscriptionOptions.filter(
+                                        (opt) => opt.selected
+                                    ).length === 0 && (
+                                        <p className="text-sm text-destructive">
+                                            Please select at least one
+                                            subscription plan
+                                        </p>
+                                    )}
+                                </div>
 
                                 <div className="flex justify-end">
                                     <Button

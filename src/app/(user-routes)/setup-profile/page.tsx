@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -34,11 +33,15 @@ import {
     CheckCircle2,
     Home,
     Phone,
+    Upload,
+    Image as ImageIcon,
+    X,
 } from 'lucide-react';
 import { ProfileFormValues, profileFormSchema } from '@/schemas/profile-schema';
 import { useRootContext } from '@/lib/contexts/RootContext';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 const SETUP_PROFILE_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/profile/setup`;
 
@@ -46,6 +49,8 @@ export default function ProfileSetupPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { user, access_token, refresh_token } = useRootContext();
     const router = useRouter();
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Default values for the form
     const defaultValues: Partial<ProfileFormValues> = {
@@ -58,6 +63,7 @@ export default function ProfileSetupPage() {
         profile: '',
         role: 'customer',
         websiteLink: '',
+        avatar: null,
     };
 
     const form = useForm<ProfileFormValues>({
@@ -68,23 +74,67 @@ export default function ProfileSetupPage() {
 
     const role = form.watch('role');
 
+    // Function to handle avatar image selection
+    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+
+        if (!file) return;
+
+        // Update form value
+        form.setValue('avatar', file, { shouldValidate: true });
+
+        // Create and set preview URL
+        const fileReader = new FileReader();
+        fileReader.onload = (event) => {
+            if (event.target?.result) {
+                setAvatarPreview(event.target.result as string);
+            }
+        };
+        fileReader.readAsDataURL(file);
+    };
+
+    // Function to clear avatar selection
+    const clearAvatar = () => {
+        form.setValue('avatar', null, { shouldValidate: true });
+        setAvatarPreview(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
+    // Function to trigger file input click
+    const openFileSelector = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
+        }
+    };
+
     async function onSubmit(data: ProfileFormValues) {
         setIsSubmitting(true);
 
         try {
-            const payload = {
-                firstName: data.firstname,
-                lastName: data.lastname,
-                phone: data.phone,
-                address: data.address,
-                websiteLink: data.websiteLink,
-                role: data.role.toUpperCase(),
-            };
+            // Create FormData for multipart/form-data submission
+            const formData = new FormData();
+            formData.append('firstName', data.firstname);
+            formData.append('lastName', data.lastname);
+            formData.append('phone', data.phone);
+            formData.append('address', data.address);
+            formData.append('role', data.role.toUpperCase());
 
-            console.log('Payload to be sent:', payload);
-            console.log(data);
-            const response = await axios.put(SETUP_PROFILE_URL, payload, {
+            if (data.websiteLink) {
+                formData.append('websiteLink', data.websiteLink);
+            }
+
+            // Append avatar file if it exists
+            if (data.avatar) {
+                formData.append('image', data.avatar);
+            }
+
+            console.log('Submitting profile data with avatar');
+
+            const response = await axios.put(SETUP_PROFILE_URL, formData, {
                 headers: {
+                    'Content-Type': 'multipart/form-data',
                     Authorization: `Bearer ${access_token}`,
                     'X-Refresh-Token': refresh_token,
                 },
@@ -125,6 +175,7 @@ export default function ProfileSetupPage() {
                 profile: '',
                 role: 'customer',
                 websiteLink: '',
+                avatar: null,
             });
         }
     }, [user, form]);
@@ -198,6 +249,87 @@ export default function ProfileSetupPage() {
                                                 Personal Details
                                             </h3>
                                         </div>
+
+                                        {/* Avatar Upload - Improved Version */}
+                                        <FormField
+                                            control={form.control}
+                                            name="avatar"
+                                            render={() => (
+                                                <FormItem className="space-y-4">
+                                                    <FormLabel>
+                                                        Profile Picture
+                                                    </FormLabel>
+                                                    <FormControl>
+                                                        <div className="flex flex-col items-center">
+                                                            {/* Avatar Preview Area */}
+                                                            <div className="relative w-24 h-24 mb-4 rounded-full overflow-hidden border-2 border-primary/20 bg-muted">
+                                                                {avatarPreview ? (
+                                                                    <>
+                                                                        <Image
+                                                                            src={
+                                                                                avatarPreview
+                                                                            }
+                                                                            alt="Avatar preview"
+                                                                            fill
+                                                                            className="object-cover"
+                                                                        />
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={
+                                                                                clearAvatar
+                                                                            }
+                                                                            className="absolute top-0 right-0 p-1 bg-black/50 rounded-full hover:bg-black/70 transition-colors"
+                                                                            title="Remove image"
+                                                                        >
+                                                                            <X className="h-3 w-3 text-white" />
+                                                                        </button>
+                                                                    </>
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center bg-muted">
+                                                                        <ImageIcon className="h-10 w-10 text-muted-foreground" />
+                                                                    </div>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Hidden File Input */}
+                                                            <input
+                                                                ref={
+                                                                    fileInputRef
+                                                                }
+                                                                type="file"
+                                                                accept="image/*"
+                                                                className="hidden"
+                                                                onChange={
+                                                                    handleAvatarChange
+                                                                }
+                                                                aria-label="Upload profile picture"
+                                                            />
+
+                                                            {/* Upload Button */}
+                                                            <Button
+                                                                type="button"
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={
+                                                                    openFileSelector
+                                                                }
+                                                                className="flex items-center text-xs h-8"
+                                                            >
+                                                                <Upload className="h-3 w-3 mr-1" />
+                                                                {avatarPreview
+                                                                    ? 'Change Photo'
+                                                                    : 'Upload Photo'}
+                                                            </Button>
+                                                        </div>
+                                                    </FormControl>
+                                                    <FormDescription className="text-xs text-center">
+                                                        Upload a square image
+                                                        for best results
+                                                    </FormDescription>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
 
                                         <FormField
                                             control={form.control}

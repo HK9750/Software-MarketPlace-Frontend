@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
 import NotificationPanel from './NotificationPanel';
+import { Avatar } from '@radix-ui/react-avatar';
 
 const Header = () => {
     const { user, loading } = useRootContext();
@@ -168,15 +169,19 @@ const Header = () => {
                             {/* Shadcn Dropdown Menu */}
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        className="flex items-center gap-2 hover:bg-muted/80 h-9 px-2 md:px-3"
-                                    >
-                                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground font-medium">
-                                            {getUserInitials()}
-                                        </span>
-                                        <ChevronDown className="h-4 w-4 opacity-70" />
-                                    </Button>
+                                    <Avatar className="w-8 h-8 cursor-pointer">
+                                        {user?.profile?.avatar ? (
+                                            <img
+                                                src={user.profile.avatar}
+                                                alt="User Avatar"
+                                                className="w-full h-full rounded-full"
+                                            />
+                                        ) : (
+                                            <span className="flex items-center justify-center w-full h-full text-sm font-medium text-primary-foreground bg-primary rounded-full">
+                                                {getUserInitials()}
+                                            </span>
+                                        )}
+                                    </Avatar>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent
                                     align="center"

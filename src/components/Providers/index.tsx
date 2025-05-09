@@ -34,14 +34,15 @@ export const Providers = ({ children }: ProvidersProps) => {
         cookieRefresh
     );
 
+    // Fetch user profile
     useEffect(() => {
         if (!access_token && !refresh_token) {
             setAccessToken(cookieAccess);
             setRefreshToken(cookieRefresh);
         }
         let isMounted = true;
+
         if (!cookiesLoading && access_token && !error) {
-            print('Fetching user profile');
             (async () => {
                 try {
                     const response: any = await axios.get(
@@ -69,6 +70,7 @@ export const Providers = ({ children }: ProvidersProps) => {
         } else if (!cookiesLoading) {
             setUserLoading(false);
         }
+
         return () => {
             isMounted = false;
         };
@@ -83,6 +85,7 @@ export const Providers = ({ children }: ProvidersProps) => {
 
     const combinedLoading = cookiesLoading || userLoading;
 
+    // Function to refetch profile on demand
     const refetchUserProfile = async () => {
         if (!cookiesLoading && access_token && !error) {
             try {
@@ -98,6 +101,16 @@ export const Providers = ({ children }: ProvidersProps) => {
             }
         }
     };
+
+    // Retry fetch if user is null or undefined after initial load
+    useEffect(() => {
+        if (!userLoading && user == null) {
+            const timer = setTimeout(() => {
+                refetchUserProfile();
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [userLoading, user]);
 
     return (
         <SessionProvider>

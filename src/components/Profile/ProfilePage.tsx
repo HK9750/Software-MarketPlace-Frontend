@@ -235,7 +235,7 @@ export default function ProfilePage({ userData }: ProfilePageProps) {
                 <div className="flex flex-col md:flex-row items-center md:items-start gap-6 mb-8">
                     <Avatar className="h-24 w-24">
                         <AvatarImage
-                            src="/placeholder.svg"
+                            src={user?.profile?.avatar || ''}
                             alt={`${user?.profile?.firstName} ${user?.profile?.lastName}`}
                         />
                         <AvatarFallback className="text-2xl">

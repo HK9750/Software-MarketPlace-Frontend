@@ -29,6 +29,10 @@ export const profileFormSchema = z
             .regex(/^[0-9()\-\s+.]+$/, {
                 message: 'Please enter a valid phone number format',
             }),
+
+        // Avatar field that accepts File object or null/undefined
+        avatar: z.instanceof(File).nullable().optional(),
+
         username: z
             .string()
             .min(3, { message: 'Username must be at least 3 characters' })
