@@ -163,8 +163,8 @@ export default function CartPage() {
                                     Your cart is empty
                                 </h2>
                                 <p className="text-muted-foreground mb-8 max-w-md text-center">
-                                    Looks like you haven&apos;t added any software
-                                    subscriptions to your cart yet.
+                                    Looks like you haven&apos;t added any
+                                    software subscriptions to your cart yet.
                                 </p>
                                 <Button
                                     size="lg"

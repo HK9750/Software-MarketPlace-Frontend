@@ -13,8 +13,7 @@ interface SellerProtectedProps {
 const SellerProtected: React.FC<SellerProtectedProps> = ({ children }) => {
     const user = useSelector((state: any) => state.auth.userData);
 
-
-    if ( user === undefined) return <Loader />;
+    if (user === undefined) return <Loader />;
     if (!user || user.role !== 'SELLER') return <Unauthorized />;
 
     return <>{children}</>;

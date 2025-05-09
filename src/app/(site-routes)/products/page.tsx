@@ -110,7 +110,7 @@ export default function ProductsPage() {
                 }
             })();
         }
-    }, [ access_token, backendUrl, query]);
+    }, [access_token, backendUrl, query]);
 
     return (
         <div className="container mx-auto py-8 px-4">

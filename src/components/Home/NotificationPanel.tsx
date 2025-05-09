@@ -37,9 +37,9 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
                 }
             );
             fetchUserProfile(access_token).then((res: any) => {
-                            console.log(res);
-                            dispatch(login(res.user));
-                        });
+                console.log(res);
+                dispatch(login(res.user));
+            });
         } catch (error) {
             console.error('Error :', error);
         }

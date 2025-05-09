@@ -439,7 +439,7 @@ export function ProductForm({ id }: ProductFormProps) {
             }
 
             // Make API request
-             await axios({
+            await axios({
                 method,
                 url,
                 data: formData,

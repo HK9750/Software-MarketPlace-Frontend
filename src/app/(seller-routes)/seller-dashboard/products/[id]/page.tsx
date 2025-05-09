@@ -83,7 +83,7 @@ export default function ProductDetailsPage() {
                 } else {
                     setError(true);
                 }
-            } catch  {
+            } catch {
                 setError(true);
             } finally {
                 setLoading(false);

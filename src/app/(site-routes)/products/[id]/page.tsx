@@ -17,16 +17,16 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
         const fetchProduct = async () => {
             try {
                 const { id } = await params; // Await the params Promise
-                    setProductLoading(true);
-                    const response = await axios.get<{ data: ProductDetail }>(
-                        `${backendUrl}/products/${id}`,
-                        {
-                            headers: {
-                                Authorization: `Bearer ${access_token}`,
-                            },
-                        }
-                    );
-                    setProduct(response.data.data);
+                setProductLoading(true);
+                const response = await axios.get<{ data: ProductDetail }>(
+                    `${backendUrl}/products/${id}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${access_token}`,
+                        },
+                    }
+                );
+                setProduct(response.data.data);
             } catch (err) {
                 console.error('Error fetching product:', err);
             } finally {

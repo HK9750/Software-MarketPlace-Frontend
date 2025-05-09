@@ -87,10 +87,9 @@ export default function ProductDetails({
             );
             setIsInCart(response.data.success);
             fetchUserProfile(access_token).then((res: any) => {
-                            console.log(res);
-                            dispatch(login(res.user));
-                        });
-
+                console.log(res);
+                dispatch(login(res.user));
+            });
         } catch (error) {
             console.error('Error adding to cart:', error);
         } finally {
