@@ -1,19 +1,19 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import React from 'react';
 import Loader from '@/components/Loader';
 import Unauthorized from '@/components/UnAuthorized';
-import { useRootContext } from '@/lib/contexts/RootContext';
+import { useSelector } from 'react-redux';
 
 interface UserProtectedProps {
     children: React.ReactNode;
 }
 
 const UserProtected: React.FC<UserProtectedProps> = ({ children }) => {
-    const { user, loading } = useRootContext();
-    console.log('USER PROTECTED', user, loading);
+    const user = useSelector((state: any) => state.auth.userData);
 
-    if (loading || user === undefined) return <Loader />;
+    if (user === undefined) return <Loader />;
     if (!user) return <Unauthorized />;
 
     return <>{children}</>;

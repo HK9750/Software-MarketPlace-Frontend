@@ -59,7 +59,6 @@ export default function ProductCatalog({
                     {
                         headers: {
                             Authorization: `Bearer ${access_token}`,
-                            'X-Refresh-Token': refresh_token || '',
                         },
                     }
                 );
