@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import React, { useState } from 'react';
@@ -26,6 +27,8 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import ActivationSignUpDialog from '@/components/ActivationDialog';
 import axios from 'axios';
+import { login, setToken } from '@/redux-store/authSlice';
+import { useDispatch } from 'react-redux';
 
 type RegisterResponse = {
     activationToken: string;
@@ -46,6 +49,7 @@ const SignUpPage = () => {
     const [activationToken, setActivationToken] = useState<string | null>(null);
     const [showActivationDialog, setShowActivationDialog] = useState(false);
     const [otp, setOtp] = useState<string[]>(new Array(4).fill(''));
+    const dispatch = useDispatch();
 
     const {
         register,
@@ -122,6 +126,9 @@ const SignUpPage = () => {
                     secure: true,
                     sameSite: 'Strict',
                 });
+
+                dispatch(login(response.data.user));
+                dispatch(setToken(response.data.access_token));
                 toast.success('Account activated successfully!');
                 setShowActivationDialog(false);
                 router.push('/setup-profile');

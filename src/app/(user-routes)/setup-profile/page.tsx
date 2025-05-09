@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
@@ -38,16 +39,19 @@ import {
     X,
 } from 'lucide-react';
 import { ProfileFormValues, profileFormSchema } from '@/schemas/profile-schema';
-import { useRootContext } from '@/lib/contexts/RootContext';
-import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useSelector } from 'react-redux';
+import axios from 'axios';
+import useAccessToken from '@/lib/accessToken';
 
 const SETUP_PROFILE_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/profile/setup`;
 
 export default function ProfileSetupPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { user, access_token, refresh_token } = useRootContext();
+    const user = useSelector((state: any) => state.auth.userData);
+    const access_token = useAccessToken();
+
     const router = useRouter();
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -136,7 +140,6 @@ export default function ProfileSetupPage() {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     Authorization: `Bearer ${access_token}`,
-                    'X-Refresh-Token': refresh_token,
                 },
             });
 

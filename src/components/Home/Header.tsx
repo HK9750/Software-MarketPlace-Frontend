@@ -1,10 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Zap, Bell, ChevronDown, Package } from 'lucide-react';
-import { useSignOut } from '@/hooks/useSignOut';
-import { useRootContext } from '@/lib/contexts/RootContext';
+import { ShoppingCart, Bell, Package } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -12,22 +11,40 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import NotificationPanel from './NotificationPanel';
 import { Avatar } from '@radix-ui/react-avatar';
+import { useDispatch, useSelector } from 'react-redux';
+import useAccessToken from '@/lib/accessToken';
+import { fetchUserProfile } from '@/hooks/useFetchProfile';
+import Cookies from 'js-cookie';
+import { login, logout } from '@/redux-store/authSlice';
 
 const Header = () => {
-    const { user, loading } = useRootContext();
+    const token = useAccessToken();
+    const user = useSelector((state: any) => state.auth.userData);
+    const dispatch = useDispatch();
+    console.log(user);
+    const loading = false;
     const router = useRouter();
-    const signOut = useSignOut(
-        typeof window !== 'undefined' ? window.location.origin : ''
-    );
 
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
     const handleSignOut = async () => {
-        await signOut();
+        dispatch(logout());
+        router.push('/sign-in');
+        Cookies.remove('access_token');
+        Cookies.remove('refresh_token');
     };
+
+    useEffect(() => {
+        if (token) {
+            fetchUserProfile(token).then((res: any) => {
+                console.log(res);
+                dispatch(login(res.user));
+            });
+        }
+    }, [token]);
 
     const getUserInitials = () => {
         if (

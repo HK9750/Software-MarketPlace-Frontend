@@ -22,7 +22,8 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import { SessionUser } from '@/types/types';
-import { useRootContext } from '@/lib/contexts/RootContext';
+import { useDispatch } from 'react-redux';
+import { login, setToken } from '@/redux-store/authSlice'
 
 const SIGNIN_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`;
 
@@ -36,7 +37,7 @@ const SignInPage = () => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const { setAccessToken, setRefreshToken } = useRootContext();
+    const dispatch = useDispatch();
 
     const {
         register,
@@ -74,8 +75,8 @@ const SignInPage = () => {
                     sameSite: 'Strict',
                 });
 
-                setAccessToken(response.data.accessToken);
-                setRefreshToken(response.data.refreshToken);
+                dispatch(login(response.data.user));
+                dispatch(setToken(response.data.accessToken));
 
                 // console.log("Access token",Cookies.get('access_token'));
                 // console.log("Refresh Token", Cookies.get('refresh_token'));
