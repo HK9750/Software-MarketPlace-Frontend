@@ -23,7 +23,7 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import { SessionUser } from '@/types/types';
 import { useDispatch } from 'react-redux';
-import { login, setToken } from '@/redux-store/authSlice'
+import { login, setToken } from '@/redux-store/authSlice';
 
 const SIGNIN_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`;
 
