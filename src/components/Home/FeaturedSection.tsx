@@ -62,12 +62,12 @@ const FeaturedSection: FC = () => {
                 setCategories(response.data.softwares);
                 setError(null);
             } else {
-                setError('Unable to load featured products.');
+                setError('Unable to load featured software.');
             }
         } catch (err) {
             console.error('Failed to fetch products:', err);
             setError(
-                'Unable to load featured products. Please try again later.'
+                'Unable to load featured software. Please try again later.'
             );
         } finally {
             setLoading(false);
@@ -145,8 +145,8 @@ const FeaturedSection: FC = () => {
                     Featured Software
                 </h2>
                 <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-                    Discover top-rated and trending software solutions for your
-                    business needs
+                    Explore our curated selection of subscription-based software
+                    solutions with flexible licensing options
                 </p>
             </div>
 
@@ -218,7 +218,7 @@ const FeaturedSection: FC = () => {
                                             {key === 'bestSellers'
                                                 ? 'best-selling'
                                                 : key}{' '}
-                                            products found at this time.
+                                            software found at this time.
                                         </p>
                                         {activeTab !== 'popular' && (
                                             <Button
@@ -228,7 +228,7 @@ const FeaturedSection: FC = () => {
                                                     setActiveTab('popular')
                                                 }
                                             >
-                                                Browse popular products instead
+                                                Browse popular software instead
                                             </Button>
                                         )}
                                     </div>

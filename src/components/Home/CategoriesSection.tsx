@@ -18,11 +18,11 @@ const CategoriesSection = () => {
                 <div className="flex flex-col items-center justify-center space-y-6 text-center">
                     <div className="space-y-3">
                         <h2 className="text-4xl font-extrabold tracking-tight md:text-5xl">
-                            Browse by Category
+                            Explore Software Categories
                         </h2>
                         <p className="max-w-xl text-muted-foreground md:text-lg">
-                            Find the perfect software solution for your specific
-                            needs.
+                            Discover top-rated software solutions across diverse
+                            categories to meet your specific needs
                         </p>
                     </div>
                 </div>
