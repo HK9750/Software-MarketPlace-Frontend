@@ -39,7 +39,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
 
         fetchProduct();
     }, [params, loading, access_token, refresh_token]);
-
+    console.log('Product:', product);
     return (
         <div className="container mx-auto py-8 px-4">
             {productLoading ? <Loader /> : <ProductDetails product={product} />}

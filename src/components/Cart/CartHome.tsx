@@ -168,7 +168,7 @@ export default function CartPage() {
                                 <Button
                                     size="lg"
                                     className="px-8"
-                                    onClick={() => router.push('/marketplace')}
+                                    onClick={() => router.push('/products')}
                                 >
                                     Browse Marketplace
                                 </Button>

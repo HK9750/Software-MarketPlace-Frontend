@@ -31,19 +31,20 @@ const HeroSection = () => {
                     {/* Text Content */}
                     <div className="space-y-6">
                         <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl xl:text-6xl">
-                            Discover the Best Software for Your Needs
+                            Find the Perfect Software for Your Business
                         </h1>
                         <p className="max-w-lg text-muted-foreground md:text-lg">
-                            Browse thousands of applications across categories.
-                            Find, compare, and purchase software with
-                            confidence.
+                            Browse thousands of subscription-based software
+                            solutions with flexible licensing options. Compare
+                            features, read authentic reviews, and make confident
+                            purchase decisions.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                             <div className="relative w-full max-w-sm">
                                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                 <Input
                                     type="search"
-                                    placeholder="Search for software..."
+                                    placeholder="What software are you looking for?"
                                     className="w-full pl-12 pr-4 py-4 text-base"
                                     value={searchQuery}
                                     onChange={(e) =>
@@ -67,6 +68,7 @@ const HeroSection = () => {
                                 'Development',
                                 'Business',
                                 'Security',
+                                'Subscription',
                             ].map((category) => (
                                 <Badge
                                     key={category}

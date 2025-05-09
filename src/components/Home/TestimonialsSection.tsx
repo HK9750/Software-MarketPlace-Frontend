@@ -15,7 +15,7 @@ const testimonials = [
         name: 'Alex Johnson',
         role: 'Product Designer',
         content:
-            'SoftMarket has completely transformed how I discover and purchase software. The user reviews and comparison features helped me find the perfect design tools for my team.',
+            'SoftMarkets licensing system makes it easy to manage our teams software subscriptions. The detailed reviews helped us choose tools that perfectly matched our design workflow.',
         avatar: 'AJ',
         image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&q=80',
     },
@@ -23,15 +23,15 @@ const testimonials = [
         name: 'Sarah Chen',
         role: 'CTO, TechStart Inc.',
         content:
-            "As a startup CTO, I need reliable software that won't break the bank. This marketplace has been invaluable for finding high-quality solutions within our budget.",
+            'As a startup CTO, I love how SoftMarket lets me track all our software subscriptions in one place. The seller analytics have also been invaluable for our own product on the platform.',
         avatar: 'SC',
         image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&q=80',
     },
     {
         name: 'Michael Rodriguez',
-        role: 'Freelance Developer',
+        role: 'Software Vendor',
         content:
-            "The variety of development tools available here is impressive. I've discovered several gems that have significantly improved my workflow and productivity.",
+            'SoftMarket has transformed how I sell my development tools. The subscription management system is seamless, and the dashboard analytics give me powerful insights into customer behavior.',
         avatar: 'MR',
         image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&q=80',
     },
@@ -44,11 +44,11 @@ const TestimonialsSection = () => {
                 {/* Header Section */}
                 <div className="text-center space-y-4">
                     <h2 className="text-4xl font-extrabold tracking-tight md:text-5xl">
-                        What Our Customers Say
+                        Trusted by Buyers and Sellers
                     </h2>
                     <p className="max-w-[700px] mx-auto text-muted-foreground md:text-lg">
-                        Trusted by thousands of businesses and individuals
-                        worldwide.
+                        Join our thriving community of software vendors and
+                        satisfied customers
                     </p>
                 </div>
 
