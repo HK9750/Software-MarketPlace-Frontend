@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { DashboardSidebar } from '@/components/Layout/Dashboard/DashboardSidebar';
 import { DashboardHeader } from '@/components/Layout/Dashboard/DashboardHeader';
-import { useRootContext } from '@/lib/contexts/RootContext';
+import { useSelector } from 'react-redux';
 
 interface DashboardLayoutProps {
     children: React.ReactNode;
@@ -16,7 +17,7 @@ export default function DashboardLayout({
 }: DashboardLayoutProps) {
     const pathname = usePathname();
     const [isMounted, setIsMounted] = useState(false);
-    const { user } = useRootContext();
+    const user = useSelector((state: any) => state.auth.userData);
 
     useEffect(() => {
         setIsMounted(true);

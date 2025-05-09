@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Loader from '@/components/Loader';
 import { toast } from 'sonner';
-import { useRootContext } from '@/lib/contexts/RootContext';
+import useAccessToken from '@/lib/accessToken';
 
 export default function SuccessPage() {
     const params = useSearchParams();
@@ -17,7 +17,7 @@ export default function SuccessPage() {
     const userId = params.get('userId');
     const amount = params.get('amount');
     const router = useRouter();
-    const { access_token, refresh_token } = useRootContext();
+    const access_token = useAccessToken();
     const [loading, setLoading] = useState(true);
 
     // useRef guard to prevent double‐execution
@@ -44,7 +44,6 @@ export default function SuccessPage() {
                         headers: {
                             'Content-Type': 'application/json',
                             Authorization: `Bearer ${access_token}`,
-                            'X-Refresh-Token': refresh_token || '',
                         },
                     }
                 );
@@ -60,7 +59,6 @@ export default function SuccessPage() {
                     {
                         headers: {
                             Authorization: `Bearer ${access_token}`,
-                            'X-Refresh-Token': refresh_token || '',
                         },
                     }
                 );

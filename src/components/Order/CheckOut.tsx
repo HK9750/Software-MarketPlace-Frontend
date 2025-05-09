@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -25,8 +27,9 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { useRootContext } from '@/lib/contexts/RootContext';
 import Loader from '../Loader';
+import useAccessToken from '@/lib/accessToken';
+import { useSelector } from 'react-redux';
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -48,30 +51,24 @@ export default function CheckoutPage() {
     const [orderId, setOrderId] = useState(null);
 
     const router = useRouter();
-    const {
-        access_token,
-        refresh_token,
-        loading: contextLoading,
-        user,
-    } = useRootContext();
+    const access_token = useAccessToken();
+    const user = useSelector((state: any) => state.auth.userData);
+
 
     // Fetch cart items
     const fetchCart = async () => {
         try {
             setLoading(true);
-            if (!contextLoading && access_token) {
                 const response = await axios.get<{ data: any[] }>(
                     `${backendUrl}/cart`,
                     {
                         headers: {
                             Authorization: `Bearer ${access_token}`,
-                            'X-Refresh-Token': refresh_token || '',
                         },
                     }
                 );
                 setCartItems(response.data.data);
                 console.log('Cart items:', response.data.data);
-            }
         } catch (err) {
             console.error('Error fetching cart:', err);
             toast.error('Failed to fetch cart items. Please try again later.');
@@ -81,7 +78,7 @@ export default function CheckoutPage() {
     };
     useEffect(() => {
         fetchCart();
-    }, [contextLoading, access_token, refresh_token]);
+    }, [ access_token]);
 
     const calculateTotal = () => {
         return cartItems.reduce(
@@ -136,7 +133,6 @@ export default function CheckoutPage() {
                 {
                     headers: {
                         Authorization: `Bearer ${access_token}`,
-                        'X-Refresh-Token': refresh_token || '',
                     },
                 }
             );
@@ -161,7 +157,7 @@ export default function CheckoutPage() {
         }
     };
 
-    if (loading || contextLoading) {
+    if (loading) {
         return (
             <div className="min-h-screen bg-muted/30 flex items-center justify-center">
                 <Loader />
@@ -413,7 +409,7 @@ export default function CheckoutPage() {
                                             </span>
                                             <p className="text-sm text-blue-700">
                                                 You will be redirected to
-                                                Stripe's secure payment page to
+                                                Stripe&apos;s secure payment page to
                                                 complete your transaction.
                                             </p>
                                         </div>

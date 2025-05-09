@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/form';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
-import { useRootContext } from '@/lib/contexts/RootContext';
+import useAccessToken from '@/lib/accessToken';
 
 const planFormSchema = z.object({
     name: z
@@ -46,7 +46,7 @@ export function SubscriptionPlanForm({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [plan, setPlan] = useState<PlanFormValues | null>(null);
     const router = useRouter();
-    const { access_token, refresh_token } = useRootContext();
+    const access_token = useAccessToken();
 
     useEffect(() => {
         if (subscriptionId) {
@@ -54,7 +54,6 @@ export function SubscriptionPlanForm({
                 .get(`${BASE_URL}/plan/${subscriptionId}`, {
                     headers: {
                         Authorization: `Bearer ${access_token}`,
-                        'x-refresh-token': refresh_token,
                     },
                 })
                 .then(({ data }) => setPlan(data))
@@ -91,7 +90,6 @@ export function SubscriptionPlanForm({
                 data,
                 headers: {
                     Authorization: `Bearer ${access_token}`,
-                    'x-refresh-token': refresh_token,
                 },
             });
 

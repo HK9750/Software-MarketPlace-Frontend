@@ -1,14 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useRootContext } from '@/lib/contexts/RootContext';
 import { OrderList } from './OrderList';
 import { OrderDetailsModal } from './OrderDetailsModal';
-import { Loader2, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import OrderListSkeleton from './OrderListSkeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import useAccessToken from '@/lib/accessToken';
 
 export default function OrderDashboardPage() {
     const [orders, setOrders] = useState([]);
@@ -18,11 +19,8 @@ export default function OrderDashboardPage() {
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
-    const {
-        access_token,
-        refresh_token,
-        loading: contextLoading,
-    } = useRootContext();
+    const access_token = useAccessToken();
+   
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
     const fetchOrders = async () => {
@@ -31,7 +29,6 @@ export default function OrderDashboardPage() {
             const response: any = await axios.get(`${backendUrl}/orders/`, {
                 headers: {
                     Authorization: `Bearer ${access_token}`,
-                    'X-Refresh-Token': refresh_token || '',
                 },
             });
             setOrders(response.data.data);
@@ -51,28 +48,26 @@ export default function OrderDashboardPage() {
     };
 
     useEffect(() => {
-        if (!contextLoading && access_token) {
             fetchOrders();
-        }
-    }, [access_token, contextLoading]);
+    }, [access_token]);
 
     const handleViewOrderDetails = (orderId) => {
         setSelectedOrderId(orderId);
         setIsDetailsModalOpen(true);
     };
 
-    if (contextLoading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="flex flex-col items-center gap-2">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    <p className="text-sm text-muted-foreground">
-                        Loading dashboard...
-                    </p>
-                </div>
-            </div>
-        );
-    }
+    // if (contextLoading) {
+    //     return (
+    //         <div className="flex items-center justify-center min-h-screen">
+    //             <div className="flex flex-col items-center gap-2">
+    //                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    //                 <p className="text-sm text-muted-foreground">
+    //                     Loading dashboard...
+    //                 </p>
+    //             </div>
+    //         </div>
+    //     );
+    // }
 
     return (
         <div className="container max-w-6xl mx-auto py-8 px-4 sm:px-6 space-y-6">

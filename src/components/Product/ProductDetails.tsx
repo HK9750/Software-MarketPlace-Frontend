@@ -34,7 +34,6 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import type { ProductDetail } from '@/types/types';
 import axios from 'axios';
-import { useRootContext } from '@/lib/contexts/RootContext';
 import Loader from '../Loader';
 import useAccessToken from '@/lib/accessToken';
 import { fetchUserProfile } from '@/hooks/useFetchProfile';

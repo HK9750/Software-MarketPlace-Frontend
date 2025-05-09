@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRootContext } from '@/lib/contexts/RootContext';
+import { useSelector } from 'react-redux';
 
 interface Product {
     id: string;
@@ -50,7 +51,8 @@ export function ProductsTable({
     const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>(
         {}
     );
-    const { user } = useRootContext();
+    const user = useSelector((state: any) => state.auth.userData);
+
     const isSeller = user?.role === 'SELLER';
     // Toggle row expansion
     const toggleRowExpand = (productId: string) => {

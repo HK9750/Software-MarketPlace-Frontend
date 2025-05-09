@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useRootContext } from '@/lib/contexts/RootContext';
 import {
     Dialog,
     DialogContent,
@@ -19,6 +19,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CheckCircle2, XCircle, Clock, AlertCircle } from 'lucide-react';
+import useAccessToken from '@/lib/accessToken';
 
 interface OrderDetailsModalProps {
     orderId: string;
@@ -35,7 +36,7 @@ export function OrderDetailsModal({
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const { access_token, refresh_token } = useRootContext();
+    const access_token = useAccessToken();
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
     useEffect(() => {
@@ -49,7 +50,6 @@ export function OrderDetailsModal({
                     {
                         headers: {
                             Authorization: `Bearer ${access_token}`,
-                            'X-Refresh-Token': refresh_token || '',
                         },
                     }
                 );
@@ -64,7 +64,7 @@ export function OrderDetailsModal({
         };
 
         fetchOrderDetails();
-    }, [orderId, isOpen, access_token, refresh_token, backendUrl]);
+    }, [orderId, isOpen, access_token, backendUrl]);
 
     const getStatusIcon = (status) => {
         switch (status.toLowerCase()) {

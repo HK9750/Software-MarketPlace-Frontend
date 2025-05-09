@@ -30,8 +30,8 @@ export const profileFormSchema = z
                 message: 'Please enter a valid phone number format',
             }),
 
-        // Avatar field that accepts File object or null/undefined
-        avatar: z.instanceof(File).nullable().optional(),
+        // Avatar field that accepts any value or null/undefined
+        avatar: z.any().optional(),
 
         username: z
             .string()

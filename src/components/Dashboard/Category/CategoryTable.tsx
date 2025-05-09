@@ -38,7 +38,7 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import axios from 'axios';
-import { useRootContext } from '@/lib/contexts/RootContext';
+import useAccessToken from '@/lib/accessToken';
 
 interface Category {
     id: string;
@@ -58,7 +58,7 @@ export function CategoryTable() {
     const [error, setError] = useState<string | null>(null);
     const isMounted = useRef(true);
 
-    const { access_token, refresh_token } = useRootContext();
+    const access_token = useAccessToken();
 
     const [categoryDialog, setCategoryDialog] = useState<{
         isOpen: boolean;
@@ -92,7 +92,6 @@ export function CategoryTable() {
             const response: any = await axios.get(BASE_CATEGORY_URL, {
                 headers: {
                     Authorization: `Bearer ${access_token}`,
-                    'x-refresh-token': refresh_token || '',
                 },
             });
 
@@ -229,7 +228,6 @@ export function CategoryTable() {
                         {
                             headers: {
                                 Authorization: `Bearer ${access_token}`,
-                                'x-refresh-token': refresh_token || '',
                             },
                         }
                     );
@@ -264,7 +262,6 @@ export function CategoryTable() {
                         {
                             headers: {
                                 Authorization: `Bearer ${access_token}`,
-                                'x-refresh-token': refresh_token || '',
                             },
                         }
                     );
@@ -298,7 +295,7 @@ export function CategoryTable() {
                 setCategoryDialog((prev) => ({ ...prev, isSubmitting: false }));
             }
         },
-        [access_token, refresh_token]
+        [access_token]
     );
 
     const handleDeleteCategory = useCallback(
@@ -316,7 +313,6 @@ export function CategoryTable() {
                 await axios.delete(`${BASE_CATEGORY_URL}/${categoryId}`, {
                     headers: {
                         Authorization: `Bearer ${access_token}`,
-                        'x-refresh-token': refresh_token || '',
                     },
                 });
 

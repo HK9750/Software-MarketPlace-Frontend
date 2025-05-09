@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
@@ -25,7 +26,7 @@ import {
     DollarSign,
     CreditCard,
 } from 'lucide-react';
-import { useRootContext } from '@/lib/contexts/RootContext';
+import useAccessToken from '@/lib/accessToken';
 
 interface DashboardStats {
     totalUsers: number;
@@ -58,7 +59,7 @@ export const Dashboard = () => {
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const { access_token, refresh_token } = useRootContext();
+    const  access_token = useAccessToken();
 
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -70,7 +71,6 @@ export const Dashboard = () => {
                         headers: {
                             Authorization: `Bearer ${access_token}`,
                             'Content-Type': 'application/json',
-                            'X-Refresh-Token': refresh_token,
                         },
                     }
                 );
@@ -87,7 +87,7 @@ export const Dashboard = () => {
         };
 
         fetchDashboardData();
-    }, [access_token, refresh_token]);
+    }, [access_token]);
 
     if (loading) {
         return <DashboardSkeleton />;

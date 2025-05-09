@@ -191,7 +191,7 @@ const SignInPage = () => {
                                 )}
                             </div>
 
-                            <div className="flex items-center space-x-2 pt-1">
+                            {/* <div className="flex items-center space-x-2 pt-1">
                                 <input
                                     type="checkbox"
                                     id="remember"
@@ -203,7 +203,7 @@ const SignInPage = () => {
                                 >
                                     Remember me for 30 days
                                 </Label>
-                            </div>
+                            </div> */}
 
                             <Button
                                 type="submit"

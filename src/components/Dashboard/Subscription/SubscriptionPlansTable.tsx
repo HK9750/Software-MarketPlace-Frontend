@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -12,8 +13,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -24,18 +23,16 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
     ArrowUpDown,
-    Check,
     Edit,
     MoreHorizontal,
-    Search,
     Trash,
     Loader2,
 } from 'lucide-react';
 import { DeleteSubscriptionPlanDialog } from './DeleteSubscriptionPlanDialog';
 import { toast } from 'sonner';
-import { useRootContext } from '@/lib/contexts/RootContext';
 import axios from 'axios';
 import { SubscriptionPlansTableSkeleton } from './SubscriptionPlansTableSkeleton';
+import useAccessToken from '@/lib/accessToken';
 
 // Subscription plan type to match backend model
 interface SubscriptionPlan {
@@ -52,10 +49,10 @@ const DELETE_SUBSCRIPTION_PLAN_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/sub
 export function SubscriptionPlansTable() {
     const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
     const [loading, setLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery] = useState('');
     const [sortField, setSortField] = useState<keyof SubscriptionPlan>('name');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-    const { access_token, refresh_token } = useRootContext();
+    const access_token = useAccessToken();
 
     // Delete dialog state
     const [deleteDialog, setDeleteDialog] = useState<{
@@ -76,7 +73,6 @@ export function SubscriptionPlansTable() {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${access_token}`,
-                    'x-refresh-token': refresh_token,
                 },
             });
 
@@ -152,7 +148,6 @@ export function SubscriptionPlansTable() {
                     headers: {
                         'Content-Type': 'application/json',
                         Authorization: `Bearer ${access_token}`,
-                        'x-refresh-token': refresh_token,
                     },
                 }
             );

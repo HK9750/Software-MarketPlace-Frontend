@@ -1,14 +1,12 @@
 'use client';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useRootContext } from '@/lib/contexts/RootContext';
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
     CardDescription,
-    CardFooter,
 } from '@/components/ui/card';
 import {
     AreaChart,
@@ -18,9 +16,7 @@ import {
     YAxis,
     Tooltip as RechartsTooltip,
     ResponsiveContainer,
-    PieChart,
-    Pie,
-    Cell,
+   
     LineChart,
     Line,
     BarChart,
@@ -44,6 +40,7 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 import AnalyticsPageSkeleton from './AnalyticsPageSkeleton';
+import useAccessToken from '@/lib/accessToken';
 
 export default function AnalyticsPage() {
     const [ordersOverTime, setOrdersOverTime] = useState([]);
@@ -54,14 +51,14 @@ export default function AnalyticsPage() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState(null);
-    const { access_token, refresh_token } = useRootContext();
+    const access_token = useAccessToken();
 
-    const COLORS = [
-        'hsl(var(--primary))',
-        'hsl(var(--secondary))',
-        'hsl(var(--accent))',
-        'hsl(var(--muted))',
-    ];
+    // const COLORS = [
+    //     'hsl(var(--primary))',
+    //     'hsl(var(--secondary))',
+    //     'hsl(var(--accent))',
+    //     'hsl(var(--muted))',
+    // ];
 
     const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -70,7 +67,6 @@ export default function AnalyticsPage() {
             const response = await axios.get(`${API_BASE_URL}${url}`, {
                 headers: {
                     Authorization: `Bearer ${access_token}`,
-                    'x-refresh-token': refresh_token,
                 },
             });
             setter(response.data);
@@ -92,7 +88,6 @@ export default function AnalyticsPage() {
                 {
                     headers: {
                         Authorization: `Bearer ${access_token}`,
-                        'x-refresh-token': refresh_token,
                     },
                 }
             );
@@ -131,7 +126,7 @@ export default function AnalyticsPage() {
         if (access_token) {
             fetchAllData();
         }
-    }, [access_token, refresh_token]);
+    }, [access_token]);
 
     // Transform product performance data for bar chart
     const transformedProductData = productPerformance

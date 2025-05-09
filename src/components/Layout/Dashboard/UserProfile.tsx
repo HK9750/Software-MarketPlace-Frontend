@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { useRootContext } from '@/lib/contexts/RootContext';
 import { LogOut } from 'lucide-react';
+import { useSelector } from 'react-redux';
 
 export function UserProfile({ onLogout = () => {} }) {
-    const { user } = useRootContext();
+    const user = useSelector((state: any) => state.auth.userData);
     let name = 'Anonymous';
     let email = 'Anonymous@gmail.com';
 

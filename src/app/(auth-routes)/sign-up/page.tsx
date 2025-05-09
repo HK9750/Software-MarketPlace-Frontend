@@ -114,9 +114,7 @@ const SignUpPage = () => {
                 }
             );
             console.log(response);
-            console.log(
-                response.data.access_token && response.data.refresh_token
-            );
+          
             if (response.data.access_token && response.data.refresh_token) {
                 Cookies.set('access_token', response.data.access_token, {
                     secure: true,
@@ -208,7 +206,7 @@ const SignUpPage = () => {
                                     {...register('password')}
                                 />
                                 <p className="text-xs text-muted-foreground mt-1">
-                                    Password must be at least 8 characters long
+                                    Password must be at least 6 characters long
                                 </p>
                                 {errors.password && (
                                     <p className="text-red-500 text-xs">

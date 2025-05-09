@@ -1,13 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // UsersPage.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useRootContext } from '@/lib/contexts/RootContext';
 import { toast } from 'sonner';
-import { ChevronDown, Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
     Card,
     CardContent,
@@ -15,18 +12,11 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { User } from '@/types/user';
 import UserFilters from './UserFilters';
 import UsersTable from './UsersTable';
 import UsersTableSkeleton from './UsersTableSkeleton';
+import useAccessToken from '@/lib/accessToken';
 
 const GET_USERS_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/profile/users`;
 const VERIFY_SELLER_URL = (userId: string) =>
@@ -40,7 +30,7 @@ export default function UsersPage() {
         string | null
     >(null);
     const [loading, setLoading] = useState(true);
-    const { access_token, refresh_token } = useRootContext();
+    const access_token = useAccessToken();
 
     const fetchUsers = async () => {
         try {
@@ -48,7 +38,6 @@ export default function UsersPage() {
             const response: any = await axios.get(GET_USERS_URL, {
                 headers: {
                     Authorization: `Bearer ${access_token}`,
-                    'x-refresh-token': refresh_token,
                 },
             });
             setUsers(response.data.users);

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -8,8 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { useRootContext } from '@/lib/contexts/RootContext';
 import Loader from '../Loader';
+import useAccessToken from '@/lib/accessToken';
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -19,23 +20,18 @@ export default function OrderConfirmationPage({ params }) {
     const [loading, setLoading] = useState(true);
 
     const router = useRouter();
-    const {
-        access_token,
-        refresh_token,
-        loading: contextLoading,
-    } = useRootContext();
+    const access_token = useAccessToken();
 
     useEffect(() => {
         const fetchOrderDetails = async () => {
             try {
                 setLoading(true);
-                if (!contextLoading && access_token && orderId) {
+                if (access_token && orderId) {
                     const response: any = await axios.get(
                         `${backendUrl}/orders/${orderId}`,
                         {
                             headers: {
                                 Authorization: `Bearer ${access_token}`,
-                                'X-Refresh-Token': refresh_token || '',
                             },
                         }
                     );
@@ -52,9 +48,9 @@ export default function OrderConfirmationPage({ params }) {
         };
 
         fetchOrderDetails();
-    }, [contextLoading, access_token, refresh_token, orderId, toast]);
+    }, [ access_token, orderId, toast]);
 
-    if (loading || contextLoading) {
+    if (loading ) {
         return (
             <div className="min-h-screen bg-muted/30 flex items-center justify-center">
                 <Loader />
@@ -76,7 +72,7 @@ export default function OrderConfirmationPage({ params }) {
                                     Order Not Found
                                 </h2>
                                 <p className="text-muted-foreground mb-8 max-w-md text-center">
-                                    We couldn't find the order details you're
+                                    We couldn&apos;t find the order details you&apos;re
                                     looking for.
                                 </p>
                                 <Button

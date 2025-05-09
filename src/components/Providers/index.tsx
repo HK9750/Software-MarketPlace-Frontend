@@ -50,7 +50,6 @@ export const Providers = ({ children }: ProvidersProps) => {
                         {
                             headers: {
                                 Authorization: `Bearer ${access_token}`,
-                                'X-Refresh-Token': refresh_token || '',
                             },
                         }
                     );
