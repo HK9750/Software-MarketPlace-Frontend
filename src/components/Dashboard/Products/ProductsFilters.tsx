@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import { Search, X, Loader2 } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
     Select,

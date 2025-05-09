@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
@@ -30,6 +31,10 @@ import type { ProductDetail } from '@/types/types';
 import axios from 'axios';
 import { useRootContext } from '@/lib/contexts/RootContext';
 import Loader from '../Loader';
+import useAccessToken from '@/lib/accessToken';
+import { fetchUserProfile } from '@/hooks/useFetchProfile';
+import { useDispatch } from 'react-redux';
+import { login } from '@/redux-store/authSlice';
 
 export default function ProductDetails({
     product,
@@ -39,9 +44,9 @@ export default function ProductDetails({
     const [isInCart, setIsInCart] = useState(product?.isInCart);
     const [isInWishlist, setIsInWishlist] = useState(product?.isWishlisted);
     const [isInCartLoading, setIsInCartLoading] = useState(false);
-    const { refetchUserProfile } = useRootContext();
 
-    const { access_token, refresh_token } = useRootContext();
+    const access_token = useAccessToken();
+
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
     const subscriptionOptions = product?.subscriptions || [];
     const [selectedsubscription, setselectedsubscription] = useState<string>(
@@ -50,6 +55,7 @@ export default function ProductDetails({
 
     const [selectedOption, setSelectedOption] = useState(null);
     const [selectedPrice, setSelectedPrice] = useState(0);
+    const dispatch = useDispatch();
 
     useEffect(() => {
         const option = subscriptionOptions.find(
@@ -76,12 +82,15 @@ export default function ProductDetails({
                 {
                     headers: {
                         Authorization: `Bearer ${access_token}`,
-                        'X-Refresh-Token': refresh_token || '',
                     },
                 }
             );
             setIsInCart(response.data.success);
-            await refetchUserProfile();
+            fetchUserProfile(access_token).then((res: any) => {
+                            console.log(res);
+                            dispatch(login(res.user));
+                        });
+
         } catch (error) {
             console.error('Error adding to cart:', error);
         } finally {
@@ -97,7 +106,6 @@ export default function ProductDetails({
             {
                 headers: {
                     Authorization: `Bearer ${access_token}`,
-                    'X-Refresh-Token': refresh_token || '',
                 },
             }
         );

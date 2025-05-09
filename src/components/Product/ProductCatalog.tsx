@@ -21,7 +21,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import axios from 'axios';
 import Link from 'next/link';
-import { useRootContext } from '@/lib/contexts/RootContext';
+import useAccessToken from '@/lib/accessToken';
 
 interface ProductCatalogProps {
     products: ProductDetail[];
@@ -49,29 +49,24 @@ export default function ProductCatalog({
     const [selectedPrice, setSelectedPrice] = useState<string | null>(null);
     const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const { access_token, refresh_token, loading } = useRootContext();
+    const access_token = useAccessToken();
 
     const fetchWishlist = async () => {
-        if (!loading && access_token) {
-            try {
-                const response: any = await axios.get(
-                    `${backendUrl}/wishlist`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${access_token}`,
-                        },
-                    }
-                );
-                setWishlist(response.data.data);
-            } catch (error) {
-                console.error('Error fetching wishlist:', error);
-            }
+        try {
+            const response: any = await axios.get(`${backendUrl}/wishlist`, {
+                headers: {
+                    Authorization: `Bearer ${access_token}`,
+                },
+            });
+            setWishlist(response.data.data);
+        } catch (error) {
+            console.error('Error fetching wishlist:', error);
         }
     };
 
     useEffect(() => {
         fetchWishlist();
-    }, [access_token, refresh_token, loading]);
+    }, [access_token]);
 
     const categories = Array.from(
         new Set(products.map((p) => p.category.name))

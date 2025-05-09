@@ -40,10 +40,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Address, SessionUser } from '@/types/types';
-import { useRootContext } from '@/lib/contexts/RootContext';
 import axios from 'axios';
 import BackButton from '../BackButton';
 import { toast } from 'sonner';
+import useAccessToken from '@/lib/accessToken';
 
 interface ProfilePageProps {
     userData: SessionUser;
@@ -57,7 +57,7 @@ export default function ProfilePage({ userData }: ProfilePageProps) {
     const [showOldPassword, setShowOldPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const { access_token, refresh_token } = useRootContext();
+    const access_token = useAccessToken();
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -159,7 +159,6 @@ export default function ProfilePage({ userData }: ProfilePageProps) {
             }>(`${backendUrl}/profile/update`, changedFields, {
                 headers: {
                     Authorization: `Bearer ${access_token}`,
-                    'X-Refresh-Token': refresh_token || '',
                 },
             });
 
@@ -205,7 +204,6 @@ export default function ProfilePage({ userData }: ProfilePageProps) {
                 {
                     headers: {
                         Authorization: `Bearer ${access_token}`,
-                        'X-Refresh-Token': refresh_token || '',
                     },
                 }
             );

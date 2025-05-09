@@ -1,18 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import React from 'react';
-import { useRootContext } from '@/lib/contexts/RootContext';
 import Loader from '@/components/Loader';
 import Unauthorized from '@/components/UnAuthorized';
+import { useSelector } from 'react-redux';
 
 interface SellerProtectedProps {
     children: React.ReactNode;
 }
 
 const SellerProtected: React.FC<SellerProtectedProps> = ({ children }) => {
-    const { user, loading } = useRootContext();
+    const user = useSelector((state: any) => state.auth.userData);
 
-    if (loading || user === undefined) return <Loader />;
+
+    if ( user === undefined) return <Loader />;
     if (!user || user.role !== 'SELLER') return <Unauthorized />;
 
     return <>{children}</>;

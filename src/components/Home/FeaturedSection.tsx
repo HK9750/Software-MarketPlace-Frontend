@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FC, useEffect, useState } from 'react';
 import axios from 'axios';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';

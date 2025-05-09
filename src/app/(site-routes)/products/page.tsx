@@ -7,7 +7,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ProductDetail } from '@/types/types';
 import { useSearchParams } from 'next/navigation';
-import { useRootContext } from '@/lib/contexts/RootContext';
+import useAccessToken from '@/lib/accessToken';
 
 // ProductCardSkeleton component for loading state
 const ProductCardSkeleton = () => {
@@ -83,14 +83,14 @@ export default function ProductsPage() {
     const searchParams = useSearchParams();
     const searchQuery = searchParams.get('search') || '';
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-    const { access_token, refresh_token, loading } = useRootContext();
+    const access_token = useAccessToken();
 
     useEffect(() => {
         setQuery(searchQuery);
     }, [searchQuery]);
 
     useEffect(() => {
-        if (!loading && access_token) {
+        if (access_token) {
             (async () => {
                 setProductLoading(true);
                 try {
@@ -99,7 +99,6 @@ export default function ProductsPage() {
                         {
                             headers: {
                                 Authorization: `Bearer ${access_token}`,
-                                'X-Refresh-Token': refresh_token || '',
                             },
                         }
                     );
@@ -111,7 +110,7 @@ export default function ProductsPage() {
                 }
             })();
         }
-    }, [loading, access_token, refresh_token, backendUrl, query]);
+    }, [ access_token, backendUrl, query]);
 
     return (
         <div className="container mx-auto py-8 px-4">

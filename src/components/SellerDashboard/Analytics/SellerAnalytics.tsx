@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useRootContext } from '@/lib/contexts/RootContext';
 import {
     Card,
     CardContent,
@@ -18,36 +18,25 @@ import {
     YAxis,
     Tooltip as RechartsTooltip,
     ResponsiveContainer,
-    PieChart,
-    Pie,
-    Cell,
     LineChart,
     Line,
-    BarChart,
-    Bar,
     Legend,
 } from 'recharts';
 import {
     Loader2,
     TrendingUp,
-    Users,
     ShoppingCart,
     DollarSign,
     RefreshCw,
     Star,
-    ArrowUpRight,
-    Percent,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
+
 import { formatCurrency } from '@/lib/utils';
 import SellerAnalyticsPageSkeleton from './SellerAnalyticsPageSkeleton';
+import useAccessToken from '@/lib/accessToken';
+import { useSelector } from 'react-redux';
 
 export default function SellerAnalyticsPage() {
     const [products, setProducts] = useState([]);
@@ -59,7 +48,8 @@ export default function SellerAnalyticsPage() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState(null);
-    const { access_token, refresh_token, user } = useRootContext();
+    const access_token = useAccessToken();
+    const user = useSelector((state: any) => state.auth.userData);
     console.log(user);
     const COLORS = [
         'hsl(var(--primary))',
@@ -79,7 +69,6 @@ export default function SellerAnalyticsPage() {
                 {
                     headers: {
                         Authorization: `Bearer ${access_token}`,
-                        'x-refresh-token': refresh_token,
                     },
                 }
             );
@@ -102,7 +91,6 @@ export default function SellerAnalyticsPage() {
                 {
                     headers: {
                         Authorization: `Bearer ${access_token}`,
-                        'x-refresh-token': refresh_token,
                     },
                 }
             );
@@ -371,7 +359,7 @@ export default function SellerAnalyticsPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {conversionRates.map((item, index) => (
+                            {conversionRates.map((item) => (
                                 <div
                                     key={item.productId}
                                     className="flex items-center justify-between"

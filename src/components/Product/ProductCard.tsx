@@ -13,7 +13,7 @@ import { Star, Heart, MoveRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ProductDetail } from '@/types/types';
 import axios from 'axios';
-import { useRootContext } from '@/lib/contexts/RootContext';
+import useAccessToken from '@/lib/accessToken';
 
 interface ProductCardProps {
     software: ProductDetail;
@@ -30,7 +30,7 @@ const ProductCard = ({ software, onWishlistToggle }: ProductCardProps) => {
         averageRating,
         isWishlisted: initialWishlist,
     } = software;
-    const { access_token, refresh_token } = useRootContext();
+    const access_token = useAccessToken();
     const [isWishlisted, setIsWishlisted] = useState(initialWishlist);
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -45,7 +45,6 @@ const ProductCard = ({ software, onWishlistToggle }: ProductCardProps) => {
                 {
                     headers: {
                         Authorization: `Bearer ${access_token}`,
-                        'X-Refresh-Token': refresh_token || '',
                     },
                 }
             );

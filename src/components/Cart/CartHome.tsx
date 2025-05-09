@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -16,8 +17,11 @@ import {
 } from '@/components/ui/card';
 import axios from 'axios';
 import Loader from '../Loader';
-import { useRootContext } from '@/lib/contexts/RootContext';
 import { useRouter } from 'next/navigation';
+import { useDispatch } from 'react-redux';
+import useAccessToken from '@/lib/accessToken';
+import { fetchUserProfile } from '@/hooks/useFetchProfile';
+import { login } from '@/redux-store/authSlice';
 
 interface CartItem {
     id: string;
@@ -41,8 +45,8 @@ export default function CartPage() {
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [cartLoading, setCartLoading] = useState<boolean>(false);
     const [fetch, setFetch] = useState<boolean>(false);
-    const { refetchUserProfile, access_token, refresh_token, loading } =
-        useRootContext();
+    const dispatch = useDispatch();
+    const access_token = useAccessToken();
     const router = useRouter();
 
     useEffect(() => {
@@ -50,18 +54,15 @@ export default function CartPage() {
             try {
                 setCartItems([]);
                 setCartLoading(true);
-                if (!loading && access_token) {
-                    const response = await axios.get<{ data: CartItem[] }>(
-                        `${backendUrl}/cart`,
-                        {
-                            headers: {
-                                Authorization: `Bearer ${access_token}`,
-                                'X-Refresh-Token': refresh_token || '',
-                            },
-                        }
-                    );
-                    setCartItems(response.data.data);
-                }
+                const response = await axios.get<{ data: CartItem[] }>(
+                    `${backendUrl}/cart`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${access_token}`,
+                        },
+                    }
+                );
+                setCartItems(response.data.data);
             } catch (err) {
                 console.error('Error fetching cart:', err);
             } finally {
@@ -70,24 +71,24 @@ export default function CartPage() {
         };
 
         fetchCart();
-    }, [loading, access_token, refresh_token, fetch]);
+    }, [access_token, fetch]);
 
     const removeItem = async (itemId: string) => {
         try {
             setCartLoading(true);
-            if (!loading && access_token) {
-                await axios.delete<{ data: CartItem[] }>(
-                    `${backendUrl}/cart/${itemId}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${access_token}`,
-                            'X-Refresh-Token': refresh_token || '',
-                        },
-                    }
-                );
-                setFetch((prev) => !prev);
-            }
-            await refetchUserProfile();
+            await axios.delete<{ data: CartItem[] }>(
+                `${backendUrl}/cart/${itemId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${access_token}`,
+                    },
+                }
+            );
+            setFetch((prev) => !prev);
+            fetchUserProfile(access_token).then((res: any) => {
+                console.log(res);
+                dispatch(login(res.user));
+            });
         } catch (err) {
             console.error('Error removing item:', err);
         } finally {
@@ -98,16 +99,16 @@ export default function CartPage() {
     const clearCart = async () => {
         try {
             setCartLoading(true);
-            if (!loading && access_token) {
-                await axios.delete<{ data: CartItem[] }>(`${backendUrl}/cart`, {
-                    headers: {
-                        Authorization: `Bearer ${access_token}`,
-                        'X-Refresh-Token': refresh_token || '',
-                    },
-                });
-                setFetch((prev) => !prev);
-            }
-            await refetchUserProfile();
+            await axios.delete<{ data: CartItem[] }>(`${backendUrl}/cart`, {
+                headers: {
+                    Authorization: `Bearer ${access_token}`,
+                },
+            });
+            setFetch((prev) => !prev);
+            fetchUserProfile(access_token).then((res: any) => {
+                console.log(res);
+                dispatch(login(res.user));
+            });
         } catch (err) {
             console.error('Error clearing cart:', err);
         } finally {
@@ -162,7 +163,7 @@ export default function CartPage() {
                                     Your cart is empty
                                 </h2>
                                 <p className="text-muted-foreground mb-8 max-w-md text-center">
-                                    Looks like you haven't added any software
+                                    Looks like you haven&apos;t added any software
                                     subscriptions to your cart yet.
                                 </p>
                                 <Button

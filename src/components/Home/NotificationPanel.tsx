@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import type React from 'react';
@@ -7,8 +8,11 @@ import { Button } from '@/components/ui/button';
 import { formatDistanceToNow } from 'date-fns';
 import { Notification } from '@/types/types';
 import { useRouter } from 'next/navigation';
-import { useRootContext } from '@/lib/contexts/RootContext';
 import axios from 'axios';
+import useAccessToken from '@/lib/accessToken';
+import { fetchUserProfile } from '@/hooks/useFetchProfile';
+import { useDispatch } from 'react-redux';
+import { login } from '@/redux-store/authSlice';
 
 interface NotificationPanelProps {
     notifications: Notification[];
@@ -17,8 +21,8 @@ interface NotificationPanelProps {
 const NotificationPanel: React.FC<NotificationPanelProps> = ({
     notifications,
 }) => {
-    const { refetchUserProfile, access_token, refresh_token } =
-        useRootContext();
+    const dispatch = useDispatch();
+    const access_token = useAccessToken();
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
     const router = useRouter();
     const onMarkAsRead = async (id: string) => {
@@ -29,11 +33,13 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
                 {
                     headers: {
                         Authorization: `Bearer ${access_token}`,
-                        'X-Refresh-Token': refresh_token || '',
                     },
                 }
             );
-            await refetchUserProfile();
+            fetchUserProfile(access_token).then((res: any) => {
+                            console.log(res);
+                            dispatch(login(res.user));
+                        });
         } catch (error) {
             console.error('Error :', error);
         }

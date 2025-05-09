@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-html-link-for-pages */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,8 +10,8 @@ import { ProductsTable } from './ProductsTable';
 import { StatusChangeDialog } from './StatusChangeDialog';
 import { ProductsSkeleton } from './ProductsSkeleton';
 import { toast } from 'sonner';
-import { useRootContext } from '@/lib/contexts/RootContext';
 import { debounce } from '@/utils/debounce';
+import useAccessToken from '@/lib/accessToken';
 
 // Define proper types for better type safety
 interface Product {
@@ -90,7 +92,7 @@ export default function ProductsPage({
         currentStatus: '',
         newStatus: 'active',
     });
-    const { access_token, refresh_token } = useRootContext();
+    const access_token = useAccessToken();
     const debouncedSetSearchQuery = debounce((query: string) => {
         setSearchQuery(query);
     }, 500);
@@ -104,7 +106,6 @@ export default function ProductsPage({
                 const response: any = await axios.get(GET_CATEGORIES_URL, {
                     headers: {
                         Authorization: `Bearer ${access_token}`,
-                        'x-refresh-token': refresh_token,
                     },
                 });
 
@@ -131,7 +132,7 @@ export default function ProductsPage({
         };
 
         fetchCategories();
-    }, [access_token, refresh_token]);
+    }, [access_token]);
 
     const url =
         type === 'admin'
@@ -148,7 +149,6 @@ export default function ProductsPage({
                 const response: any = await axios.get(url, {
                     headers: {
                         Authorization: `Bearer ${access_token}`,
-                        'x-refresh-token': refresh_token,
                     },
                 });
 
@@ -189,7 +189,7 @@ export default function ProductsPage({
         };
 
         fetchProducts();
-    }, [access_token, refresh_token, url]);
+    }, [access_token, url]);
 
     // Filter and sort products
     const filteredProducts: any = products
@@ -296,7 +296,6 @@ export default function ProductsPage({
                 {
                     headers: {
                         Authorization: `Bearer ${access_token}`,
-                        'x-refresh-token': refresh_token,
                     },
                 }
             );

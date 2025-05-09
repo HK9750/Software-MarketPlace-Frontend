@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import Link from 'next/link';
@@ -11,12 +12,12 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Edit, ExternalLink, Star } from 'lucide-react';
+import { Edit, ExternalLink, Star } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useRootContext } from '@/lib/contexts/RootContext';
 import axios from 'axios';
 import { Skeleton } from '@/components/ui/skeleton';
+import useAccessToken from '@/lib/accessToken';
 
 const GET_PRODUCT_BY_ID = `${process.env.NEXT_PUBLIC_BACKEND_URL}/products`;
 
@@ -55,7 +56,7 @@ export default function ProductDetailsPage() {
     const [product, setProduct] = useState<ProductData | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<boolean>(false);
-    const { refresh_token, access_token } = useRootContext();
+    const access_token = useAccessToken();
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -66,7 +67,6 @@ export default function ProductDetailsPage() {
                     {
                         headers: {
                             Authorization: `Bearer ${access_token}`,
-                            'x-refresh-token': refresh_token,
                         },
                     }
                 );
@@ -83,14 +83,14 @@ export default function ProductDetailsPage() {
                 } else {
                     setError(true);
                 }
-            } catch (error) {
+            } catch  {
                 setError(true);
             } finally {
                 setLoading(false);
             }
         };
         fetchProduct();
-    }, [paramsId, access_token, refresh_token]);
+    }, [paramsId, access_token]);
 
     // Helper function to convert object to array of features
     const getFeaturesList = (

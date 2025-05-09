@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import type React from 'react';
@@ -31,7 +32,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
-import { useRootContext } from '@/lib/contexts/RootContext';
+import useAccessToken from '@/lib/accessToken';
 
 // Define types based on the API response
 interface ProductFeatures {
@@ -116,7 +117,7 @@ interface ProductFormProps {
 
 export function ProductForm({ id }: ProductFormProps) {
     const router = useRouter();
-    const { access_token, refresh_token } = useRootContext();
+    const access_token = useAccessToken();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -191,7 +192,6 @@ export function ProductForm({ id }: ProductFormProps) {
             const res: any = await axios.get(GET_CATEGORIES_URL, {
                 headers: {
                     Authorization: `Bearer ${access_token}`,
-                    'x-refresh-token': refresh_token,
                 },
             });
 
@@ -214,7 +214,6 @@ export function ProductForm({ id }: ProductFormProps) {
             const res: any = await axios.get(GET_SUBSCRIPTION_PLANS_URL, {
                 headers: {
                     Authorization: `Bearer ${access_token}`,
-                    'x-refresh-token': refresh_token,
                 },
             });
 
@@ -250,7 +249,6 @@ export function ProductForm({ id }: ProductFormProps) {
             const res: any = await axios.get(`${GET_PRODUCT_BY_ID}/${id}`, {
                 headers: {
                     Authorization: `Bearer ${access_token}`,
-                    'x-refresh-token': refresh_token,
                 },
             });
 
@@ -441,13 +439,12 @@ export function ProductForm({ id }: ProductFormProps) {
             }
 
             // Make API request
-            const response = await axios({
+             await axios({
                 method,
                 url,
                 data: formData,
                 headers: {
                     Authorization: `Bearer ${access_token}`,
-                    'x-refresh-token': refresh_token,
                     'Content-Type': 'multipart/form-data',
                 },
             });
