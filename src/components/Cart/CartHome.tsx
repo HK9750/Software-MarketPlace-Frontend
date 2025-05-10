@@ -22,6 +22,7 @@ import { useDispatch } from 'react-redux';
 import useAccessToken from '@/lib/accessToken';
 import { fetchUserProfile } from '@/hooks/useFetchProfile';
 import { login } from '@/redux-store/authSlice';
+import BackButton from '../BackButton';
 
 interface CartItem {
     id: string;
@@ -128,16 +129,8 @@ export default function CartPage() {
             {/* Header with back button */}
             <div className="container max-w-6xl mx-auto py-4 px-4 md:px-6">
                 <div className="flex items-center relative">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="rounded-full h-10 w-10 bg-background hover:bg-accent absolute left-0"
-                        onClick={() => router.back()}
-                        aria-label="Go back"
-                    >
-                        <ArrowLeft className="h-5 w-5" />
-                    </Button>
-                    <h1 className="text-2xl md:text-3xl font-bold w-full text-center relative">
+                    <BackButton className="absolute left-0 top-0 z-10" />
+                    <h1 className="text-2xl md:text-3xl font-bold w-full text-center relative pointer-events-none">
                         <span className="relative inline-block">
                             Your Cart
                             <span className="absolute -bottom-1 left-0 right-0 h-1 bg-primary/70 rounded-full transform"></span>
