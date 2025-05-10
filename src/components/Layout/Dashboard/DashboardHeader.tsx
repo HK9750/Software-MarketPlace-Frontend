@@ -12,8 +12,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SessionUser } from '@/types/types';
 import { useRouter } from 'next/navigation';
-import { useSignOut } from '@/hooks/useSignOut';
+import Cookies from 'js-cookie';
 import BackButton from '@/components/BackButton';
+import { useDispatch } from 'react-redux';
+import { logout } from '@/redux-store/authSlice';
 
 interface DashboardHeaderProps {
     user?: SessionUser;
@@ -51,13 +53,13 @@ function NotificationsButton() {
 
 function UserMenu({ initials }: { initials: string }) {
     const router = useRouter();
-
-    const signOut = useSignOut(
-        typeof window !== 'undefined' ? window.location.origin : ''
-    );
+    const dispatch = useDispatch();
 
     const handleLogout = async () => {
-        await signOut();
+        dispatch(logout());
+        router.push('/sign-in');
+        Cookies.remove('access_token');
+        Cookies.remove('refresh_token');
     };
 
     return (
