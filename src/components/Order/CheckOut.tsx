@@ -30,6 +30,8 @@ import { toast } from 'sonner';
 import Loader from '../Loader';
 import useAccessToken from '@/lib/accessToken';
 import { useSelector } from 'react-redux';
+import { v4 as uuidv4 } from 'uuid'; // Import UUID for generating transaction IDs
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -37,6 +39,7 @@ export default function CheckoutPage() {
     const [cartItems, setCartItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [orderLoading, setOrderLoading] = useState(false);
+    const [paymentMethod, setPaymentMethod] = useState('stripe');
     const [billingInfo, setBillingInfo] = useState({
         firstName: '',
         lastName: '',
@@ -75,6 +78,7 @@ export default function CheckoutPage() {
             setLoading(false);
         }
     };
+
     useEffect(() => {
         fetchCart();
     }, [access_token]);
@@ -112,6 +116,29 @@ export default function CheckoutPage() {
         return true;
     };
 
+    const redirectToPayfast = async (orderId) => {
+        try {
+            // Construct item details
+            const itemNames = cartItems.map(
+                (item) => item.subscription.software.name
+            );
+            const itemName = itemNames.join(', ');
+            const itemDescription = `Software license${itemNames.length > 1 ? 's' : ''} - ${itemName}`;
+            const totalAmount = calculateTotal().toFixed(2);
+            const transactionId = uuidv4();
+            const userId = user.id;
+
+            // Construct the PayFast URL with all required parameters
+            const payfastUrl = `${process.env.NEXT_PUBLIC_PAYFAST_TESTING_URL}?merchant_id=${process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_ID}&merchant_key=${process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_KEY}&amount=${totalAmount}&item_name=${encodeURIComponent(itemName)}&item_description=${encodeURIComponent(itemDescription)}&email_confirmation=1&confirmation_address=${encodeURIComponent(billingInfo.email)}&payment_method=cc&return_url=${encodeURIComponent(`${process.env.NEXT_PUBLIC_FRONTEND_URL}/success?orderId=${orderId}&transactionId=${transactionId}&userId=${userId}&amount=${totalAmount}`)}&cancel_url=${encodeURIComponent(`${process.env.NEXT_PUBLIC_FRONTEND_URL}/cart`)}&notify_url=${encodeURIComponent(`${process.env.NEXT_PUBLIC_BACKEND_URL}/payments/payfast-callback`)}`;
+
+            // Redirect to PayFast
+            window.location.href = payfastUrl;
+        } catch (error) {
+            console.error('Error redirecting to PayFast:', error);
+            toast.error('Failed to process payment. Please try again later.');
+        }
+    };
+
     const handleSubmitOrder = async () => {
         if (!validateForm()) return;
 
@@ -140,14 +167,21 @@ export default function CheckoutPage() {
             const newOrderId = response.data.order.id;
             setOrderId(newOrderId);
 
-            const stripeRes: any = await axios.post('/api/stripe', {
-                orderId: newOrderId,
-                orderItems,
-                userId: user.id,
-            });
+            // Process payment based on selected payment method
+            if (paymentMethod === 'stripe') {
+                // Existing Stripe integration
+                const stripeRes: any = await axios.post('/api/stripe', {
+                    orderId: newOrderId,
+                    orderItems,
+                    userId: user.id,
+                });
 
-            // Redirect to Stripe Checkout
-            window.location.href = stripeRes.data.url;
+                // Redirect to Stripe Checkout
+                window.location.href = stripeRes.data.url;
+            } else if (paymentMethod === 'payfast') {
+                // New PayFast integration - redirect to PayFast
+                await redirectToPayfast(newOrderId);
+            }
         } catch (err) {
             console.error('Error creating order:', err);
             toast.error('Failed to place order. Please try again later.');
@@ -395,22 +429,90 @@ export default function CheckoutPage() {
                                     Payment Method
                                 </CardTitle>
                                 <CardDescription>
-                                    Secure payment via Stripe
+                                    Choose your preferred payment method
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="px-6 py-6">
-                                <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
+                                <RadioGroup
+                                    value={paymentMethod}
+                                    onValueChange={setPaymentMethod}
+                                    className="space-y-4"
+                                >
+                                    <div className="flex items-center space-x-3 border rounded-md p-4 hover:bg-muted/20 transition-colors cursor-pointer">
+                                        <RadioGroupItem
+                                            value="stripe"
+                                            id="stripe"
+                                        />
+                                        <Label
+                                            htmlFor="stripe"
+                                            className="flex items-center cursor-pointer"
+                                        >
+                                            <svg
+                                                viewBox="0 0 60 25"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="60"
+                                                height="25"
+                                                className="mr-2"
+                                            >
+                                                <path
+                                                    fill="#6772E5"
+                                                    d="M59.64 14.28h-8.06c.19 1.16 1.18 1.88 2.55 1.88 1.23 0 2.26-.37 3.12-.95v2.28c-.97.47-2.17.73-3.5.73-3.05 0-5.08-1.89-5.08-4.98 0-2.92 1.98-4.97 4.85-4.97 2.35 0 4.22 1.65 4.22 4.44 0 .52-.04 1.06-.1 1.57zm-8.14-1.97h4.47c-.05-1.1-.95-1.88-2.15-1.88-1.17 0-2.07.77-2.32 1.88zm-9.2 4.55V9.33h2.83v1.29c.66-.89 1.86-1.51 3.08-1.51V12c-.29-.06-.56-.1-.98-.1-1.32 0-2.1.6-2.1 2.24v3.85l-2.83-.13zm-5.47-6.55v6.42h-2.82v-6.42h-1.7V9.33h1.7V6.92h2.82v2.41h1.7v1.91h-1.7zM25.97 11.9c0-1.47 1.14-2.76 2.99-2.76 1.88 0 3.02 1.29 3.02 2.76 0 1.5-1.14 2.8-3.02 2.8-1.85 0-2.99-1.3-2.99-2.8zm2.99 5.36c3.5 0 5.87-2.46 5.87-5.36 0-2.86-2.37-5.33-5.87-5.33-3.46 0-5.84 2.47-5.84 5.33 0 2.9 2.38 5.36 5.84 5.36zm-12.43.42V7.46h2.76v2.12c.97-1.42 2.63-2.41 4.36-2.41 1.83 0 3.18.76 3.8 2.05 1.04-1.29 2.58-2.05 4.32-2.05 2.38 0 4.5 1.39 4.5 4.4v5.75h-2.8v-5.5c0-1.65-1.02-2.57-2.48-2.57-1.59 0-2.65 1.05-2.65 2.55v5.52h-2.8v-5.5c0-1.65-.99-2.57-2.48-2.57-1.56 0-2.63 1.05-2.63 2.55v5.52h-2.8zM5.84 16.3a2.95 2.95 0 0 0 2.9-2.96 2.95 2.95 0 0 0-2.9-2.96A2.95 2.95 0 0 0 2.95 13.34a2.95 2.95 0 0 0 2.89 2.96zm0 2.37c-2.9 0-5.84-2.32-5.84-5.33S2.94 7.99 5.84 7.99c1.7 0 2.99.8 3.83 1.94V7.46h2.8v9.85h-2.8v-1.39a5.13 5.13 0 0 1-3.83 1.75z"
+                                                ></path>
+                                            </svg>
+                                            <span className="font-medium ml-1">
+                                                Pay with Stripe
+                                            </span>
+                                        </Label>
+                                    </div>
+
+                                    <div className="flex items-center space-x-3 border rounded-md p-4 hover:bg-muted/20 transition-colors cursor-pointer">
+                                        <RadioGroupItem
+                                            value="payfast"
+                                            id="payfast"
+                                        />
+                                        <Label
+                                            htmlFor="payfast"
+                                            className="flex items-center cursor-pointer"
+                                        >
+                                            <svg
+                                                viewBox="0 0 512 512"
+                                                width="25"
+                                                height="25"
+                                                className="mr-2"
+                                            >
+                                                <rect
+                                                    width="512"
+                                                    height="512"
+                                                    rx="15%"
+                                                    fill="#2D3E50"
+                                                />
+                                                <path
+                                                    fill="#FFF"
+                                                    d="M104 104h88v304h-88zM320 104h88v304h-88z"
+                                                />
+                                                <path
+                                                    fill="#E8562D"
+                                                    d="M212 104h88v304h-88z"
+                                                />
+                                            </svg>
+                                            <span className="font-medium ml-1">
+                                                Pay with PayFast
+                                            </span>
+                                        </Label>
+                                    </div>
+                                </RadioGroup>
+
+                                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
                                     <div className="flex items-start">
                                         <ShieldCheck className="h-5 w-5 mr-2 text-blue-600 flex-shrink-0 mt-0.5" />
                                         <div>
                                             <span className="text-sm text-blue-700 font-medium block mb-1">
-                                                Secure Checkout with Stripe
+                                                Secure Checkout
                                             </span>
                                             <p className="text-sm text-blue-700">
-                                                You will be redirected to
-                                                Stripe&apos;s secure payment
-                                                page to complete your
-                                                transaction.
+                                                {paymentMethod === 'stripe'
+                                                    ? "You will be redirected to Stripe's secure payment page to complete your transaction."
+                                                    : "You will be redirected to PayFast's secure payment page to complete your transaction."}
                                             </p>
                                         </div>
                                     </div>
@@ -515,7 +617,10 @@ export default function CheckoutPage() {
                                         </span>
                                     ) : (
                                         <span className="flex items-center">
-                                            Proceed to Checkout
+                                            {paymentMethod === 'stripe'
+                                                ? 'Pay with Stripe'
+                                                : 'Pay with PayFast'}
+                                            <ArrowRight className="ml-2 h-4 w-4" />
                                         </span>
                                     )}
                                 </Button>

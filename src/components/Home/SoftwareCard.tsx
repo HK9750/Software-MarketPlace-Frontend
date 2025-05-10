@@ -39,29 +39,26 @@ const SoftwareCard: FC<SoftwareCardProps> = ({
         return (
             <Card
                 className={cn(
-                    'h-full overflow-hidden rounded-xl border shadow-sm',
+                    'overflow-hidden rounded-lg border border-gray-200 shadow-sm',
                     className
                 )}
             >
-                <div className="h-48 bg-muted rounded-t-xl animate-pulse" />
-                <CardContent className="p-5 space-y-3">
-                    <div className="h-5 bg-muted rounded w-3/4 animate-pulse" />
+                <div className="aspect-[16/9] bg-muted rounded-t-lg animate-pulse" />
+                <CardContent className="p-3 space-y-2">
+                    <div className="h-4 bg-muted rounded-md w-3/4 animate-pulse" />
                     <div className="flex space-x-1">
-                        {[...Array(3)].map((_, i) => (
+                        {[...Array(5)].map((_, i) => (
                             <div
                                 key={i}
-                                className="h-4 w-4 bg-muted rounded-full animate-pulse"
+                                className="h-3 w-3 bg-muted rounded-full animate-pulse"
                             />
                         ))}
                     </div>
-                    <div className="space-y-2">
-                        <div className="h-4 bg-muted rounded w-full animate-pulse" />
-                        <div className="h-4 bg-muted rounded w-5/6 animate-pulse" />
-                    </div>
+                    <div className="h-3 bg-muted rounded-md w-full animate-pulse" />
                 </CardContent>
-                <CardFooter className="border-t p-5 flex justify-between items-center">
-                    <div className="h-6 bg-muted rounded w-1/4 animate-pulse" />
-                    <div className="h-9 bg-muted rounded w-1/3 animate-pulse" />
+                <CardFooter className="border-t border-gray-100 p-3 flex justify-between items-center">
+                    <div className="h-5 bg-muted rounded-md w-1/4 animate-pulse" />
+                    <div className="h-7 bg-muted rounded-md w-1/3 animate-pulse" />
                 </CardFooter>
             </Card>
         );
@@ -76,9 +73,9 @@ const SoftwareCard: FC<SoftwareCardProps> = ({
             : null;
 
     const badgeVariants = {
-        popular: 'bg-blue-100 text-blue-800 hover:bg-blue-200',
-        trending: 'bg-rose-100 text-rose-800 hover:bg-rose-200',
-        bestseller: 'bg-amber-100 text-amber-800 hover:bg-amber-200',
+        popular: 'bg-blue-100 text-blue-800 hover:bg-blue-100',
+        trending: 'bg-rose-100 text-rose-800 hover:bg-rose-100',
+        bestseller: 'bg-amber-100 text-amber-800 hover:bg-amber-100',
     };
 
     const badgeLabels = {
@@ -90,58 +87,64 @@ const SoftwareCard: FC<SoftwareCardProps> = ({
     return (
         <Card
             className={cn(
-                'group flex flex-col h-full rounded-xl border overflow-hidden shadow-sm hover:shadow-md transition-all duration-300',
+                'group flex flex-col rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300',
                 className
             )}
         >
             <div className="relative">
-                {/* Image container with fixed aspect ratio */}
-                <div className="aspect-[4/3] relative overflow-hidden">
+                {/* Image container with wider aspect ratio */}
+                <div className="aspect-[16/9] relative overflow-hidden bg-gray-50">
                     <Image
                         src={
                             software.filePath ||
-                            '/placeholder.svg?height=300&width=400'
+                            '/placeholder.svg?height=300&width=400' ||
+                            '/placeholder.svg'
                         }
                         alt={software.name}
                         fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        priority={false}
                     />
 
                     {/* Gradient overlay for better text visibility */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
 
                 {/* Badge positioned for better visibility */}
                 <Badge
                     className={cn(
-                        'absolute top-3 right-3 font-medium px-2.5 py-1 text-xs rounded-md shadow-sm',
+                        'absolute top-2 right-2 font-medium px-2 py-0.5 text-xs rounded-md shadow-sm',
                         badgeVariants[software.type]
                     )}
+                    variant="outline"
                 >
                     {badgeLabels[software.type]}
                 </Badge>
 
                 {/* Discount badge if applicable */}
                 {discount && discount > 0 && (
-                    <Badge className="absolute top-3 left-3 font-medium px-2.5 py-1 text-xs rounded-md bg-green-100 text-green-800 shadow-sm">
+                    <Badge
+                        className="absolute top-2 left-2 font-medium px-2 py-0.5 text-xs rounded-md bg-green-100 text-green-800 shadow-sm"
+                        variant="outline"
+                    >
                         {discount}% OFF
                     </Badge>
                 )}
             </div>
 
-            <CardContent className="flex-1 p-5 space-y-3">
-                <CardTitle className="text-lg font-semibold line-clamp-1 group-hover:text-primary transition-colors">
+            <CardContent className="p-3 space-y-2">
+                <CardTitle className="text-sm font-semibold line-clamp-1 group-hover:text-primary transition-colors">
                     {software.name}
                 </CardTitle>
 
                 {/* Rating stars with improved styling */}
                 <div className="flex items-center">
-                    <div className="flex items-center">
+                    <div className="flex items-center gap-0.5">
                         {[...Array(5)].map((_, i) => (
                             <Star
                                 key={i}
-                                size={16}
+                                size={12}
                                 className={cn(
                                     'fill-current',
                                     i < Math.floor(displayRating)
@@ -154,30 +157,30 @@ const SoftwareCard: FC<SoftwareCardProps> = ({
                             />
                         ))}
                     </div>
-                    <span className="text-sm font-medium text-muted-foreground ml-2">
+                    <span className="text-xs font-medium text-gray-500 ml-1.5">
                         {displayRating.toFixed(1)}
                     </span>
                 </div>
 
-                <CardDescription className="text-sm text-muted-foreground line-clamp-2">
+                <CardDescription className="text-xs text-gray-600 line-clamp-1">
                     {software.description}
                 </CardDescription>
             </CardContent>
 
-            <CardFooter className="p-5 pt-3 border-t flex items-center justify-between">
+            <CardFooter className="p-3 border-t border-gray-100 flex items-center justify-between mt-auto">
                 {price != null ? (
-                    <div className="flex flex-col">
-                        <span className="text-lg font-bold text-primary">
+                    <div className="flex items-baseline gap-1.5">
+                        <span className="text-sm font-bold text-primary">
                             ${Number(price).toFixed(2)}
                         </span>
                         {oldPrice && oldPrice > price && (
-                            <span className="text-sm text-muted-foreground line-through">
+                            <span className="text-xs text-gray-500 line-through">
                                 ${oldPrice.toFixed(2)}
                             </span>
                         )}
                     </div>
                 ) : (
-                    <span className="text-sm font-medium text-muted-foreground">
+                    <span className="text-xs font-medium text-primary">
                         Free
                     </span>
                 )}
@@ -185,10 +188,10 @@ const SoftwareCard: FC<SoftwareCardProps> = ({
                 <Link href={`/products/${software.id}`} className="inline-flex">
                     <Button
                         size="sm"
-                        className="gap-1.5 rounded-md font-medium transition-all group-hover:bg-primary/90"
+                        className="gap-1 rounded-md h-7 px-2.5 font-medium text-xs transition-all group-hover:translate-x-0.5"
                     >
                         Details
-                        <ArrowRight className="h-3.5 w-3.5" />
+                        <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
                     </Button>
                 </Link>
             </CardFooter>

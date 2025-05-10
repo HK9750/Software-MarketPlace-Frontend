@@ -1,5 +1,6 @@
 'use client';
 
+import type React from 'react';
 import { useState } from 'react';
 import {
     Card,
@@ -11,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Star, Heart, MoveRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ProductDetail } from '@/types/types';
+import type { ProductDetail } from '@/types/types';
 import axios from 'axios';
 import useAccessToken from '@/lib/accessToken';
 
@@ -56,18 +57,21 @@ const ProductCard = ({ software, onWishlistToggle }: ProductCardProps) => {
     };
 
     return (
-        <Card className="h-full flex flex-col overflow-hidden transition-all hover:shadow-lg border border-gray-200">
-            <div className="relative h-48">
+        <Card className="w-full h-full flex flex-col overflow-hidden transition-all duration-200 hover:shadow-md border border-gray-200 rounded-xl">
+            {/* Image container with fixed aspect ratio */}
+            <div className="relative w-full pt-[56.25%]">
+                {' '}
+                {/* 16:9 aspect ratio */}
                 <img
                     src={filePath || '/placeholder.svg'}
                     alt={name}
-                    className="w-full h-full object-cover"
+                    className="absolute inset-0 w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-30"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute top-3 right-3 bg-white/90 shadow-sm hover:bg-white rounded-full h-8 w-8"
+                    className="absolute top-2 right-2 bg-white/80 hover:bg-white rounded-full h-8 w-8 shadow-sm"
                     onClick={toggleWishlist}
                     aria-label={
                         isWishlisted
@@ -77,42 +81,53 @@ const ProductCard = ({ software, onWishlistToggle }: ProductCardProps) => {
                 >
                     <Heart
                         className={cn(
-                            'h-4 w-4 transition-colors',
+                            'h-4 w-4',
                             isWishlisted
                                 ? 'fill-red-500 text-red-500'
-                                : 'text-muted-foreground'
+                                : 'text-gray-600'
                         )}
                     />
                 </Button>
             </div>
-            <CardHeader className="flex-grow pb-0">
-                <CardTitle className="text-lg font-bold line-clamp-1 mb-2">
-                    {name}
-                </CardTitle>
-                <CardDescription className="line-clamp-2 h-10 text-gray-600">
-                    {description}
-                </CardDescription>
-            </CardHeader>
-            <CardFooter className="flex justify-between items-center pt-2 pb-4">
-                <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-md">
-                    <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-                    <span className="text-sm font-medium">
-                        {averageRating || '0.0'}
-                    </span>
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                    <div className="text-sm font-semibold text-gray-500">
-                        From
+
+            {/* Content area with consistent padding */}
+            <div className="flex flex-col flex-grow">
+                <CardHeader className="px-4 py-3 sm:px-5">
+                    <CardTitle className="text-base sm:text-lg font-semibold line-clamp-1 text-gray-800">
+                        {name}
+                    </CardTitle>
+                    <CardDescription className="mt-1 text-xs sm:text-sm line-clamp-2 text-gray-600">
+                        {description}
+                    </CardDescription>
+                </CardHeader>
+
+                {/* Footer with improved layout */}
+                <CardFooter className="px-4 sm:px-5 py-3 mt-auto border-t border-gray-100 flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-full">
+                        <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                        <span className="text-xs font-medium text-gray-700">
+                            {averageRating || '0.0'}
+                        </span>
                     </div>
-                    <div className="text-lg font-bold text-primary">
-                        ${subscriptions[0].price}
+
+                    <div className="ml-auto flex items-center gap-3">
+                        <div className="flex flex-col items-end">
+                            <span className="text-xs text-gray-500">From</span>
+                            <span className="text-sm font-bold text-primary">
+                                ${subscriptions[0].price}
+                            </span>
+                        </div>
+
+                        <Button
+                            size="sm"
+                            className="h-8 px-3 text-xs font-medium"
+                        >
+                            <MoveRight className="h-3.5 w-3.5 mr-1.5" />
+                            View
+                        </Button>
                     </div>
-                </div>
-                <Button size="sm" className="h-9 ml-2 px-4 font-medium">
-                    <MoveRight className="h-4 w-4 mr-2" />
-                    View
-                </Button>
-            </CardFooter>
+                </CardFooter>
+            </div>
         </Card>
     );
 };

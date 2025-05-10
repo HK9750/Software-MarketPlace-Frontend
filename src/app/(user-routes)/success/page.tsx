@@ -106,9 +106,7 @@ export default function SuccessPage() {
                             <Button
                                 size="lg"
                                 className="w-full sm:w-auto"
-                                onClick={() =>
-                                    router.push('/dashboard/licenses')
-                                }
+                                onClick={() => router.push('/licenses')}
                             >
                                 View My Licenses
                                 <ArrowRight className="ml-2 h-4 w-4" />
