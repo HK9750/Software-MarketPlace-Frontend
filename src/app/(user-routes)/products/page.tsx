@@ -95,7 +95,7 @@ export default function ProductsPage() {
                 setProductLoading(true);
                 try {
                     const response = await axios.get<{ data: ProductDetail[] }>(
-                        `${backendUrl}/products?name=${query ? query : ''}`,
+                        `${backendUrl}/products?name=${query ? query : ''}&status=1`,
                         {
                             headers: {
                                 Authorization: `Bearer ${access_token}`,
