@@ -163,7 +163,6 @@ export default function ProductDetails({
             setAverageRating(
                 response.data.data.software?.averageRating || averageRating
             );
-            
 
             setComment('');
             setRating(5);
