@@ -69,7 +69,7 @@ export default function UsersPage() {
         setVerificationLoading(userId);
 
         try {
-            await axios.post(
+            await axios.put(
                 VERIFY_SELLER_URL(userId),
                 {},
                 {
@@ -95,7 +95,7 @@ export default function UsersPage() {
 
             toast.success('Seller verified successfully', {
                 description:
-                    'The seller can now list products on the marketplace',
+                    'The seller will now have verified badge on the marketplace',
             });
         } catch {
             toast.error('Failed to verify seller', {
