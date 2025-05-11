@@ -39,6 +39,7 @@ import useAccessToken from '@/lib/accessToken';
 import { fetchUserProfile } from '@/hooks/useFetchProfile';
 import { useDispatch, useSelector } from 'react-redux';
 import { login } from '@/redux-store/authSlice';
+import { toast } from 'sonner';
 
 export default function ProductDetails({
     product,
@@ -148,6 +149,12 @@ export default function ProductDetails({
                 }
             );
 
+            if (response.data.status !== 201) {
+                toast.error(response.data.message);
+                setComment('');
+                return;
+            }
+
             // Add the new review to the reviews array
             const newReview = response.data.data;
             setReviews((prev) => [...prev, newReview]);
@@ -156,8 +163,8 @@ export default function ProductDetails({
             setAverageRating(
                 response.data.data.software?.averageRating || averageRating
             );
+            
 
-            // Reset form and show success message
             setComment('');
             setRating(5);
             setReviewSuccess('Review added successfully!');
