@@ -46,11 +46,11 @@ interface ProductRequirements {
 
 interface Subscription {
     id: string;
+    subscriptionId?: string; // <-- Add this
     basePrice: number;
     price: number;
     name: string;
     duration: number;
-    subscriptionPlanId?: string;
 }
 
 interface ProductResponse {
@@ -279,20 +279,6 @@ export function ProductForm({ id }: ProductFormProps) {
                 }
 
                 // Map existing subscriptions to the subscription options
-                if (
-                    productData.subscriptions &&
-                    productData.subscriptions.length > 0
-                ) {
-                    // Create a mapping of plan IDs to subscription data
-                    const existingSubscriptionsMap =
-                        productData.subscriptions.reduce(
-                            (acc: Record<string, Subscription>, sub) => {
-                                acc[sub.subscriptionPlanId] = sub;
-                                return acc;
-                            },
-                            {}
-                        );
-                }
             } else {
                 toast.error('Failed to load product data');
             }
@@ -308,10 +294,10 @@ export function ProductForm({ id }: ProductFormProps) {
 
     useEffect(() => {
         if (product && product.subscriptions && subscriptionPlans.length > 0) {
-            // Map plan IDs to subscription data, fallback to sub.id if subscriptionPlanId is missing
+            // Map plan IDs to subscription data, fallback to sub.id if subscriptionId is missing
             const existingSubscriptionsMap = product.subscriptions.reduce(
                 (acc: Record<string, Subscription>, sub) => {
-                    const planId = sub.subscriptionPlanId || sub.id;
+                    const planId = sub.subscriptionId || sub.id;
                     acc[planId] = sub;
                     return acc;
                 },
