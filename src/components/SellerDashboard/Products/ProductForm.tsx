@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
@@ -49,7 +50,7 @@ interface Subscription {
     price: number;
     name: string;
     duration: number;
-    subscriptionPlanId: string;
+    subscriptionPlanId?: string;
 }
 
 interface ProductResponse {
@@ -94,7 +95,6 @@ const productFormSchema = z.object({
     categoryId: z.string({ required_error: 'Please select a category' }),
     features: z.string().optional(),
     requirements: z.string().optional(),
-    // We'll handle subscriptions separately
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -255,6 +255,7 @@ export function ProductForm({ id }: ProductFormProps) {
             if (res.status === 200 && res.data.success) {
                 const productData: ProductResponse = res.data.data;
                 setProduct(productData);
+                console.log('Product is:', productData);
 
                 // Convert features and requirements objects to strings for form
                 const featuresString = objectToString(productData.features);
@@ -291,20 +292,6 @@ export function ProductForm({ id }: ProductFormProps) {
                             },
                             {}
                         );
-
-                    // Wait for subscription plans to be loaded
-                    if (subscriptionPlans.length > 0) {
-                        const updatedOptions = subscriptionPlans.map((plan) => {
-                            const existingSub =
-                                existingSubscriptionsMap[plan.id];
-                            return {
-                                subscriptionPlanId: plan.id,
-                                price: existingSub ? existingSub.basePrice : 0,
-                                selected: !!existingSub,
-                            };
-                        });
-                        setSubscriptionOptions(updatedOptions);
-                    }
                 }
             } else {
                 toast.error('Failed to load product data');
@@ -319,13 +306,13 @@ export function ProductForm({ id }: ProductFormProps) {
         }
     };
 
-    // Update subscription options when subscription plans are loaded after product data
     useEffect(() => {
         if (product && product.subscriptions && subscriptionPlans.length > 0) {
-            // Create a mapping of plan IDs to subscription data
+            // Map plan IDs to subscription data, fallback to sub.id if subscriptionPlanId is missing
             const existingSubscriptionsMap = product.subscriptions.reduce(
                 (acc: Record<string, Subscription>, sub) => {
-                    acc[sub.subscriptionPlanId] = sub;
+                    const planId = sub.subscriptionPlanId || sub.id;
+                    acc[planId] = sub;
                     return acc;
                 },
                 {}
@@ -574,32 +561,34 @@ export function ProductForm({ id }: ProductFormProps) {
                                 />
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <FormField
-                                        control={form.control}
-                                        name="discount"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>
-                                                    Discount (%)
-                                                </FormLabel>
-                                                <FormControl>
-                                                    <Input
-                                                        type="number"
-                                                        step="1"
-                                                        min="0"
-                                                        max="100"
-                                                        {...field}
-                                                    />
-                                                </FormControl>
-                                                <FormDescription>
-                                                    Set a discount percentage
-                                                    (0-100%) for all
-                                                    subscription plans
-                                                </FormDescription>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+                                    {id && (
+                                        <FormField
+                                            control={form.control}
+                                            name="discount"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>
+                                                        Discount (%)
+                                                    </FormLabel>
+                                                    <FormControl>
+                                                        <Input
+                                                            type="number"
+                                                            step="1"
+                                                            min="0"
+                                                            max="100"
+                                                            {...field}
+                                                        />
+                                                    </FormControl>
+                                                    <FormDescription>
+                                                        Set a discount
+                                                        percentage (0-100%) for
+                                                        all subscription plans
+                                                    </FormDescription>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    )}
 
                                     <FormField
                                         control={form.control}
@@ -607,50 +596,71 @@ export function ProductForm({ id }: ProductFormProps) {
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Category</FormLabel>
-                                                <Select
-                                                    onValueChange={
-                                                        field.onChange
-                                                    }
-                                                    value={field.value}
-                                                >
-                                                    <FormControl>
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder="Select a category" />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        {categories.length >
-                                                        0 ? (
-                                                            categories.map(
-                                                                (category) => (
-                                                                    <SelectItem
-                                                                        key={
-                                                                            category.id
-                                                                        }
-                                                                        value={
-                                                                            category.id
-                                                                        }
-                                                                    >
-                                                                        {
-                                                                            category.name
-                                                                        }
-                                                                    </SelectItem>
+                                                {id ? (
+                                                    // If editing, show category as plain text (not editable)
+                                                    <Input
+                                                        value={
+                                                            categories.find(
+                                                                (cat) =>
+                                                                    cat.id ===
+                                                                    field.value
+                                                            )?.name ||
+                                                            product?.category
+                                                                ?.name ||
+                                                            ''
+                                                        }
+                                                        disabled
+                                                        readOnly
+                                                    />
+                                                ) : (
+                                                    <Select
+                                                        onValueChange={
+                                                            field.onChange
+                                                        }
+                                                        value={field.value}
+                                                    >
+                                                        <FormControl>
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder="Select a category" />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            {categories.length >
+                                                            0 ? (
+                                                                categories.map(
+                                                                    (
+                                                                        category
+                                                                    ) => (
+                                                                        <SelectItem
+                                                                            key={
+                                                                                category.id
+                                                                            }
+                                                                            value={
+                                                                                category.id
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                category.name
+                                                                            }
+                                                                        </SelectItem>
+                                                                    )
                                                                 )
-                                                            )
-                                                        ) : (
-                                                            <SelectItem
-                                                                value="loading"
-                                                                disabled
-                                                            >
-                                                                Loading
-                                                                categories...
-                                                            </SelectItem>
-                                                        )}
-                                                    </SelectContent>
-                                                </Select>
+                                                            ) : (
+                                                                <SelectItem
+                                                                    value="loading"
+                                                                    disabled
+                                                                >
+                                                                    Loading
+                                                                    categories...
+                                                                </SelectItem>
+                                                            )}
+                                                        </SelectContent>
+                                                    </Select>
+                                                )}
                                                 <FormDescription>
-                                                    Choose the category that
-                                                    best fits your product
+                                                    {id
+                                                        ? 'Category cannot be changed when updating a product.'
+                                                        : 'Choose the category that best fits your product'}
                                                 </FormDescription>
                                                 <FormMessage />
                                             </FormItem>

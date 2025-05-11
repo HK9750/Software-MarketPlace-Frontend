@@ -211,23 +211,14 @@ export default function ProductDetails({
         return <Loader />;
     }
 
-    // Extract features from the product
-    const features = [
-        product.features?.aitools,
-        product.features?.filters,
-        product.features?.formats,
-        product.features?.layerSupport,
-        product.features?.plugins,
-    ].filter(Boolean);
+    // Dynamically extract features and requirements as key-value pairs
+    const featuresEntries = product.features
+        ? Object.entries(product.features).filter(([_, value]) => value)
+        : [];
 
-    // Extract requirements from the product
-    const requirements = [
-        product.requirements?.graphics,
-        product.requirements?.os,
-        product.requirements?.processor,
-        product.requirements?.ram,
-        product.requirements?.storage,
-    ].filter(Boolean);
+    const requirementsEntries = product.requirements
+        ? Object.entries(product.requirements).filter(([_, value]) => value)
+        : [];
 
     return (
         <TooltipProvider>
@@ -412,17 +403,32 @@ export default function ProductDetails({
                                 <CardTitle>Features</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {features.map((feature, index) => (
-                                        <li
-                                            key={index}
-                                            className="flex items-start"
-                                        >
-                                            <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                                            <span>{feature}</span>
-                                        </li>
-                                    ))}
-                                </ul>
+                                {featuresEntries.length > 0 ? (
+                                    <ul className="grid grid-cols-1  gap-4">
+                                        {featuresEntries.map(
+                                            ([key, value], index) => (
+                                                <li
+                                                    key={index}
+                                                    className="flex items-start justify-start"
+                                                >
+                                                    <Check className="h-8 w-8 text-green-500 mr-2 mt-0.5" />
+                                                    <span>
+                                                        <span className="font-semibold capitalize">
+                                                            {key}:
+                                                        </span>{' '}
+                                                        {Array.isArray(value)
+                                                            ? value.join(', ')
+                                                            : String(value)}
+                                                    </span>
+                                                </li>
+                                            )
+                                        )}
+                                    </ul>
+                                ) : (
+                                    <p className="text-gray-500">
+                                        No features listed.
+                                    </p>
+                                )}
                             </CardContent>
                         </Card>
                     </TabsContent>
@@ -432,17 +438,32 @@ export default function ProductDetails({
                                 <CardTitle>System Requirements</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <ul className="space-y-2">
-                                    {requirements.map((req, index) => (
-                                        <li
-                                            key={index}
-                                            className="flex items-start"
-                                        >
-                                            <Check className="h-5 w-5 text-blue-500 mr-2 mt-0.5" />
-                                            <span>{req}</span>
-                                        </li>
-                                    ))}
-                                </ul>
+                                {requirementsEntries.length > 0 ? (
+                                    <ul className="space-y-2">
+                                        {requirementsEntries.map(
+                                            ([key, value], index) => (
+                                                <li
+                                                    key={index}
+                                                    className="flex items-start"
+                                                >
+                                                    <Check className="h-5 w-5 text-blue-500 mr-2 mt-0.5" />
+                                                    <span>
+                                                        <span className="font-semibold capitalize">
+                                                            {key}:
+                                                        </span>{' '}
+                                                        {Array.isArray(value)
+                                                            ? value.join(', ')
+                                                            : String(value)}
+                                                    </span>
+                                                </li>
+                                            )
+                                        )}
+                                    </ul>
+                                ) : (
+                                    <p className="text-gray-500">
+                                        No requirements listed.
+                                    </p>
+                                )}
                             </CardContent>
                         </Card>
                     </TabsContent>
