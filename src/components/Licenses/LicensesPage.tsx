@@ -406,17 +406,6 @@ export default function LicensesPage() {
                             </div>
 
                             <div className="grid grid-cols-3 gap-2">
-                                <div className="font-medium">Activated:</div>
-                                <div className="col-span-2">
-                                    {selectedLicense.activatedAt
-                                        ? formatDate(
-                                              selectedLicense.activatedAt
-                                          )
-                                        : 'Not activated yet'}
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-3 gap-2">
                                 <div className="font-medium">Valid Until:</div>
                                 <div className="col-span-2">
                                     {formatDate(selectedLicense.validUntil)}
