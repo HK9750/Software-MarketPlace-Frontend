@@ -177,7 +177,8 @@ export default function CheckoutPage() {
                 });
 
                 // Redirect to Stripe Checkout
-                window.location.href = stripeRes.data.url;
+                console.log(stripeRes);
+                window.location.href = `${stripeRes.data.url}&transactionId=${stripeRes.data.transactionId}`;
             } else if (paymentMethod === 'payfast') {
                 // New PayFast integration - redirect to PayFast
                 await redirectToPayfast(newOrderId);

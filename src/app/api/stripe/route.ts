@@ -33,11 +33,16 @@ export async function POST(request: Request) {
         const session = await stripe.checkout.sessions.create({
             mode: 'payment',
             line_items,
-            success_url: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/success?orderId=${orderId}&transactionId=${Uuid()}&userId=${userId}&amount=${totalAmount}`,
+            success_url: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/success?orderId=${orderId}&userId=${userId}&amount=${totalAmount}`,
             cancel_url: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/checkout`,
         });
 
-        return NextResponse.json({ url: session.url });
+        console.log(session);
+
+        return NextResponse.json({
+            url: session.url,
+            transactionId: session.id,
+        });
     } catch (err) {
         console.error('Error creating Stripe session:', err);
         return NextResponse.json(
