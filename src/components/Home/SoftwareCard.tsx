@@ -212,14 +212,14 @@ const SoftwareCard: FC<SoftwareCardProps> = ({
 
                 <div className="flex items-center gap-2">
                     {/* Add to cart button */}
-                    <Button
+                    {/* <Button
                         variant="outline"
                         size="icon"
                         className="h-7 w-7 rounded-md"
                         onClick={handleAddToCart}
                     >
                         <ShoppingCart className="h-3.5 w-3.5" />
-                    </Button>
+                    </Button> */}
 
                     {/* Details button */}
                     <Link href={`/products/${software.id}`}>
