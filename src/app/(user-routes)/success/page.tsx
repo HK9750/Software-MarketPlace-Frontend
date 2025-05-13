@@ -14,6 +14,7 @@ export default function SuccessPage() {
     const params = useSearchParams();
     const orderId = params.get('orderId');
     const transactionId = params.get('transactionId');
+    console.log('TransactionId', transactionId);
     const userId = params.get('userId');
     const amount = params.get('amount');
     const router = useRouter();

@@ -170,15 +170,23 @@ export default function CheckoutPage() {
             // Process payment based on selected payment method
             if (paymentMethod === 'stripe') {
                 // Existing Stripe integration
-                const stripeRes: any = await axios.post('/api/stripe', {
-                    orderId: newOrderId,
-                    orderItems,
-                    userId: user.id,
-                });
+                const stripeRes: any = await axios.post(
+                    '/api/stripe',
+                    JSON.stringify({
+                        orderId: newOrderId,
+                        orderItems,
+                        userId: user.id,
+                    }),
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
 
                 // Redirect to Stripe Checkout
                 console.log(stripeRes);
-                window.location.href = `${stripeRes.data.url}&transactionId=${stripeRes.data.transactionId}`;
+                window.location.href = stripeRes.data.url;
             } else if (paymentMethod === 'payfast') {
                 // New PayFast integration - redirect to PayFast
                 await redirectToPayfast(newOrderId);
